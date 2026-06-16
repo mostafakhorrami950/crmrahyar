@@ -5,6 +5,13 @@ class View
 {
     public static function render(string $view, array $data = []): void
     {
+        // Make config available in all views
+        global $config;
+        if (!isset($config)) {
+            $config = $GLOBALS['app_config'];
+        }
+        $data['config'] = $config;
+        
         extract($data);
         
         $viewPath = __DIR__ . '/../views/' . $view . '.php';
