@@ -133,7 +133,7 @@ class Migration
             // Set permissions for roles
             // Super admin gets all permissions
             $this->db->exec("INSERT INTO role_permissions (role_id, permission) 
-                SELECT 1, permission FROM permissions");
+                SELECT 1, slug FROM permissions");
             
             // Operator permissions
             $this->db->exec("INSERT INTO role_permissions (role_id, permission) VALUES 

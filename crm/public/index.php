@@ -7,21 +7,27 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-// Autoloader
+// Autoloader - handles Core\ and Controllers\ namespaces
 spl_autoload_register(function ($class) {
-    $prefix = 'Core\\';
-    $baseDir = __DIR__ . '/../core/';
+    // Map namespaces to directories
+    $prefixes = [
+        'Core\\' => __DIR__ . '/../core/',
+        'Controllers\\' => __DIR__ . '/../controllers/',
+    ];
     
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-    
-    $relativeClass = substr($class, $len);
-    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-    
-    if (file_exists($file)) {
-        require $file;
+    foreach ($prefixes as $prefix => $baseDir) {
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) !== 0) {
+            continue;
+        }
+        
+        $relativeClass = substr($class, $len);
+        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+        
+        if (file_exists($file)) {
+            require $file;
+            return;
+        }
     }
 });
 
