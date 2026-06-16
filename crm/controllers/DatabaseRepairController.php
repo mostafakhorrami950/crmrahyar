@@ -36,8 +36,13 @@ class DatabaseRepairController
         $migrationFiles = glob(__DIR__ . '/../database/migrations/*.sql');
         sort($migrationFiles);
         
-        // Get repair log
-        $repairLog = $db->fetchAll("SELECT * FROM db_repair_log ORDER BY created_at DESC LIMIT 50");
+        // Get repair log - with error handling if table doesn't exist yet
+        $repairLog = [];
+        try {
+            $repairLog = $db->fetchAll("SELECT * FROM db_repair_log ORDER BY created_at DESC LIMIT 50");
+        } catch (\Exception $e) {
+            // Table doesn't exist yet - that's ok
+        }
         
         View::render('database/index', [
             'title' => 'تعمیر دیتابیس',
