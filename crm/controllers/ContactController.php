@@ -45,6 +45,7 @@ class ContactController
 
     public function store(): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
         $email = trim($_POST['email'] ?? '');
@@ -57,11 +58,34 @@ class ContactController
         $tags = trim($_POST['tags'] ?? '');
 
         if (empty($fullName)) {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'لطفا نام مخاطب را وارد کنید.']);
+                exit;
+            }
             Session::setFlash('danger', 'لطفا نام مخاطب را وارد کنید.');
             View::redirect('/contacts/create');
         }
 
         $db = Database::getInstance();
+
+        // Check duplicate phone
+        if (!empty($phone)) {
+            $existing = $db->fetch("SELECT id, full_name FROM contacts WHERE phone = :phone", [':phone' => $phone]);
+            if ($existing) {
+                if ($isAjax) {
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => "❌ این شماره قبلاً برای «{$existing->full_name}» ثبت شده است.",
+                        'duplicate' => true,
+                        'existing_id' => $existing->id
+                    ]);
+                    exit;
+                }
+                Session::setFlash('danger', "این شماره قبلاً برای «{$existing->full_name}» ثبت شده است.");
+                View::redirect('/contacts/create');
+            }
+        }
+
         $contactId = $db->insert('contacts', [
             'full_name' => $fullName,
             'phone' => $phone,
@@ -77,6 +101,16 @@ class ContactController
         ]);
 
         ActivityLog::log('create_contact', 'contact', $contactId, "مخاطب {$fullName} ایجاد شد");
+
+        if ($isAjax) {
+            $newContact = $db->fetch("SELECT id, full_name, phone FROM contacts WHERE id = :id", [':id' => $contactId]);
+            echo json_encode([
+                'success' => true, 
+                'message' => 'مخاطب با موفقیت ایجاد شد.',
+                'contact' => $newContact
+            ]);
+            exit;
+        }
         Session::setFlash('success', 'مخاطب با موفقیت ایجاد شد.');
         View::redirect('/contacts');
     }
@@ -106,6 +140,16 @@ class ContactController
         $tags = trim($_POST['tags'] ?? '');
 
         $db = Database::getInstance();
+        
+        // Check duplicate phone but exclude current contact
+        if (!empty($phone)) {
+            $existing = $db->fetch("SELECT id, full_name FROM contacts WHERE phone = :phone AND id != :id", [':phone' => $phone, ':id' => $params['id']]);
+            if ($existing) {
+                echo json_encode(['success' => false, 'message' => "این شماره قبلاً برای «{$existing->full_name}» ثبت شده است."]);
+                exit;
+            }
+        }
+
         $db->update('contacts', [
             'full_name' => $fullName,
             'phone' => $phone,

@@ -33,22 +33,21 @@ class SmsController
 
     public function send(): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $recipient = trim($_POST['recipient'] ?? '');
         $message = trim($_POST['message'] ?? '');
         $dealId = (int)($_POST['deal_id'] ?? 0);
         $contactId = (int)($_POST['contact_id'] ?? 0) ?: null;
-        $patternCode = trim($_POST['pattern_code'] ?? '');
-        $patternParams = $_POST['pattern_params'] ?? [];
+        $sendTime = trim($_POST['send_time'] ?? '');
 
         if (empty($recipient)) {
-            Session::setFlash('danger', 'لطفا شماره گیرنده را وارد کنید.');
-            if ($dealId) {
-                View::redirect('/sms/send/' . $dealId);
-            }
-            View::redirect('/sms/history');
+            $errorMsg = 'لطفا شماره گیرنده را وارد کنید.';
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMsg]); exit; }
+            Session::setFlash('danger', $errorMsg);
+            View::redirect('/sms/send/' . $dealId);
         }
 
-        // Format phone number - ensure it starts with +98
+        // Format phone number
         if (substr($recipient, 0, 1) === '0') {
             $recipient = '+98' . substr($recipient, 1);
         } elseif (substr($recipient, 0, 1) !== '+') {
@@ -60,30 +59,27 @@ class SmsController
         $fromNumber = $config['sms']['from_number'];
 
         if (empty($apiToken)) {
-            Session::setFlash('danger', 'توکن API پیامک تنظیم نشده است. لطفا ابتدا در تنظیمات مقداردهی کنید.');
-            if ($dealId) {
-                View::redirect('/sms/send/' . $dealId);
-            }
+            $errorMsg = 'توکن API تنظیم نشده است.';
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMsg]); exit; }
+            Session::setFlash('danger', $errorMsg);
             View::redirect('/settings');
         }
 
-        // Build request payload
+        // Build request payload - Use webservice API per docs
         $payload = [
-            'sending_type' => 'pattern',
+            'sending_type' => 'webservice',
             'from_number' => $fromNumber,
-            'recipients' => [$recipient],
+            'message' => $message,
+            'params' => [
+                'recipients' => [$recipient]
+            ],
         ];
-
-        if ($patternCode) {
-            $payload['code'] = $patternCode;
-            $payload['params'] = $patternParams;
-        } else {
-            // For non-pattern (text message) - but the API uses pattern, so we use a generic pattern
-            $payload['code'] = $patternCode ?: 'default';
-            $payload['params'] = ['message' => $message];
+        
+        if (!empty($sendTime)) {
+            $payload['send_time'] = $sendTime;
         }
 
-        // Use cURL to send SMS via IPPanel
+        // cURL to IPPanel
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://edge.ippanel.com/v1/api/send');
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -109,7 +105,7 @@ class SmsController
             $outboxId = $result->data->message_outbox_ids[0] ?? null;
         } else {
             $status = 'failed';
-            $errorMessage = $result->meta->message ?? 'خطا در ارسال پیامک';
+            $errorMessage = $result->meta->message ?? 'خطا در ارسال';
         }
 
         // Save to history
@@ -118,8 +114,7 @@ class SmsController
             'deal_id' => $dealId ?: null,
             'contact_id' => $contactId,
             'recipient' => $recipient,
-            'message' => $patternCode ? "الگو: {$patternCode}" : $message,
-            'pattern_code' => $patternCode,
+            'message' => $message,
             'status' => $status,
             'message_outbox_id' => $outboxId,
             'error_message' => $errorMessage,
@@ -128,91 +123,14 @@ class SmsController
 
         if ($status === 'sent') {
             ActivityLog::log('send_sms', 'sms', $dealId, "پیامک به {$recipient} ارسال شد");
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'پیامک با موفقیت ارسال شد.']); exit; }
             Session::setFlash('success', 'پیامک با موفقیت ارسال شد.');
         } else {
-            Session::setFlash('danger', "خطا در ارسال پیامک: {$errorMessage}");
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMessage]); exit; }
+            Session::setFlash('danger', "خطا: {$errorMessage}");
         }
 
-        if ($dealId) {
-            View::redirect('/deals/view/' . $dealId);
-        }
-        View::redirect('/sms/history');
-    }
-
-    public function sendBulk(): void
-    {
-        $recipients = $_POST['recipients'] ?? [];
-        $message = trim($_POST['message'] ?? '');
-        $patternCode = trim($_POST['pattern_code'] ?? '');
-
-        if (empty($recipients) || (empty($message) && empty($patternCode))) {
-            Session::setFlash('danger', 'لطفا گیرندگان و متن پیام را وارد کنید.');
-            View::redirect('/sms/history');
-        }
-
-        $config = $GLOBALS['app_config'];
-        $apiToken = $config['sms']['api_token'];
-        $fromNumber = $config['sms']['from_number'];
-
-        $successCount = 0;
-        $failCount = 0;
-
-        foreach ($recipients as $recipient) {
-            $recipient = trim($recipient);
-            if (empty($recipient)) continue;
-
-            if (substr($recipient, 0, 1) === '0') {
-                $recipient = '+98' . substr($recipient, 1);
-            } elseif (substr($recipient, 0, 1) !== '+') {
-                $recipient = '+98' . $recipient;
-            }
-
-            $payload = [
-                'sending_type' => 'pattern',
-                'from_number' => $fromNumber,
-                'recipients' => [$recipient],
-                'code' => $patternCode ?: 'default',
-                'params' => ['message' => $message],
-            ];
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://edge.ippanel.com/v1/api/send');
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Authorization: ' . $apiToken,
-            ]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $result = json_decode($response);
-            
-            $status = 'sent';
-            $errorMessage = null;
-            if ($result && isset($result->meta) && $result->meta->status === true) {
-                $successCount++;
-            } else {
-                $status = 'failed';
-                $errorMessage = $result->meta->message ?? 'خطا';
-                $failCount++;
-            }
-
-            $db = Database::getInstance();
-            $db->insert('sms_history', [
-                'recipient' => $recipient,
-                'message' => $message,
-                'pattern_code' => $patternCode,
-                'status' => $status,
-                'error_message' => $errorMessage,
-                'sent_by' => Auth::id(),
-            ]);
-        }
-
-        Session::setFlash('success', "{$successCount} پیامک با موفقیت ارسال شد. {$failCount} ناموفق.");
+        if ($dealId) { View::redirect('/deals/view/' . $dealId); }
         View::redirect('/sms/history');
     }
 
@@ -224,13 +142,9 @@ class SmsController
              FROM sms_history sh 
              LEFT JOIN users u ON sh.sent_by = u.id 
              LEFT JOIN deals d ON sh.deal_id = d.id 
-             ORDER BY sh.created_at DESC 
-             LIMIT 100"
+             ORDER BY sh.created_at DESC LIMIT 100"
         );
 
-        View::render('sms/history', [
-            'title' => 'تاریخچه پیامک‌ها',
-            'history' => $history,
-        ]);
+        View::render('sms/history', ['title' => 'تاریخچه پیامک‌ها', 'history' => $history]);
     }
 }

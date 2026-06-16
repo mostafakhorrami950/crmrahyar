@@ -30,7 +30,13 @@
             </div>
             <?php if ($deal->description): ?>
             <hr>
-            <p><strong>توضیحات:</strong><br><?php echo nl2br(htmlspecialchars($deal->description)); ?></p>
+            <p><strong>توضیحات:</strong><br>
+            <?php 
+            $desc = htmlspecialchars($deal->description);
+            $desc = preg_replace('/#(\w+)/', '<a href="' . $config['url'] . '/deals/tag/$1" style="color:var(--primary);font-weight:bold;text-decoration:none;">#$1</a>', $desc);
+            echo nl2br($desc); 
+            ?>
+            </p>
             <?php endif; ?>
         </div>
 

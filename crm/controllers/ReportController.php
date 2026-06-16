@@ -132,6 +132,23 @@ class ReportController
         ]);
     }
 
+    public function toggleActivity(array $params): void
+    {
+        $db = Database::getInstance();
+        $activity = $db->fetch("SELECT id, is_done FROM deal_activities WHERE id = :id", [':id' => $params['id']]);
+        if ($activity) {
+            $newStatus = $activity->is_done ? 0 : 1;
+            $db->update('deal_activities', ['is_done' => $newStatus], 'id = :id', [':id' => $params['id']]);
+            
+            $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'is_done' => $newStatus]);
+                exit;
+            }
+        }
+        View::redirect('/activities');
+    }
+
     public function activities(): void
     {
         $db = Database::getInstance();

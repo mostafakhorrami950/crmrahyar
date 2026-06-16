@@ -9,6 +9,32 @@ use Core\ActivityLog;
 
 class DealController
 {
+    public function getData(array $params): void
+    {
+        $db = Database::getInstance();
+        $deal = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $params['id']]);
+        if (!$deal) {
+            echo json_encode(['success' => false]);
+            exit;
+        }
+        $stages = $db->fetchAll("SELECT s.* FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE p.id = :pid AND s.is_active = 1 ORDER BY s.order_index", [':pid' => $deal->pipeline_id]);
+        
+        // Parse hashtags from description
+        $tags = [];
+        if ($deal->description) {
+            preg_match_all('/#(\w+)/', $deal->description, $matches);
+            $tags = $matches[1] ?? [];
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'deal' => $deal,
+            'stages' => $stages,
+            'tags' => $tags
+        ]);
+        exit;
+    }
+
     public function index(): void
     {
         $db = Database::getInstance();
@@ -339,6 +365,43 @@ class DealController
         ActivityLog::log('add_activity', 'deal', $params['id'], "فعالیت {$type} برای معامله ثبت شد");
         Session::setFlash('success', 'فعالیت با موفقیت ثبت شد.');
         View::redirect('/deals/view/' . $params['id']);
+    }
+
+    public function byTag(array $params): void
+    {
+        $tag = trim($params['tag'] ?? '');
+        $db = Database::getInstance();
+        
+        $deals = $db->fetchAll(
+            "SELECT d.*, s.name as stage_name, s.color as stage_color, 
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    p.name as pipeline_name, u.full_name as assigned_name
+             FROM deals d 
+             JOIN stages s ON d.stage_id = s.id 
+             JOIN pipelines p ON d.pipeline_id = p.id 
+             LEFT JOIN contacts c ON d.contact_id = c.id 
+             LEFT JOIN users u ON d.assigned_to = u.id 
+             WHERE d.description LIKE :tag
+             ORDER BY d.created_at DESC",
+            [':tag' => "%#{$tag}%"]
+        );
+
+        $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
+        $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
+        $stages = $db->fetchAll("SELECT s.*, p.name as pipeline_name FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE s.is_active = 1 ORDER BY p.name, s.order_index");
+
+        View::render('deals/index', [
+            'title' => "معاملات با تگ: #{$tag}",
+            'deals' => $deals,
+            'pipelines' => $pipelines,
+            'users' => $users,
+            'stages' => $stages,
+            'search' => "#{$tag}",
+            'selectedStage' => '',
+            'selectedPipeline' => '',
+            'selectedAssigned' => '',
+            'selectedStatus' => '',
+        ]);
     }
 
     public function convertToDeal(): void

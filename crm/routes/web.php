@@ -77,6 +77,8 @@ Router::group('/deals', function() {
     Router::post('/delete/{id}', [DealController::class, 'delete'], 'deals.delete');
     Router::post('/add-activity/{id}', [DealController::class, 'addActivity'], 'deals.edit');
     Router::post('/convert/{id}', [DealController::class, 'convertToDeal'], 'deals.edit');
+    Router::get('/get-data/{id}', [DealController::class, 'getData'], 'deals.view');
+    Router::get('/tag/{tag}', [DealController::class, 'byTag'], 'deals.view');
 });
 
 // Contacts management
@@ -107,12 +109,17 @@ Router::group('/sms', function() {
     Router::get('/history', [SmsController::class, 'history'], 'sms.send');
 });
 
+// Activities
+Router::group('/activities', function() {
+    Router::get('', [ReportController::class, 'activities'], 'reports.view');
+    Router::post('/toggle-done/{id}', [ReportController::class, 'toggleActivity'], 'reports.view');
+});
+
 // Reports
 Router::group('/reports', function() {
     Router::get('', [ReportController::class, 'index'], 'reports.view');
     Router::get('/sales', [ReportController::class, 'sales'], 'reports.view');
     Router::get('/pipeline', [ReportController::class, 'pipeline'], 'reports.view');
-    Router::get('/activities', [ReportController::class, 'activities'], 'reports.view');
     Router::get('/contacts', [ReportController::class, 'contacts'], 'reports.view');
 });
 

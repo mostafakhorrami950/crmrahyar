@@ -56,6 +56,9 @@
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('reports.view')): ?>
+                <a href="<?php echo $config['url']; ?>/activities" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/activities') !== false ? 'active' : ''; ?>">
+                    <span class="icon">📅</span> فعالیت‌ها
+                </a>
                 <div class="sidebar-section">گزارشات</div>
                 <a href="<?php echo $config['url']; ?>/reports" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/reports') !== false && strpos($_SERVER['REQUEST_URI'], '/reports/sales') === false && strpos($_SERVER['REQUEST_URI'], '/reports/pipeline') === false && strpos($_SERVER['REQUEST_URI'], '/reports/activities') === false && strpos($_SERVER['REQUEST_URI'], '/reports/contacts') === false) ? 'active' : ''; ?>">
                     <span class="icon">📈</span> داشبورد گزارشات
