@@ -77,8 +77,18 @@
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
-                <a href="<?php echo $config['url']; ?>/settings" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/settings') !== false ? 'active' : ''; ?>">
+                <a href="<?php echo $config['url']; ?>/settings" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/settings') !== false && strpos($_SERVER['REQUEST_URI'], '/custom-fields') === false ? 'active' : ''; ?>">
                     <span class="icon">⚙️</span> تنظیمات
+                </a>
+                <?php endif; ?>
+                <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
+                <a href="<?php echo $config['url']; ?>/custom-fields" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/custom-fields') !== false ? 'active' : ''; ?>">
+                    <span class="icon">📋</span> فیلدهای اختصاصی
+                </a>
+                <?php endif; ?>
+                <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
+                <a href="<?php echo $config['url']; ?>/database/repair" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/database') !== false ? 'active' : ''; ?>">
+                    <span class="icon">🔧</span> تعمیر دیتابیس
                 </a>
                 <?php endif; ?>
             </nav>

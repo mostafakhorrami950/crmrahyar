@@ -120,3 +120,17 @@ Router::group('/settings', function() {
     Router::post('/update', [SettingController::class, 'update'], 'settings.manage');
     Router::post('/toggle-feature', [SettingController::class, 'toggleFeature'], 'settings.manage');
 });
+
+// Database Repair
+Router::group('/database', function() {
+    Router::get('/repair', [DatabaseRepairController::class, 'index'], 'settings.manage');
+    Router::post('/repair/run', [DatabaseRepairController::class, 'runRepair'], 'settings.manage');
+});
+
+// Custom Fields
+Router::group('/custom-fields', function() {
+    Router::get('', [CustomFieldController::class, 'index'], 'settings.manage');
+    Router::post('/store', [CustomFieldController::class, 'store'], 'settings.manage');
+    Router::post('/update/{id}', [CustomFieldController::class, 'update'], 'settings.manage');
+    Router::post('/delete/{id}', [CustomFieldController::class, 'delete'], 'settings.manage');
+});

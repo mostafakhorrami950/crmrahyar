@@ -2,6 +2,47 @@
  * CRM Travel Agency - Custom JavaScript
  * Pure JS, no dependencies
  */
+
+// ========== UTILITY FUNCTIONS ==========
+function showError(container, message) {
+    var el = document.getElementById(container);
+    if (!el) {
+        el = document.createElement('div');
+        el.id = container;
+        el.className = 'alert alert-danger';
+        var form = document.querySelector('form[data-ajax="true"]');
+        if (form) form.prepend(el);
+        else document.querySelector('.page-content')?.prepend(el);
+    }
+    el.textContent = message;
+    el.style.display = 'block';
+    setTimeout(function() { el.style.display = 'none'; }, 10000);
+}
+
+function showSuccess(message) {
+    var el = document.createElement('div');
+    el.className = 'alert alert-success';
+    el.textContent = message;
+    var container = document.querySelector('.page-content');
+    if (container) container.prepend(el);
+    setTimeout(function() { el.remove(); }, 5000);
+}
+
+function serializeForm(form) {
+    var data = [];
+    var elements = form.querySelectorAll('input, textarea, select');
+    for (var i = 0; i < elements.length; i++) {
+        var el = elements[i];
+        if (el.disabled || el.type === 'submit' || el.type === 'button') continue;
+        if (el.type === 'checkbox' || el.type === 'radio') {
+            if (el.checked) data.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(el.value));
+        } else {
+            data.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(el.value));
+        }
+    }
+    return data.join('&');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Flash auto-hide
     document.querySelectorAll('.flash').forEach(function(flash) {
@@ -10,9 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
             flash.style.transform = 'translateX(80px)';
             flash.style.transition = 'all 0.3s ease';
             setTimeout(function() { flash.remove(); }, 300);
-        }, 5000);
+        }, 7000);
     });
-    // Close flash
     document.querySelectorAll('.flash .close-btn').forEach(function(btn) {
         btn.addEventListener('click', function() { this.parentElement.remove(); });
     });
@@ -73,20 +113,93 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!confirm(this.dataset.confirm || 'آیا اطمینان دارید؟')) e.preventDefault();
         });
     });
-    // Pipeline change
-    document.getElementById('pipelineSelect')?.addEventListener('change', function() {
-        var url = new URL(window.location.href);
-        url.searchParams.set('pipeline_id', this.value);
-        window.location.href = url.toString();
-    });
     // Feature toggle
     document.querySelectorAll('.feature-toggle').forEach(function(t) {
         t.addEventListener('change', function() {
-            fetch(this.dataset.url || '/settings/toggle-feature', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'feature=' + this.dataset.feature + '&enabled=' + (this.checked ? 1 : 0)
-            }).then(function(r) { return r.json(); }).then(function(d) { if (d.success) location.reload(); });
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', this.dataset.url || '/settings/toggle-feature', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() { try { var d = JSON.parse(xhr.responseText); if (d.success) location.reload(); } catch(e) {} };
+            xhr.send('feature=' + t.dataset.feature + '&enabled=' + (t.checked ? 1 : 0));
         });
+    });
+    // Pipeline stages loading
+    document.getElementById('pipelineSelect')?.addEventListener('change', function() {
+        var pipelineId = this.value;
+        var stageSelect = document.getElementById('stageSelect');
+        if (!stageSelect) return;
+        stageSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+        var base = document.querySelector('base')?.getAttribute('href') || '';
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', base + '/pipelines/' + pipelineId + '/stages', true);
+        xhr.onload = function() {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                stageSelect.innerHTML = '<option value="">انتخاب مرحله</option>';
+                if (data.success && data.stages) {
+                    data.stages.forEach(function(s) {
+                        stageSelect.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
+                    });
+                }
+            } catch(e) { stageSelect.innerHTML = '<option value="">خطا در بارگذاری</option>'; }
+        };
+        xhr.send();
+    });
+    // ========== UNIVERSAL AJAX FORM HANDLER ==========
+    document.querySelectorAll('form[data-ajax="true"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var submitBtn = form.querySelector('[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ ...'; }
+            
+            var errorContainer = form.querySelector('.ajax-error');
+            if (errorContainer) errorContainer.style.display = 'none';
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open(form.method || 'POST', form.action, true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.original || submitBtn.textContent; }
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.success) {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else if (data.reload) {
+                            location.reload();
+                        } else {
+                            showSuccess(data.message || 'عملیات با موفقیت انجام شد.');
+                            // If form is in a modal, close it
+                            var modal = form.closest('.modal-overlay');
+                            if (modal) closeModal(modal.id);
+                        }
+                    } else {
+                        if (errorContainer) {
+                            errorContainer.textContent = data.message || 'خطا در انجام عملیات';
+                            errorContainer.style.display = 'block';
+                        } else {
+                            showError('ajax-error-global', data.message || 'خطا در انجام عملیات');
+                        }
+                    }
+                } catch(e) {
+                    if (errorContainer) {
+                        errorContainer.textContent = 'خطا: ' + xhr.responseText;
+                        errorContainer.style.display = 'block';
+                    } else {
+                        showError('ajax-error-global', 'خطا: ' + xhr.responseText);
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.original || 'ارسال'; }
+                showError('ajax-error-global', 'خطا در ارتباط با سرور');
+            };
+            xhr.send(serializeForm(form));
+        });
+        // Save original button text
+        var btn = form.querySelector('[type="submit"]');
+        if (btn) btn.dataset.original = btn.textContent;
     });
 });
