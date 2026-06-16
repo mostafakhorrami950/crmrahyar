@@ -50,6 +50,7 @@ class PipelineController
                     $db->insert('stages', [
                         'pipeline_id' => $pipelineId,
                         'name' => trim($stage['name']),
+                        'description' => trim($stage['description'] ?? ''),
                         'color' => $stage['color'] ?? '#6B7280',
                         'order_index' => $index + 1,
                     ]);
