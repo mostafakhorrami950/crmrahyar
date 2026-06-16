@@ -15,6 +15,8 @@ use Controllers\PaymentController;
 use Controllers\SmsController;
 use Controllers\ReportController;
 use Controllers\SettingController;
+use Controllers\DatabaseRepairController;
+use Controllers\CustomFieldController;
 
 // Auth routes
 Router::get('/login', [AuthController::class, 'loginForm']);
