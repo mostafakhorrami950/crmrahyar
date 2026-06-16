@@ -1,78 +1,115 @@
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="table-container">
-            <h5 style="font-weight: bold; margin-bottom: 25px;">ایجاد معامله جدید</h5>
-            <form method="POST" action="<?php echo $config['url']; ?>/deals/store">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">عنوان معامله *</label>
-                        <input type="text" name="title" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">پایپ لاین *</label>
-                        <select name="pipeline_id" class="form-select" id="pipelineSelect" required>
-                            <?php foreach ($pipelines as $p): ?>
-                            <option value="<?php echo $p->id; ?>"><?php echo htmlspecialchars($p->name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">مرحله *</label>
-                        <select name="stage_id" class="form-select" id="stageSelect" required>
-                            <?php foreach ($stages as $s): ?>
-                            <option value="<?php echo $s->id; ?>"><?php echo htmlspecialchars($s->name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">مبلغ (ریال)</label>
-                        <input type="text" name="amount" class="form-control" data-format="number" placeholder="مثلاً ۵,۰۰۰,۰۰۰">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">مخاطب</label>
-                        <select name="contact_id" class="form-select">
-                            <option value="">انتخاب مخاطب</option>
-                            <?php foreach ($contacts as $c): ?>
-                            <option value="<?php echo $c->id; ?>"><?php echo htmlspecialchars($c->full_name); ?> (<?php echo htmlspecialchars($c->phone); ?>)</option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">مسئول</label>
-                        <select name="assigned_to" class="form-select">
-                            <option value="">انتخاب کنید</option>
-                            <?php foreach ($users as $u): ?>
-                            <option value="<?php echo $u->id; ?>"><?php echo htmlspecialchars($u->full_name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">نحوه آشنایی</label>
-                        <input type="text" name="source" class="form-control" placeholder="مثلاً اینستاگرام، دوستان، وبسایت">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">تاریخ پیش‌بینی بسته شدن</label>
-                        <input type="date" name="expected_close_date" class="form-control">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">توضیحات</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">ذخیره معامله</button>
-                        <a href="<?php echo $config['url']; ?>/deals" class="btn btn-secondary">انصراف</a>
-                    </div>
-                </div>
-            </form>
+<div class="page-header">
+    <h5>ایجاد معامله جدید</h5>
+    <a href="<?php echo $config['url']; ?>/deals" class="btn btn-secondary">بازگشت به لیست</a>
+</div>
+
+<div class="card">
+    <form method="POST" action="<?php echo $config['url']; ?>/deals/store">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">عنوان معامله</label>
+                <input type="text" name="title" class="form-input" required placeholder="مثال: تور استانبول">
+            </div>
+            <div class="form-group">
+                <label class="form-label">مبلغ (تومان)</label>
+                <input type="text" name="amount" class="form-input" data-format="number" required placeholder="مبلغ به تومان">
+            </div>
         </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">پایپ لاین</label>
+                <select name="pipeline_id" class="form-select" id="pipelineSelect" required>
+                    <option value="">انتخاب پایپ لاین</option>
+                    <?php foreach ($pipelines as $p): ?>
+                    <option value="<?php echo $p->id; ?>" <?php echo ($selectedPipeline ?? 0) == $p->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($p->name); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">مرحله</label>
+                <select name="stage_id" class="form-select" id="stageSelect" required>
+                    <option value="">ابتدا پایپ لاین را انتخاب کنید</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">مخاطب</label>
+                <div class="d-flex gap-8">
+                    <select name="contact_id" class="form-select" id="contactSelect" style="flex:1;">
+                        <option value="">انتخاب مخاطب موجود</option>
+                        <?php foreach ($contacts as $c): ?>
+                        <option value="<?php echo $c->id; ?>"><?php echo htmlspecialchars($c->name . ' - ' . $c->phone); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('newContactModal')">+ جدید</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">مسئول</label>
+                <select name="user_id" class="form-select">
+                    <option value="">انتخاب مسئول</option>
+                    <?php foreach ($users as $u): ?>
+                    <option value="<?php echo $u->id; ?>" <?php echo (\Core\Auth::id() == $u->id) ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">توضیحات</label>
+            <textarea name="description" class="form-textarea" placeholder="توضیحات معامله..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">ذخیره معامله</button>
+    </form>
+</div>
+
+<!-- Modal: New Contact -->
+<div class="modal-overlay" id="newContactModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h5>مخاطب جدید</h5>
+            <button type="button" class="modal-close" onclick="closeModal('newContactModal')">&times;</button>
+        </div>
+        <form method="POST" action="<?php echo $config['url']; ?>/contacts/store" class="ajax-form">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">نام و نام خانوادگی</label>
+                    <input type="text" name="name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">شماره موبایل</label>
+                    <input type="text" name="phone" class="form-input" required placeholder="0912xxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ایمیل</label>
+                    <input type="email" name="email" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">ذخیره</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('newContactModal')">انصراف</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-// Load stages when pipeline changes
-$('#pipelineSelect').on('change', function() {
-    var pipelineId = $(this).val();
-    // For simplicity, we'll load stages via a simple approach
-    // In production, you'd use AJAX to load stages dynamically
+document.getElementById('pipelineSelect')?.addEventListener('change', function() {
+    var pipelineId = this.value;
+    var stageSelect = document.getElementById('stageSelect');
+    stageSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+    
+    fetch('<?php echo $config['url']; ?>/pipelines/get-stages/' + pipelineId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            stageSelect.innerHTML = '<option value="">انتخاب مرحله</option>';
+            data.forEach(function(s) {
+                stageSelect.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
+            });
+        });
 });
 </script>

@@ -68,14 +68,17 @@ class Router
                 // Extract named parameters
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                 
-                // Call handler
+                // Call handler - use positional args for PHP 8+ compatibility
                 $handler = $route['handler'];
                 if (is_array($handler)) {
-                    [$class, $method] = $handler;
+                    [$class, $methodName] = $handler;
                     $controller = new $class();
-                    call_user_func_array([$controller, $method], $params);
+                    // Convert named params to positional args
+                    $args = array_values($params);
+                    $controller->$methodName(...$args);
                 } elseif (is_callable($handler)) {
-                    call_user_func_array($handler, $params);
+                    $args = array_values($params);
+                    $handler(...$args);
                 }
 
                 return;
