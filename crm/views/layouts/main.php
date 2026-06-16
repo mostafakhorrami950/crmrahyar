@@ -87,8 +87,11 @@
                 </a>
                 <?php endif; ?>
                 <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
-                <a href="<?php echo $config['url']; ?>/database/repair" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/database') !== false ? 'active' : ''; ?>">
+                <a href="<?php echo $config['url']; ?>/database/repair" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/database') !== false && strpos($_SERVER['REQUEST_URI'], '/database/error-logs') === false) ? 'active' : ''; ?>">
                     <span class="icon">🔧</span> تعمیر دیتابیس
+                </a>
+                <a href="<?php echo $config['url']; ?>/database/error-logs" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/database/error-logs') !== false ? 'active' : ''; ?>">
+                    <span class="icon">⚠️</span> گزارش خطاها
                 </a>
                 <?php endif; ?>
             </nav>
