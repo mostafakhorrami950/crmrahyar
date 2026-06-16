@@ -6,15 +6,57 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-// Bootstrap
-require_once __DIR__ . '/index.php';
+// Load environment variables from .env
+function loadEnv(): void {
+    $envFile = __DIR__ . '/../.env';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos(trim($line), '#') === 0) continue;
+            if (strpos($line, '=') !== false) {
+                list($key, $value) = explode('=', $line, 2);
+                $key = trim($key);
+                $value = trim($value);
+                putenv("{$key}={$value}");
+                $_ENV[$key] = $value;
+            }
+        }
+    }
+}
+
+loadEnv();
+
+// Autoloader
+spl_autoload_register(function ($class) {
+    $prefix = 'Core\\';
+    $baseDir = __DIR__ . '/../core/';
+    
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    
+    $relativeClass = substr($class, $len);
+    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
+// Load config
+$config = require __DIR__ . '/../config/app.php';
+$GLOBALS['app_config'] = $config;
+
+// Set timezone
+date_default_timezone_set($config['timezone']);
+
+\Core\Session::start();
 
 use Core\Migration;
 use Core\Session;
 
 // Only allow if not installed
-$config = $GLOBALS['app_config'];
-
 $installed = false;
 try {
     $pdo = new PDO(
@@ -172,7 +214,7 @@ if (!file_exists($envPath)) {
             <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <button class="btn" onclick="location.reload()">تلاش مجدد</button>
         <?php elseif ($installed): ?>
-            <div class="message">سیستم قبلاً نصب شده است.</div>
+            <div class="message">✅ سیستم قبلاً نصب شده است.</div>
             <a href="login" class="btn" style="display: block; text-align: center; text-decoration: none;">ورود به سیستم</a>
         <?php else: ?>
             <div class="info-box">

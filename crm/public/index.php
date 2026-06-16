@@ -75,11 +75,14 @@ try {
     // Database doesn't exist yet, needs install
 }
 
-// Handle installation
+// Handle installation - skip redirect if we're on install page
 $url = $_GET['url'] ?? '';
-if ($needsInstall && strpos($url, 'install') === false && strpos($url, 'setup') === false) {
-    header('Location: install.php');
-    exit;
+if ($needsInstall) {
+    $scriptName = basename($_SERVER['SCRIPT_NAME'] ?? '');
+    if ($scriptName !== 'install.php' && strpos($url, 'install') === false && strpos($url, 'setup') === false) {
+        header('Location: install.php');
+        exit;
+    }
 }
 
 // Load routes
