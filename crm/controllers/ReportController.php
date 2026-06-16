@@ -73,8 +73,8 @@ class ReportController
         $dateTo = $_GET['date_to'] ?? date('Y-m-d');
         $pipelineId = $_GET['pipeline_id'] ?? '';
 
-        $where = "WHERE d.created_at BETWEEN :date_from AND :date_to 23:59:59";
-        $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo];
+        $where = "WHERE d.created_at >= :date_from AND d.created_at <= :date_to";
+        $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo . ' 23:59:59'];
 
         if ($pipelineId) {
             $where .= " AND d.pipeline_id = :pipeline_id";
@@ -157,8 +157,8 @@ class ReportController
         $dateTo = $_GET['date_to'] ?? date('Y-m-d');
         $userId = $_GET['user_id'] ?? '';
 
-        $where = "WHERE da.created_at BETWEEN :date_from AND :date_to 23:59:59";
-        $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo];
+        $where = "WHERE da.created_at >= :date_from AND da.created_at <= :date_to";
+        $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo . ' 23:59:59'];
 
         if ($userId) {
             $where .= " AND da.user_id = :user_id";
