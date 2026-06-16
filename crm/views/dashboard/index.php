@@ -2,26 +2,26 @@
     <div class="stat-card">
         <div class="stat-icon" style="background: #eef0ff; color: #4361ee;">💼</div>
         <div class="stat-label">کل معاملات</div>
-        <div class="stat-value"><?php echo number_format($totalDeals ?? 0); ?></div>
-        <div class="stat-sub"><?php echo $activeDeals ?? 0; ?> معامله فعال</div>
+        <div class="stat-value"><?php echo number_format((int)(($totalDeals->count ?? $totalDeals) ?: 0)); ?></div>
+        <div class="stat-sub"><?php echo number_format((int)(($totalDeals->total ?? 0) ?: 0)); ?> تومان ارزش</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon" style="background: #d4edda; color: #06d6a0;">💰</div>
-        <div class="stat-label">فروش تکمیل شده</div>
-        <div class="stat-value"><?php echo number_format($completedDeals ?? 0); ?></div>
-        <div class="stat-sub"><?php echo number_format($totalRevenue ?? 0); ?> تومان</div>
+        <div class="stat-label">فروش موفق</div>
+        <div class="stat-value"><?php echo number_format((int)(($wonDeals->count ?? $wonDeals) ?: 0)); ?></div>
+        <div class="stat-sub"><?php echo number_format((int)(($wonDeals->total ?? 0) ?: 0)); ?> تومان</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon" style="background: #fff3cd; color: #ffd166;">👥</div>
         <div class="stat-label">مخاطبان</div>
-        <div class="stat-value"><?php echo number_format($totalContacts ?? 0); ?></div>
-        <div class="stat-sub"><?php echo $newContactsThisMonth ?? 0; ?> جدید این ماه</div>
+        <div class="stat-value"><?php echo number_format((int)(($totalContacts->count ?? $totalContacts) ?: 0)); ?></div>
+        <div class="stat-sub"><?php echo (int)(($lostDeals->count ?? $lostDeals) ?: 0); ?> معامله از دست رفته</div>
     </div>
     <div class="stat-card">
         <div class="stat-icon" style="background: #d1ecf1; color: #118ab2;">📊</div>
         <div class="stat-label">پایپ لاین‌ها</div>
-        <div class="stat-value"><?php echo number_format($totalPipelines ?? 0); ?></div>
-        <div class="stat-sub"><?php echo $totalStages ?? 0; ?> مرحله تعریف شده</div>
+        <div class="stat-value"><?php echo number_format((int)(($totalPipelines->count ?? $totalPipelines) ?: 0)); ?></div>
+        <div class="stat-sub">سیستم فعال</div>
     </div>
 </div>
 
