@@ -120,29 +120,76 @@ class DealController
         $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: null;
         $source = trim($_POST['source'] ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? null;
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
         if (empty($title) || empty($pipelineId) || empty($stageId)) {
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'لطفا فیلدهای ضروری را پر کنید.']);
+                exit;
+            }
             Session::setFlash('danger', 'لطفا فیلدهای ضروری را پر کنید.');
             View::redirect('/deals/create');
         }
 
         $db = Database::getInstance();
-        $dealId = $db->insert('deals', [
-            'title' => $title,
-            'description' => $description,
-            'amount' => $amount,
-            'pipeline_id' => $pipelineId,
-            'stage_id' => $stageId,
-            'contact_id' => $contactId,
-            'assigned_to' => $assignedTo,
-            'source' => $source,
-            'expected_close_date' => $expectedCloseDate,
-            'created_by' => Auth::id(),
-        ]);
+        $db->beginTransaction();
 
-        ActivityLog::log('create_deal', 'deal', $dealId, "معامله {$title} ایجاد شد");
-        Session::setFlash('success', 'معامله با موفقیت ایجاد شد.');
-        View::redirect('/deals/view/' . $dealId);
+        try {
+            $dealId = $db->insert('deals', [
+                'title' => $title,
+                'description' => $description,
+                'amount' => (int)$amount,
+                'pipeline_id' => $pipelineId,
+                'stage_id' => $stageId,
+                'contact_id' => $contactId,
+                'assigned_to' => $assignedTo,
+                'source' => $source,
+                'expected_close_date' => $expectedCloseDate,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Create activity if provided
+            $activityType = trim($_POST['activity_type'] ?? '');
+            $activitySubject = trim($_POST['activity_subject'] ?? '');
+            $activityDate = $_POST['activity_date'] ?? null;
+            $activityDescription = trim($_POST['activity_description'] ?? '');
+            $reminderAt = $_POST['reminder_at'] ?? null;
+
+            if (!empty($activityType) && !empty($activityDate)) {
+                $db->insert('deal_activities', [
+                    'deal_id' => $dealId,
+                    'user_id' => Auth::id(),
+                    'type' => $activityType,
+                    'subject' => $activitySubject ?: 'فعالیت برنامه‌ریزی شده',
+                    'description' => $activityDescription,
+                    'activity_date' => $activityDate,
+                    'reminder_at' => $reminderAt ?: null,
+                    'is_done' => 0,
+                ]);
+            }
+
+            $db->commit();
+            ActivityLog::log('create_deal', 'deal', $dealId, "معامله {$title} ایجاد شد");
+
+            if ($isAjax) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'معامله با موفقیت ایجاد شد.',
+                    'redirect' => '/deals/view/' . $dealId
+                ]);
+                exit;
+            }
+            Session::setFlash('success', 'معامله با موفقیت ایجاد شد.');
+            View::redirect('/deals/view/' . $dealId);
+        } catch (\Exception $e) {
+            $db->rollback();
+            if ($isAjax) {
+                echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
+                exit;
+            }
+            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
+            View::redirect('/deals/create');
+        }
     }
 
     public function view(array $params): void
