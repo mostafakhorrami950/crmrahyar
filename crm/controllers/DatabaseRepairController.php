@@ -5,6 +5,7 @@ use Core\Auth;
 use Core\Database;
 use Core\Session;
 use Core\View;
+use Core\ActivityLog;
 
 class DatabaseRepairController
 {
@@ -157,6 +158,40 @@ class DatabaseRepairController
             echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
         }
         exit;
+    }
+
+    public function errorLogs(): void
+    {
+        Auth::requirePermission('settings.manage');
+        $db = Database::getInstance();
+        
+        try {
+            // Get error logs from activity_logs (actions with 'error' or 'failed')
+            $errorLogs = $db->fetchAll(
+                "SELECT al.*, u.full_name as user_name 
+                 FROM activity_logs al 
+                 LEFT JOIN users u ON al.user_id = u.id 
+                 WHERE al.action LIKE '%error%' OR al.action LIKE '%fail%' OR al.action LIKE 'delete%'
+                 ORDER BY al.created_at DESC LIMIT 100"
+            );
+            
+            $totalErrors = $db->fetch("SELECT COUNT(*) as count FROM activity_logs WHERE action LIKE '%error%' OR action LIKE '%fail%'");
+            $todayErrors = $db->fetch("SELECT COUNT(*) as count FROM activity_logs WHERE (action LIKE '%error%' OR action LIKE '%fail%') AND DATE(created_at) = CURDATE()");
+            $uniqueUsers = $db->fetch("SELECT COUNT(DISTINCT user_id) as count FROM activity_logs WHERE (action LIKE '%error%' OR action LIKE '%fail%') AND user_id IS NOT NULL");
+        } catch (\Exception $e) {
+            $errorLogs = [];
+            $totalErrors = (object)['count' => 0];
+            $todayErrors = (object)['count' => 0];
+            $uniqueUsers = (object)['count' => 0];
+        }
+        
+        View::render('database/error_logs', [
+            'title' => 'گزارش خطاها',
+            'errorLogs' => $errorLogs,
+            'totalErrors' => $totalErrors->count ?? 0,
+            'todayErrors' => $todayErrors->count ?? 0,
+            'uniqueUsers' => $uniqueUsers->count ?? 0,
+        ]);
     }
 
     private function ensureColumn(Database $db, string $table, string $column, string $definition): ?array

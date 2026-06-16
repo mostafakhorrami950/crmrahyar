@@ -123,10 +123,11 @@ Router::group('/settings', function() {
     Router::post('/toggle-feature', [SettingController::class, 'toggleFeature'], 'settings.manage');
 });
 
-// Database Repair
+// Database Repair & Error Logs
 Router::group('/database', function() {
     Router::get('/repair', [DatabaseRepairController::class, 'index'], 'settings.manage');
     Router::post('/repair/run', [DatabaseRepairController::class, 'runRepair'], 'settings.manage');
+    Router::get('/error-logs', [DatabaseRepairController::class, 'errorLogs'], 'settings.manage');
 });
 
 // Custom Fields
