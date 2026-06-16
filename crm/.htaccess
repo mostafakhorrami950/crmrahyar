@@ -1,8 +1,11 @@
 RewriteEngine On
 
-# If the requested file or directory exists, serve it directly
+# Serve assets from public/assets/ directory
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+# Serve existing files/directories directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Route everything else to public/index.php with url parameter
+# Route everything else to public/index.php
 RewriteRule ^(.*)$ public/index.php?url=$1 [QSA,L]
