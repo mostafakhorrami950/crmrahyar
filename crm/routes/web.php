@@ -56,6 +56,12 @@ Router::group('/pipelines', function() {
     Router::post('/delete/{id}', [PipelineController::class, 'delete'], 'pipelines.delete');
     Router::get('/kanban/{id}', [PipelineController::class, 'kanban'], 'pipelines.view');
     Router::post('/update-stage', [PipelineController::class, 'updateStage'], 'pipelines.edit');
+    // Stage management (AJAX)
+    Router::get('/{id}/stages', [PipelineController::class, 'stages'], 'pipelines.view');
+    Router::post('/{id}/stages/store', [PipelineController::class, 'storeStage'], 'pipelines.edit');
+    Router::post('/stages/update/{id}', [PipelineController::class, 'updateStageName'], 'pipelines.edit');
+    Router::post('/stages/delete/{id}', [PipelineController::class, 'deleteStage'], 'pipelines.delete');
+    Router::post('/{id}/stages/reorder', [PipelineController::class, 'reorderStages'], 'pipelines.edit');
 });
 
 // Deals management

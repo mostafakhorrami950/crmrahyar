@@ -67,6 +67,96 @@ class PipelineController
         View::redirect('/pipelines');
     }
 
+    public function stages(array $params): void
+    {
+        $db = Database::getInstance();
+        $pipeline = $db->fetch("SELECT * FROM pipelines WHERE id = :id", [':id' => $params['id']]);
+        if (!$pipeline) {
+            echo json_encode(['success' => false, 'message' => 'پایپ لاین یافت نشد']);
+            exit;
+        }
+        $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :id ORDER BY order_index", [':id' => $params['id']]);
+        echo json_encode(['success' => true, 'stages' => $stages]);
+        exit;
+    }
+
+    public function storeStage(array $params): void
+    {
+        $name = trim($_POST['name'] ?? '');
+        $color = trim($_POST['color'] ?? '#6B7280');
+        $pipelineId = $params['id'] ?? 0;
+        
+        if (empty($name)) {
+            echo json_encode(['success' => false, 'message' => 'نام مرحله الزامی است']);
+            exit;
+        }
+        
+        $db = Database::getInstance();
+        $maxOrder = $db->fetch("SELECT COALESCE(MAX(order_index), 0) as max_order FROM stages WHERE pipeline_id = :id", [':id' => $pipelineId]);
+        $stageId = $db->insert('stages', [
+            'pipeline_id' => $pipelineId,
+            'name' => $name,
+            'color' => $color,
+            'order_index' => ($maxOrder->max_order ?? 0) + 1,
+        ]);
+        
+        ActivityLog::log('create_stage', 'stage', $stageId, "مرحله {$name} ایجاد شد");
+        echo json_encode(['success' => true, 'message' => 'مرحله با موفقیت ایجاد شد', 'stage_id' => $stageId]);
+        exit;
+    }
+
+    public function updateStageName(array $params): void
+    {
+        $name = trim($_POST['name'] ?? '');
+        $color = trim($_POST['color'] ?? '#6B7280');
+        $stageId = $params['id'] ?? 0;
+        
+        if (empty($name) || !$stageId) {
+            echo json_encode(['success' => false, 'message' => 'اطلاعات نامعتبر']);
+            exit;
+        }
+        
+        $db = Database::getInstance();
+        $db->update('stages', ['name' => $name, 'color' => $color], 'id = :id', [':id' => $stageId]);
+        echo json_encode(['success' => true, 'message' => 'مرحله ویرایش شد']);
+        exit;
+    }
+
+    public function deleteStage(array $params): void
+    {
+        $stageId = $params['id'] ?? 0;
+        if (!$stageId) {
+            echo json_encode(['success' => false, 'message' => 'مرحله نامعتبر']);
+            exit;
+        }
+        
+        $db = Database::getInstance();
+        // Check if any deals exist in this stage
+        $dealCount = $db->fetch("SELECT COUNT(*) as count FROM deals WHERE stage_id = :id", [':id' => $stageId]);
+        if ($dealCount->count > 0) {
+            echo json_encode(['success' => false, 'message' => 'این مرحله دارای معامله است و قابل حذف نیست']);
+            exit;
+        }
+        $db->delete('stages', 'id = :id', [':id' => $stageId]);
+        echo json_encode(['success' => true, 'message' => 'مرحله حذف شد']);
+        exit;
+    }
+
+    public function reorderStages(array $params): void
+    {
+        $order = $_POST['order'] ?? []; // [stage_id => order_index]
+        if (empty($order)) {
+            echo json_encode(['success' => false, 'message' => 'اطلاعات نامعتبر']);
+            exit;
+        }
+        $db = Database::getInstance();
+        foreach ($order as $stageId => $index) {
+            $db->update('stages', ['order_index' => (int)$index + 1], 'id = :id', [':id' => (int)$stageId]);
+        }
+        echo json_encode(['success' => true, 'message' => 'ترتیب مراحل بروزرسانی شد']);
+        exit;
+    }
+
     public function edit(array $params): void
     {
         $db = Database::getInstance();
