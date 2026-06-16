@@ -1,12 +1,27 @@
 <?php
 /**
+ * Auto-detect base URL
+ */
+function detectBaseUrl(): string {
+    $envUrl = getenv('APP_URL');
+    if ($envUrl) return rtrim($envUrl, '/');
+    
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $dir = dirname($scriptName);
+    if ($dir === '/' || $dir === '\\') $dir = '';
+    return "{$protocol}://{$host}{$dir}";
+}
+
+/**
  * Main Application Configuration
  */
 return [
     'name' => 'CRM Travel Agency',
     'version' => '1.0.0',
     'debug' => filter_var(getenv('APP_DEBUG') ?: true, FILTER_VALIDATE_BOOLEAN),
-    'url' => getenv('APP_URL') ?: 'http://localhost/crm',
+    'url' => detectBaseUrl(),
     'timezone' => 'Asia/Tehran',
     
     // Feature Toggles - enable/disable features

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="<?php echo $config['url']; ?>/">
     <title><?php echo $title ?? 'CRM Travel Agency'; ?> | CRM آژانس مسافرتی</title>
-    <link rel="stylesheet" href="assets/css/app.css?v=1.0.0">
-    <script src="assets/js/app.js?v=1.0.0"></script>
+    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=1.0.0">
+    <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=1.0.0"></script>
 </head>
 <body>
     <div class="app-layout">
