@@ -19,10 +19,10 @@ class DealController
         }
         $stages = $db->fetchAll("SELECT s.* FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE p.id = :pid AND s.is_active = 1 ORDER BY s.order_index", [':pid' => $deal->pipeline_id]);
         
-        // Parse hashtags from description
+        // Parse hashtags from description (supports Persian)
         $tags = [];
         if ($deal->description) {
-            preg_match_all('/#(\w+)/', $deal->description, $matches);
+            preg_match_all('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', $deal->description, $matches);
             $tags = $matches[1] ?? [];
         }
         
@@ -374,7 +374,8 @@ class DealController
         
         $tags = [];
         foreach ($deals as $deal) {
-            preg_match_all('/#(\w+)/', $deal->description, $matches);
+            // Match Persian/Arabic/English hashtags: # followed by any word characters including unicode
+            preg_match_all('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', $deal->description, $matches);
             foreach ($matches[1] as $tag) {
                 $tagLower = mb_strtolower($tag);
                 if (!isset($tags[$tagLower])) {
@@ -397,7 +398,7 @@ class DealController
         $tag = trim($params['tag'] ?? '');
         $db = Database::getInstance();
         
-        // Use LIKE for MySQL compatibility
+        // Use LOCATE/CONCAT for proper hashtag matching
         $deals = $db->fetchAll(
             "SELECT d.*, s.name as stage_name, s.color as stage_color, 
                     c.full_name as contact_name, c.phone as contact_phone,
@@ -407,9 +408,9 @@ class DealController
              JOIN pipelines p ON d.pipeline_id = p.id 
              LEFT JOIN contacts c ON d.contact_id = c.id 
              LEFT JOIN users u ON d.assigned_to = u.id 
-             WHERE d.description LIKE :tag
+             WHERE d.description LIKE :tag1
              ORDER BY d.created_at DESC",
-            [':tag' => "%#{$tag}%"]
+            [':tag1' => "%#{$tag}%"]
         );
 
         $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");

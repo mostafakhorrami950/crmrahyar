@@ -15,70 +15,49 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
 
-    // ========== CLOSE FLASH ==========
+    // Close flash
     document.querySelectorAll('.flash .close-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            this.parentElement.remove();
-        });
+        btn.addEventListener('click', function() { this.parentElement.remove(); });
     });
 
     // ========== USER DROPDOWN ==========
-    var dropdownBtns = document.querySelectorAll('.user-dropdown-btn');
-    dropdownBtns.forEach(function(btn) {
+    document.querySelectorAll('.user-dropdown-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            var menu = this.nextElementSibling;
-            menu.classList.toggle('show');
+            this.nextElementSibling.classList.toggle('show');
         });
     });
     document.addEventListener('click', function() {
-        document.querySelectorAll('.user-dropdown-menu.show').forEach(function(m) {
-            m.classList.remove('show');
-        });
+        document.querySelectorAll('.user-dropdown-menu.show').forEach(function(m) { m.classList.remove('show'); });
     });
 
     // ========== MODAL ==========
     window.openModal = function(id) {
         var modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
+        if (modal) { modal.classList.add('show'); document.body.style.overflow = 'hidden'; }
     };
     window.closeModal = function(id) {
         var modal = document.getElementById(id);
         if (modal) {
             modal.classList.remove('show');
             document.body.style.overflow = '';
-            // Clear errors
-            var errDiv = modal.querySelector('.ajax-error');
-            if (errDiv) { errDiv.style.display = 'none'; errDiv.innerHTML = ''; }
+            clearModalErrors(modal);
         }
     };
-    // Close modal on overlay click
+    function clearModalErrors(modal) {
+        modal.querySelectorAll('.ajax-error').forEach(function(e) {
+            e.style.display = 'none'; e.innerHTML = '';
+        });
+    }
     document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
         overlay.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('show');
-                document.body.style.overflow = '';
-                // Clear errors
-                this.querySelectorAll('.ajax-error').forEach(function(e) {
-                    e.style.display = 'none'; e.innerHTML = '';
-                });
-            }
+            if (e.target === this) { this.classList.remove('show'); document.body.style.overflow = ''; clearModalErrors(this); }
         });
     });
-    // Close modal on close button
     document.querySelectorAll('.modal-close').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var modal = this.closest('.modal-overlay');
-            if (modal) {
-                modal.classList.remove('show');
-                document.body.style.overflow = '';
-                modal.querySelectorAll('.ajax-error').forEach(function(e) {
-                    e.style.display = 'none'; e.innerHTML = '';
-                });
-            }
+            if (modal) { modal.classList.remove('show'); document.body.style.overflow = ''; clearModalErrors(modal); }
         });
     });
 
@@ -86,7 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var sidebarToggle = document.getElementById('sidebarToggle');
     var sidebar = document.getElementById('sidebar');
     var sidebarOverlay = document.getElementById('sidebarOverlay');
-    
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', function() {
             sidebar.classList.toggle('open');
@@ -95,73 +73,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.remove('open');
-            this.classList.remove('show');
+            sidebar.classList.remove('open'); this.classList.remove('show');
         });
     }
 
-    // ========== NUMBER FORMAT ==========
-    document.querySelectorAll('[data-format="number"]').forEach(function(input) {
-        input.addEventListener('input', function(e) {
-            var value = this.value.replace(/[^0-9]/g, '');
-            if (value) {
-                this.value = new Intl.NumberFormat('fa-IR').format(parseInt(value));
-            }
-        });
-        input.addEventListener('focus', function() {
-            var value = this.value.replace(/[^0-9]/g, '');
-            if (value) this.value = value;
-        });
-        input.addEventListener('blur', function() {
-            var value = this.value.replace(/[^0-9]/g, '');
-            if (value) {
-                this.value = new Intl.NumberFormat('fa-IR').format(parseInt(value));
-            }
-        });
-    });
-
-    // ========== CONFIRM DIALOGS ==========
-    document.querySelectorAll('[data-confirm]').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-            if (!confirm(this.dataset.confirm || 'آیا اطمینان دارید؟')) {
-                e.preventDefault();
-            }
-        });
-    });
-
-    // ========== STAGE UPDATE ==========
-    document.querySelectorAll('.kanban-card').forEach(function(card) {
-        card.addEventListener('click', function(e) {
-            var dealUrl = this.dataset.url;
-            if (dealUrl && !e.target.closest('.stage-select')) {
-                window.location.href = dealUrl;
-            }
-        });
-    });
-
-    // ========== STAGE SELECT CHANGE ==========
-    document.querySelectorAll('.stage-select').forEach(function(select) {
-        select.addEventListener('change', function() {
-            var dealId = this.dataset.dealId;
-            var stageId = this.value;
-            if (!dealId || !stageId) return;
-            
-            fetch(this.dataset.url || '/deals/update-stage', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'deal_id=' + dealId + '&stage_id=' + stageId
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (data.success) { location.reload(); }
-            })
-            .catch(function(err) { console.error(err); });
-        });
-    });
-
     // ========== DATA-AJAX FORM HANDLER ==========
-    // Handles forms with data-ajax="true" attribute
-    // Supports: modal forms (auto-close on success), inline forms (show errors)
     document.addEventListener('submit', function(e) {
         var form = e.target;
         if (!form.matches('form[data-ajax="true"]')) return;
@@ -185,9 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
 
             if (data.success) {
-                // Check if this is a contact create modal form
+                // Contact created - auto-select in parent form
                 if (data.contact) {
-                    // Auto-select the contact in the parent form
                     var contactSelect = document.getElementById('contactSelect');
                     if (contactSelect) {
                         var opt = document.createElement('option');
@@ -196,92 +111,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         opt.selected = true;
                         contactSelect.appendChild(opt);
                     }
-                    // Close the modal
                     var modal = form.closest('.modal-overlay');
-                    if (modal) {
-                        modal.classList.remove('show');
-                        document.body.style.overflow = '';
-                        modal.querySelectorAll('.ajax-error').forEach(function(e) {
-                            e.style.display = 'none'; e.innerHTML = '';
-                        });
-                    }
-                    // Reset form
+                    if (modal) { modal.classList.remove('show'); document.body.style.overflow = ''; clearModalErrors(modal); }
                     form.reset();
                     return;
                 }
 
-                // If has redirect, go there
+                // Redirect (fix base path)
                 if (data.redirect) {
-                    window.location.href = data.redirect;
+                    // If redirect doesn't start with /crm, prepend it
+                    var basePath = '/crm';
+                    var redirectUrl = data.redirect;
+                    if (redirectUrl.indexOf(basePath) !== 0) {
+                        redirectUrl = basePath + redirectUrl;
+                    }
+                    window.location.href = redirectUrl;
                     return;
                 }
-                // Otherwise reload
                 location.reload();
             } else {
-                // Show error
                 var msg = data.message || 'خطا در اجرای درخواست';
-                if (errorDiv) {
-                    errorDiv.innerHTML = msg;
-                    errorDiv.style.display = 'block';
-                } else {
-                    alert(msg);
-                }
+                if (errorDiv) { errorDiv.innerHTML = msg; errorDiv.style.display = 'block'; }
+                else { alert(msg); }
             }
         })
         .catch(function(err) {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
-            if (errorDiv) {
-                errorDiv.innerHTML = 'خطا در ارتباط با سرور';
-                errorDiv.style.display = 'block';
-            } else {
-                alert('خطا در ارتباط با سرور');
-            }
+            if (errorDiv) { errorDiv.innerHTML = 'خطا در ارتباط با سرور'; errorDiv.style.display = 'block'; }
+            else { alert('خطا در ارتباط با سرور'); }
             console.error(err);
         });
     });
-
-    // ========== PIPELINE CHANGE ==========
-    var pipelineSelect = document.getElementById('pipelineSelect');
-    if (pipelineSelect) {
-        pipelineSelect.addEventListener('change', function() {
-            var url = new URL(window.location.href);
-            url.searchParams.set('pipeline_id', this.value);
-            window.location.href = url.toString();
-        });
-    }
-
-    // ========== SEARCH INPUT ==========
-    var searchInputs = document.querySelectorAll('.search-input');
-    searchInputs.forEach(function(input) {
-        input.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                var url = new URL(window.location.href);
-                url.searchParams.set('search', this.value);
-                window.location.href = url.toString();
-            }
-        });
-    });
-
-    // ========== TOGGLE FEATURE (Settings) ==========
-    document.querySelectorAll('.feature-toggle').forEach(function(toggle) {
-        toggle.addEventListener('change', function() {
-            var feature = this.dataset.feature;
-            var enabled = this.checked ? 1 : 0;
-            
-            fetch(this.dataset.url || '/settings/toggle-feature', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'feature=' + feature + '&enabled=' + enabled
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (data.success) { location.reload(); }
-            })
-            .catch(function(err) { console.error(err); });
-        });
-    });
-
-    // ========== ACTIVITY TOGGLE ==========
-    // Already handled by data-ajax handler above
 
 });

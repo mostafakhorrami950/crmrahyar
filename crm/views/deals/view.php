@@ -33,7 +33,7 @@
             <p><strong>توضیحات:</strong><br>
             <?php 
             $desc = htmlspecialchars($deal->description);
-            $desc = preg_replace('/#(\w+)/', '<a href="/crm/deals/tag/$1" style="color:var(--primary);font-weight:bold;text-decoration:none;">#$1</a>', $desc);
+            $desc = preg_replace('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', '<a href="' . $config['url'] . '/deals/tag/$1" style="color:var(--primary);font-weight:bold;text-decoration:none;">#$1</a>', $desc);
             echo nl2br($desc); 
             ?>
             </p>
