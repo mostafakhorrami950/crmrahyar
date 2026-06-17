@@ -27,7 +27,8 @@ class ContactController
         $contacts = $db->fetchAll(
             "SELECT c.*, u.full_name as created_by_name,
                     (SELECT COUNT(*) FROM deals WHERE contact_id = c.id) as deals_count,
-                    (SELECT SUM(amount) FROM deals WHERE contact_id = c.id AND is_won = 1) as total_purchases
+                    (SELECT SUM(amount) FROM deals WHERE contact_id = c.id AND is_won = 1) as total_purchases,
+                    (SELECT SUM(amount) FROM deals WHERE contact_id = c.id) as total_deals_amount
              FROM contacts c 
              LEFT JOIN users u ON c.created_by = u.id 
              {$where}
@@ -36,6 +37,69 @@ class ContactController
         );
 
         View::render('contacts/index', ['title' => 'مدیریت مخاطبان', 'contacts' => $contacts, 'search' => $search]);
+    }
+
+    public function view(array $params): void
+    {
+        $db = Database::getInstance();
+        $contact = $db->fetch(
+            "SELECT c.*, u.full_name as created_by_name,
+                    (SELECT COUNT(*) FROM deals WHERE contact_id = c.id) as deals_count,
+                    (SELECT SUM(amount) FROM deals WHERE contact_id = c.id AND is_won = 1) as total_purchases,
+                    (SELECT SUM(amount) FROM deals WHERE contact_id = c.id) as total_deals_amount
+             FROM contacts c 
+             LEFT JOIN users u ON c.created_by = u.id 
+             WHERE c.id = :id",
+            [':id' => $params['id']]
+        );
+
+        if (!$contact) {
+            Session::setFlash('danger', 'مخاطب مورد نظر یافت نشد.');
+            View::redirect('/contacts');
+        }
+
+        // Get all deals for this contact
+        $deals = $db->fetchAll(
+            "SELECT d.*, s.name as stage_name, s.color as stage_color,
+                    p.name as pipeline_name, u.full_name as assigned_name
+             FROM deals d
+             JOIN stages s ON d.stage_id = s.id
+             JOIN pipelines p ON d.pipeline_id = p.id
+             LEFT JOIN users u ON d.assigned_to = u.id
+             WHERE d.contact_id = :id
+             ORDER BY d.created_at DESC",
+            [':id' => $params['id']]
+        );
+
+        // Get payment history for this contact's deals
+        $payments = $db->fetchAll(
+            "SELECT p.*, d.title as deal_title
+             FROM payments p
+             JOIN deals d ON p.deal_id = d.id
+             WHERE d.contact_id = :id
+             ORDER BY p.created_at DESC",
+            [':id' => $params['id']]
+        );
+
+        // Get recent activities for this contact's deals
+        $activities = $db->fetchAll(
+            "SELECT da.*, d.title as deal_title, u2.full_name as user_name
+             FROM deal_activities da
+             JOIN deals d ON da.deal_id = d.id
+             LEFT JOIN users u2 ON da.user_id = u2.id
+             WHERE d.contact_id = :id
+             ORDER BY da.created_at DESC
+             LIMIT 20",
+            [':id' => $params['id']]
+        );
+
+        View::render('contacts/view', [
+            'title' => "مخاطب: {$contact->full_name}",
+            'contact' => $contact,
+            'deals' => $deals,
+            'payments' => $payments,
+            'activities' => $activities,
+        ]);
     }
 
     public function create(): void
@@ -112,7 +176,7 @@ class ContactController
             exit;
         }
         Session::setFlash('success', 'مخاطب با موفقیت ایجاد شد.');
-        View::redirect('/contacts');
+        View::redirect('/contacts/view/' . $contactId);
     }
 
     public function edit(array $params): void
@@ -165,7 +229,7 @@ class ContactController
 
         ActivityLog::log('update_contact', 'contact', $params['id'], "مخاطب {$fullName} ویرایش شد");
         Session::setFlash('success', 'مخاطب با موفقیت ویرایش شد.');
-        View::redirect('/contacts');
+        View::redirect('/contacts/view/' . $params['id']);
     }
 
     public function delete(array $params): void

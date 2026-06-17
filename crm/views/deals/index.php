@@ -25,7 +25,7 @@
 
 <!-- Filters -->
 <div class="filter-section card">
-    <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <form method="GET" action="<?php echo parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); ?>" style="display:flex;gap:8px;flex-wrap:wrap;">
         <input type="text" name="search" class="form-input" style="flex:2;min-width:150px;" placeholder="🔍 جستجو در معاملات..." value="<?php echo htmlspecialchars($search); ?>">
         <select name="pipeline_id" class="form-input" style="flex:1;min-width:120px;">
             <option value="">همه پایپ لاین‌ها</option>

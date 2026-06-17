@@ -466,6 +466,41 @@ class DealController
         $tag = trim($params['tag'] ?? '');
         $db = Database::getInstance();
         
+        // Also get other filter params from GET for search refinement
+        $searchQuery = trim($_GET['search'] ?? '');
+        $stageId = $_GET['stage_id'] ?? '';
+        $pipelineId = $_GET['pipeline_id'] ?? '';
+        $assignedTo = $_GET['assigned_to'] ?? '';
+        $status = $_GET['status'] ?? '';
+        
+        $where = "WHERE d.description LIKE :tag1";
+        $queryParams = [':tag1' => "%#{$tag}%"];
+        
+        if ($searchQuery) {
+            $where .= " AND (d.title LIKE :search OR c.full_name LIKE :search2)";
+            $queryParams[':search'] = "%{$searchQuery}%";
+            $queryParams[':search2'] = "%{$searchQuery}%";
+        }
+        if ($stageId) {
+            $where .= " AND d.stage_id = :stage_id";
+            $queryParams[':stage_id'] = $stageId;
+        }
+        if ($pipelineId) {
+            $where .= " AND d.pipeline_id = :pipeline_id";
+            $queryParams[':pipeline_id'] = $pipelineId;
+        }
+        if ($assignedTo) {
+            $where .= " AND d.assigned_to = :assigned_to";
+            $queryParams[':assigned_to'] = $assignedTo;
+        }
+        if ($status === 'won') {
+            $where .= " AND d.is_won = 1";
+        } elseif ($status === 'lost') {
+            $where .= " AND d.is_lost = 1";
+        } elseif ($status === 'open') {
+            $where .= " AND d.is_won = 0 AND d.is_lost = 0";
+        }
+        
         $deals = $db->fetchAll(
             "SELECT d.*, s.name as stage_name, s.color as stage_color, 
                     c.full_name as contact_name, c.phone as contact_phone,
@@ -475,9 +510,9 @@ class DealController
              JOIN pipelines p ON d.pipeline_id = p.id 
              LEFT JOIN contacts c ON d.contact_id = c.id 
              LEFT JOIN users u ON d.assigned_to = u.id 
-             WHERE d.description LIKE :tag1
+             {$where}
              ORDER BY d.created_at DESC",
-            [':tag1' => "%#{$tag}%"]
+            $queryParams
         );
 
         $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
@@ -490,11 +525,11 @@ class DealController
             'pipelines' => $pipelines,
             'users' => $users,
             'stages' => $stages,
-            'search' => "#{$tag}",
-            'selectedStage' => '',
-            'selectedPipeline' => '',
-            'selectedAssigned' => '',
-            'selectedStatus' => '',
+            'search' => $searchQuery ?: "#{$tag}",
+            'selectedStage' => $stageId,
+            'selectedPipeline' => $pipelineId,
+            'selectedAssigned' => $assignedTo,
+            'selectedStatus' => $status,
         ]);
     }
 

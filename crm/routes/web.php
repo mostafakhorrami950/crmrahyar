@@ -87,6 +87,7 @@ Router::group('/contacts', function() {
     Router::get('', [ContactController::class, 'index'], 'contacts.view');
     Router::get('/create', [ContactController::class, 'create'], 'contacts.create');
     Router::post('/store', [ContactController::class, 'store'], 'contacts.create');
+    Router::get('/view/{id}', [ContactController::class, 'view'], 'contacts.view');
     Router::get('/edit/{id}', [ContactController::class, 'edit'], 'contacts.edit');
     Router::post('/update/{id}', [ContactController::class, 'update'], 'contacts.edit');
     Router::post('/delete/{id}', [ContactController::class, 'delete'], 'contacts.delete');
