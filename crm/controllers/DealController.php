@@ -404,6 +404,7 @@ class DealController
 
     public function addActivity(array $params): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $type = $_POST['type'] ?? 'note';
         $subject = trim($_POST['subject'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -422,6 +423,11 @@ class DealController
         ]);
 
         ActivityLog::log('add_activity', 'deal', $params['id'], "فعالیت {$type} برای معامله ثبت شد");
+
+        if ($isAjax) {
+            echo json_encode(['success' => true, 'message' => 'فعالیت با موفقیت ثبت شد.', 'redirect' => '/deals/view/' . $params['id']]);
+            exit;
+        }
         Session::setFlash('success', 'فعالیت با موفقیت ثبت شد.');
         View::redirect('/deals/view/' . $params['id']);
     }

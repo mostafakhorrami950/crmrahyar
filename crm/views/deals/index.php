@@ -165,8 +165,8 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">وضعیت</label>
-                    <select name="status_action" class="form-input" id="qe_status">
-                        <option value="open">در جریان</option>
+                    <select name="deal_status" class="form-input" id="qe_status">
+                        <option value="open">⏳ در جریان</option>
                         <option value="won">✅ موفق</option>
                         <option value="lost">❌ ناموفق</option>
                     </select>
