@@ -310,9 +310,11 @@ class DealController
         $expectedCloseDate = $_POST['expected_close_date'] ?? null;
         $probability = (int)($_POST['probability'] ?? 0);
         $lostReason = trim($_POST['lost_reason'] ?? '');
+        $dealStatus = $_POST['deal_status'] ?? 'open';
 
         $db = Database::getInstance();
-        $db->update('deals', [
+
+        $updateData = [
             'title' => $title,
             'description' => $description,
             'amount' => $amount,
@@ -324,7 +326,24 @@ class DealController
             'expected_close_date' => $expectedCloseDate,
             'probability' => $probability,
             'lost_reason' => $lostReason,
-        ], 'id = :id', [':id' => $params['id']]);
+        ];
+
+        // Handle deal status - is_won, is_lost, or open
+        if ($dealStatus === 'won') {
+            $updateData['is_won'] = 1;
+            $updateData['is_lost'] = 0;
+            $updateData['closed_at'] = date('Y-m-d H:i:s');
+        } elseif ($dealStatus === 'lost') {
+            $updateData['is_won'] = 0;
+            $updateData['is_lost'] = 1;
+            $updateData['closed_at'] = date('Y-m-d H:i:s');
+        } else {
+            $updateData['is_won'] = 0;
+            $updateData['is_lost'] = 0;
+            $updateData['closed_at'] = null;
+        }
+
+        $db->update('deals', $updateData, 'id = :id', [':id' => $params['id']]);
 
         ActivityLog::log('update_deal', 'deal', $params['id'], "معامله {$title} ویرایش شد");
         Session::setFlash('success', 'معامله با موفقیت ویرایش شد.');
