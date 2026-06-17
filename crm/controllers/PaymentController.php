@@ -344,8 +344,9 @@ class PaymentController
             );
         }
 
-        // Render public view without layout
-        $GLOBALS['app_config']['features'] = [];
+        // Render public view without layout - make $config available in scope
+        $config = $GLOBALS['app_config'];
+        $config['features'] = [];
         require __DIR__ . '/../views/payment/public.php';
         exit;
     }
@@ -353,7 +354,7 @@ class PaymentController
     /**
      * Submit payment from public page (AJAX) - creates Zibal request
      */
-    public function publicSubmit(): void
+    public function publicSubmit(array $params = []): void
     {
         $token = $_POST['token'] ?? '';
 
@@ -378,7 +379,7 @@ class PaymentController
 
         $config = $GLOBALS['app_config'];
         $merchant = $config['zibal']['merchant'];
-        $callbackUrl = $config['zibal']['callback_url'];
+        $callbackUrl = $config['url'] . '/payment/result';
 
         $data = [
             'merchant' => $merchant,
@@ -434,7 +435,7 @@ class PaymentController
     /**
      * Public verify result page - shown after payment completes
      */
-    public function publicVerifyResult(): void
+    public function publicVerifyResult(array $params = []): void
     {
         $trackId = $_GET['trackId'] ?? '';
 
@@ -508,6 +509,7 @@ class PaymentController
             $message = 'اطلاعات پرداخت نامعتبر است.';
         }
 
+        $config = $GLOBALS['app_config'];
         require __DIR__ . '/../views/payment/result.php';
         exit;
     }
@@ -525,6 +527,7 @@ class PaymentController
      */
     private function showPublicError(string $message): void
     {
+        $config = $GLOBALS['app_config'];
         $success = false;
         $trackId = '';
         $refNumber = '';
