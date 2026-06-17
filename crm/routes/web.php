@@ -79,6 +79,7 @@ Router::group('/deals', function() {
     Router::post('/convert/{id}', [DealController::class, 'convertToDeal'], 'deals.edit');
     Router::get('/get-data/{id}', [DealController::class, 'getData'], 'deals.view');
     Router::get('/tag/{tag}', [DealController::class, 'byTag'], 'deals.view');
+    Router::get('/tags', [DealController::class, 'allTags'], 'deals.view');
 });
 
 // Contacts management

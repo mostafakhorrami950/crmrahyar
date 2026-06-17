@@ -367,6 +367,31 @@ class DealController
         View::redirect('/deals/view/' . $params['id']);
     }
 
+    public function allTags(): void
+    {
+        $db = Database::getInstance();
+        $deals = $db->fetchAll("SELECT id, description FROM deals WHERE description IS NOT NULL AND description != ''");
+        
+        $tags = [];
+        foreach ($deals as $deal) {
+            preg_match_all('/#(\w+)/', $deal->description, $matches);
+            foreach ($matches[1] as $tag) {
+                $tagLower = mb_strtolower($tag);
+                if (!isset($tags[$tagLower])) {
+                    $tags[$tagLower] = ['tag' => $tag, 'count' => 0, 'deal_ids' => []];
+                }
+                $tags[$tagLower]['count']++;
+                $tags[$tagLower]['deal_ids'][] = $deal->id;
+            }
+        }
+        ksort($tags);
+        
+        View::render('deals/tags', [
+            'title' => 'همه هشتگ‌ها',
+            'tags' => $tags,
+        ]);
+    }
+
     public function byTag(array $params): void
     {
         $tag = trim($params['tag'] ?? '');

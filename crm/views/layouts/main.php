@@ -32,8 +32,11 @@
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('deals.view')): ?>
-                <a href="<?php echo $config['url']; ?>/deals" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/deals') !== false ? 'active' : ''; ?>">
+                <a href="<?php echo $config['url']; ?>/deals" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/deals') !== false && strpos($_SERVER['REQUEST_URI'], '/deals/tag') === false && strpos($_SERVER['REQUEST_URI'], '/deals/tags') === false) ? 'active' : ''; ?>">
                     <span class="icon">💼</span> معاملات
+                </a>
+                <a href="<?php echo $config['url']; ?>/deals/tags" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/deals/tag') !== false || strpos($_SERVER['REQUEST_URI'], '/deals/tags') !== false) ? 'active' : ''; ?>">
+                    <span class="icon">🏷️</span> هشتگ‌ها
                 </a>
                 <?php endif; ?>
                 

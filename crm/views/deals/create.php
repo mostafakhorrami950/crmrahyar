@@ -38,14 +38,17 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">مخاطب</label>
-                <div class="d-flex gap-8">
-                    <select name="contact_id" class="form-input" id="contactSelect" style="flex:1;">
+                <div class="d-flex gap-8" style="flex-direction:column;">
+                    <div class="d-flex gap-8" style="width:100%;">
+                        <input type="text" class="form-input" id="contactSearch" placeholder="🔍 جستجوی مخاطب با نام یا شماره تماس..." style="flex:1;" autocomplete="off">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="openModal('newContactModal')">➕ جدید</button>
+                    </div>
+                    <select name="contact_id" class="form-input" id="contactSelect" style="width:100%;" size="4">
                         <option value="">انتخاب مخاطب موجود</option>
                         <?php foreach ($contacts as $c): ?>
                         <option value="<?php echo $c->id; ?>"><?php echo htmlspecialchars($c->full_name . ' - ' . $c->phone); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('newContactModal')">➕ جدید</button>
                 </div>
             </div>
             <div class="form-group">
@@ -149,6 +152,21 @@
 </div>
 
 <script>
+// Contact search with live filter
+document.getElementById('contactSearch')?.addEventListener('input', function() {
+    var select = document.getElementById('contactSelect');
+    var query = this.value.trim().toLowerCase();
+    
+    for (var i = 0; i < select.options.length; i++) {
+        var opt = select.options[i];
+        if (!query || opt.textContent.toLowerCase().indexOf(query) !== -1) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    }
+});
+
 // Pipeline -> Stages loading
 document.getElementById('dealPipelineSelect')?.addEventListener('change', function() {
     var pipelineId = this.value;
