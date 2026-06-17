@@ -33,13 +33,19 @@ class PaymentController
 
     public function requestPayment(): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $dealId = (int)($_POST['deal_id'] ?? 0);
-        $amount = (int)str_replace(',', '', $_POST['amount'] ?? '0');
+        $amountToman = (int)str_replace(',', '', $_POST['amount'] ?? '0');
         $description = trim($_POST['description'] ?? '');
         $mobile = trim($_POST['mobile'] ?? '');
 
-        if ($amount < 1000) {
-            Session::setFlash('danger', 'مبلغ باید حداقل ۱۰۰۰ ریال باشد.');
+        // Convert Toman to Rial (Zibal uses Rial)
+        $amountRial = $amountToman * 10;
+
+        if ($amountRial < 1000) {
+            $msg = 'مبلغ باید حداقل ۱۰۰ تومان باشد.';
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
+            Session::setFlash('danger', $msg);
             View::redirect('/payment/create/' . $dealId);
         }
 
@@ -50,7 +56,7 @@ class PaymentController
         // Request payment from Zibal
         $data = [
             'merchant' => $merchant,
-            'amount' => $amount,
+            'amount' => $amountRial,
             'callbackUrl' => $callbackUrl,
             'description' => $description ?: 'پرداخت معامله',
             'orderId' => 'DEAL-' . $dealId . '-' . time(),
@@ -79,7 +85,7 @@ class PaymentController
             $db = Database::getInstance();
             $paymentId = $db->insert('payments', [
                 'deal_id' => $dealId,
-                'amount' => $amount,
+                'amount' => $amountToman,
                 'payment_type' => 'online',
                 'status' => 'pending',
                 'track_id' => $result->trackId,
@@ -87,7 +93,17 @@ class PaymentController
                 'created_by' => Auth::id(),
             ]);
 
-            ActivityLog::log('create_payment', 'payment', $paymentId, "لینک پرداخت به مبلغ " . number_format($amount) . " ریال ایجاد شد");
+            ActivityLog::log('create_payment', 'payment', $paymentId, "لینک پرداخت به مبلغ " . number_format($amountToman) . " تومان ایجاد شد");
+
+            if ($isAjax) {
+                // Return JSON with redirect URL to payment gateway
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'در حال اتصال به درگاه پرداخت...',
+                    'redirect' => 'https://gateway.zibal.ir/start/' . $result->trackId
+                ]);
+                exit;
+            }
 
             // Redirect to Zibal payment gateway
             header('Location: https://gateway.zibal.ir/start/' . $result->trackId);
@@ -97,6 +113,7 @@ class PaymentController
             if ($result && isset($result->message)) {
                 $errorMsg = $result->message;
             }
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMsg]); exit; }
             Session::setFlash('danger', $errorMsg);
             View::redirect('/payment/create/' . $dealId);
         }
