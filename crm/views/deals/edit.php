@@ -75,7 +75,12 @@
                     
                     <div class="col-md-6">
                         <label class="form-label">🎯 نحوه آشنایی</label>
-                        <input type="text" name="source" class="form-control" value="<?php echo htmlspecialchars($deal->source ?? ''); ?>" placeholder="مثال: اینستاگرام, معرفی دوستان, گوگل">
+                        <select name="source" class="form-control">
+                            <option value="">انتخاب کنید</option>
+                            <?php foreach ($sources as $s): ?>
+                            <option value="<?php echo htmlspecialchars($s->name); ?>" <?php echo $s->name == $deal->source ? 'selected' : ''; ?>><?php echo htmlspecialchars($s->icon . ' ' . $s->name); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     
                     <div class="col-md-6">

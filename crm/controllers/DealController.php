@@ -117,6 +117,7 @@ class DealController
         $pipelines = $db->fetchAll("SELECT * FROM pipelines WHERE is_active = 1");
         $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
+        $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
         
         $defaultPipeline = $db->fetch("SELECT id FROM pipelines WHERE is_default = 1");
         $stages = [];
@@ -130,6 +131,7 @@ class DealController
             'contacts' => $contacts,
             'users' => $users,
             'stages' => $stages,
+            'sources' => $sources,
         ]);
     }
 
@@ -304,6 +306,7 @@ class DealController
         $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :id AND is_active = 1 ORDER BY order_index", [':id' => $deal->pipeline_id]);
         $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
+        $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
 
         View::render('deals/edit', [
             'title' => 'ویرایش معامله',
@@ -312,6 +315,7 @@ class DealController
             'stages' => $stages,
             'contacts' => $contacts,
             'users' => $users,
+            'sources' => $sources,
         ]);
     }
 

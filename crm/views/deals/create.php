@@ -63,8 +63,13 @@
         </div>
 
         <div class="form-group">
-            <label class="form-label">نحوه آشنایی</label>
-            <input type="text" name="source" class="form-input" placeholder="مثال: اینستاگرام, سایت, معرفی">
+            <label class="form-label">🎯 نحوه آشنایی</label>
+            <select name="source" class="form-input">
+                <option value="">انتخاب کنید</option>
+                <?php foreach ($sources as $s): ?>
+                <option value="<?php echo htmlspecialchars($s->name); ?>"><?php echo htmlspecialchars($s->icon . ' ' . $s->name); ?></option>
+                <?php endforeach; ?>
+            </select>
         </div>
 
         <div class="form-group">

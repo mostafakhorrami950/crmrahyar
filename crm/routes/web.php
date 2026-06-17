@@ -150,3 +150,12 @@ Router::group('/custom-fields', function() {
     Router::post('/update/{id}', [CustomFieldController::class, 'update'], 'settings.manage');
     Router::post('/delete/{id}', [CustomFieldController::class, 'delete'], 'settings.manage');
 });
+
+// Deal Sources Management
+Router::group('/settings/sources', function() {
+    Router::get('', [SourceController::class, 'index'], 'settings.manage');
+    Router::post('/store', [SourceController::class, 'store'], 'settings.manage');
+    Router::post('/update', [SourceController::class, 'update'], 'settings.manage');
+    Router::post('/delete', [SourceController::class, 'delete'], 'settings.manage');
+    Router::get('/active', [SourceController::class, 'getActive']);
+});
