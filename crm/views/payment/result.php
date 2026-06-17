@@ -366,20 +366,23 @@
                 </div>
 
                 <div class="result-actions">
-                    <?php if ($success && !empty($returnUrl)): ?>
-                        <a href="<?php echo htmlspecialchars($returnUrl); ?>" class="btn-return primary">
-                            🔄 بازگشت به سایت
+                    <?php if ($success): ?>
+                        <?php if (!empty($dealId)): ?>
+                        <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $dealId; ?>" class="btn-return primary">
+                            🏠 بازگشت به معامله
                         </a>
-                    <?php elseif ($success): ?>
-                        <a href="<?php echo $config['url']; ?>" class="btn-return primary">
-                            🏠 بازگشت به صفحه اصلی
+                        <?php endif; ?>
+                        <a href="<?php echo $config['url']; ?>" class="btn-return secondary">
+                            🏠 بازگشت به سایت
                         </a>
                     <?php else: ?>
-                        <button onclick="window.history.back()" class="btn-return primary">
+                        <?php if (!empty($publicToken)): ?>
+                        <a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($publicToken); ?>" class="btn-return primary">
                             🔄 تلاش مجدد
-                        </button>
+                        </a>
+                        <?php endif; ?>
                         <a href="<?php echo $config['url']; ?>" class="btn-return secondary">
-                            🏠 بازگشت به صفحه اصلی
+                            🏠 بازگشت به سایت
                         </a>
                     <?php endif; ?>
                 </div>

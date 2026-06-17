@@ -19,7 +19,6 @@ class DealController
         }
         $stages = $db->fetchAll("SELECT s.* FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE p.id = :pid AND s.is_active = 1 ORDER BY s.order_index", [':pid' => $deal->pipeline_id]);
         
-        // Parse hashtags from description (supports Persian)
         $tags = [];
         if ($deal->description) {
             preg_match_all('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', $deal->description, $matches);
@@ -119,7 +118,6 @@ class DealController
         $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
         
-        // Get default pipeline stages
         $defaultPipeline = $db->fetch("SELECT id FROM pipelines WHERE is_default = 1");
         $stages = [];
         if ($defaultPipeline) {
@@ -137,16 +135,17 @@ class DealController
 
     public function store(): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $amount = str_replace(',', '', $_POST['amount'] ?? '0');
+        $amountRaw = str_replace(',', '', $_POST['amount'] ?? '');
+        $amount = $amountRaw !== '' ? (int)$amountRaw : null;
         $pipelineId = (int)($_POST['pipeline_id'] ?? 0);
         $stageId = (int)($_POST['stage_id'] ?? 0);
         $contactId = (int)($_POST['contact_id'] ?? 0) ?: null;
         $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: null;
         $source = trim($_POST['source'] ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? null;
-        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
         if (empty($title) || empty($pipelineId) || empty($stageId)) {
             if ($isAjax) {
@@ -164,7 +163,7 @@ class DealController
             $dealId = $db->insert('deals', [
                 'title' => $title,
                 'description' => $description,
-                'amount' => (int)$amount,
+                'amount' => $amount,
                 'pipeline_id' => $pipelineId,
                 'stage_id' => $stageId,
                 'contact_id' => $contactId,
@@ -174,7 +173,6 @@ class DealController
                 'created_by' => Auth::id(),
             ]);
 
-            // Create activity if provided
             $activityType = trim($_POST['activity_type'] ?? '');
             $activitySubject = trim($_POST['activity_subject'] ?? '');
             $activityDate = $_POST['activity_date'] ?? null;
@@ -263,7 +261,6 @@ class DealController
 
         $logs = ActivityLog::getByEntity('deal', $params['id']);
 
-        // Pipeline progress data
         $allStages = $db->fetchAll(
             "SELECT * FROM stages WHERE pipeline_id = :pid AND is_active = 1 ORDER BY order_index",
             [':pid' => $deal->pipeline_id]
@@ -321,20 +318,34 @@ class DealController
     public function update(array $params): void
     {
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        $title = trim($_POST['title'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $amount = str_replace(',', '', $_POST['amount'] ?? '0');
-        $pipelineId = (int)($_POST['pipeline_id'] ?? 0);
-        $stageId = (int)($_POST['stage_id'] ?? 0);
-        $contactId = (int)($_POST['contact_id'] ?? 0) ?: null;
-        $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: null;
-        $source = trim($_POST['source'] ?? '');
-        $expectedCloseDate = $_POST['expected_close_date'] ?? null;
-        $probability = (int)($_POST['probability'] ?? 0);
-        $lostReason = trim($_POST['lost_reason'] ?? '');
+        $db = Database::getInstance();
+        $existing = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $params['id']]);
+        if (!$existing) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'معامله یافت نشد.']); exit; }
+            Session::setFlash('danger', 'معامله یافت نشد.');
+            View::redirect('/deals');
+        }
+
+        // For AJAX, keep existing values if not sent (partial update)
+        $title = trim($_POST['title'] ?? $existing->title ?? '');
+        $description = trim($_POST['description'] ?? $existing->description ?? '');
+        $amountRaw = str_replace(',', '', $_POST['amount'] ?? '');
+        $amount = $amountRaw !== '' ? (int)$amountRaw : ($existing->amount ?? null);
+        $pipelineId = (int)($_POST['pipeline_id'] ?? $existing->pipeline_id ?? 0);
+        $stageId = (int)($_POST['stage_id'] ?? $existing->stage_id ?? 0);
+        $contactId = (int)($_POST['contact_id'] ?? 0) ?: $existing->contact_id ?: null;
+        $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: $existing->assigned_to ?: null;
+        $source = trim($_POST['source'] ?? $existing->source ?? '');
+        $expectedCloseDate = $_POST['expected_close_date'] ?? $existing->expected_close_date ?? null;
+        $probability = (int)($_POST['probability'] ?? $existing->probability ?? 0);
+        $lostReason = trim($_POST['lost_reason'] ?? $existing->lost_reason ?? '');
         $dealStatus = $_POST['deal_status'] ?? 'open';
 
-        $db = Database::getInstance();
+        if (empty($title)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'عنوان معامله الزامی است.']); exit; }
+            Session::setFlash('danger', 'عنوان معامله الزامی است.');
+            View::redirect('/deals/edit/' . $params['id']);
+        }
 
         $updateData = [
             'title' => $title,
@@ -360,9 +371,11 @@ class DealController
             $updateData['is_lost'] = 1;
             $updateData['closed_at'] = date('Y-m-d H:i:s');
         } else {
-            $updateData['is_won'] = 0;
-            $updateData['is_lost'] = 0;
-            $updateData['closed_at'] = null;
+            if (!$existing->is_won && !$existing->is_lost) {
+                $updateData['is_won'] = 0;
+                $updateData['is_lost'] = 0;
+                $updateData['closed_at'] = null;
+            }
         }
 
         $db->update('deals', $updateData, 'id = :id', [':id' => $params['id']]);
@@ -420,7 +433,6 @@ class DealController
         
         $tags = [];
         foreach ($deals as $deal) {
-            // Match Persian/Arabic/English hashtags: # followed by any word characters including unicode
             preg_match_all('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', $deal->description, $matches);
             foreach ($matches[1] as $tag) {
                 $tagLower = mb_strtolower($tag);
@@ -444,7 +456,6 @@ class DealController
         $tag = trim($params['tag'] ?? '');
         $db = Database::getInstance();
         
-        // Use LOCATE/CONCAT for proper hashtag matching
         $deals = $db->fetchAll(
             "SELECT d.*, s.name as stage_name, s.color as stage_color, 
                     c.full_name as contact_name, c.phone as contact_phone,
@@ -480,7 +491,6 @@ class DealController
     public function convertToDeal(): void
     {
         $db = Database::getInstance();
-        // Quick deal creation from kanban
         $title = trim($_POST['title'] ?? '');
         $pipelineId = (int)($_POST['pipeline_id'] ?? 0);
         $stageId = (int)($_POST['stage_id'] ?? 0);

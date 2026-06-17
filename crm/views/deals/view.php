@@ -6,7 +6,7 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-sm btn-success" onclick="openModal('smsModal')">✉️ پیامک</button>
         <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-sm btn-primary">💳 لینک پرداخت</a>
-        <button class="btn btn-sm btn-secondary" onclick="openModal('editDealModal')">✏️ ویرایش</button>
+        <a href="<?php echo $config['url']; ?>/deals/edit/<?php echo $deal->id; ?>" class="btn btn-sm btn-secondary">✏️ ویرایش</a>
     </div>
 </div>
 

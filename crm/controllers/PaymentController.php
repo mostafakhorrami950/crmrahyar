@@ -510,6 +510,8 @@ class PaymentController
         }
 
         $config = $GLOBALS['app_config'];
+        $publicToken = $payment->public_token ?? '';
+        $dealId = $payment->deal_id ?? '';
         require __DIR__ . '/../views/payment/result.php';
         exit;
     }
@@ -533,6 +535,8 @@ class PaymentController
         $refNumber = '';
         $amount = 0;
         $returnUrl = '';
+        $publicToken = $_GET['token'] ?? '';
+        $dealId = '';
         require __DIR__ . '/../views/payment/result.php';
         exit;
     }
