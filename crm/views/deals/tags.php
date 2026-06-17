@@ -32,3 +32,13 @@
     </div>
     <?php endif; ?>
 </div>
+
+<script>
+// Auto-refresh when page loads - trigger via data-ajax
+document.addEventListener('DOMContentLoaded', function() {
+    // If URL has ?reload=1, refresh the page
+    if (window.location.search.indexOf('reload=1') !== -1) {
+        window.location.href = window.location.pathname;
+    }
+});
+</script>

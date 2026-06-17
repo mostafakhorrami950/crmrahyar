@@ -397,6 +397,7 @@ class DealController
         $tag = trim($params['tag'] ?? '');
         $db = Database::getInstance();
         
+        // Use LIKE for MySQL compatibility
         $deals = $db->fetchAll(
             "SELECT d.*, s.name as stage_name, s.color as stage_color, 
                     c.full_name as contact_name, c.phone as contact_phone,
