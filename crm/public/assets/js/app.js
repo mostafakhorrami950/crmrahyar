@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modal) {
             modal.classList.remove('show');
             document.body.style.overflow = '';
+            // Clear errors
+            var errDiv = modal.querySelector('.ajax-error');
+            if (errDiv) { errDiv.style.display = 'none'; errDiv.innerHTML = ''; }
         }
     };
     // Close modal on overlay click
@@ -58,6 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === this) {
                 this.classList.remove('show');
                 document.body.style.overflow = '';
+                // Clear errors
+                this.querySelectorAll('.ajax-error').forEach(function(e) {
+                    e.style.display = 'none'; e.innerHTML = '';
+                });
             }
         });
     });
@@ -68,6 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (modal) {
                 modal.classList.remove('show');
                 document.body.style.overflow = '';
+                modal.querySelectorAll('.ajax-error').forEach(function(e) {
+                    e.style.display = 'none'; e.innerHTML = '';
+                });
             }
         });
     });
@@ -98,12 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.value = new Intl.NumberFormat('fa-IR').format(parseInt(value));
             }
         });
-        // Remove formatting on focus for editing
         input.addEventListener('focus', function() {
             var value = this.value.replace(/[^0-9]/g, '');
             if (value) this.value = value;
         });
-        // Add formatting on blur
         input.addEventListener('blur', function() {
             var value = this.value.replace(/[^0-9]/g, '');
             if (value) {
@@ -121,8 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ========== STAGE UPDATE (Drag & Drop simulation) ==========
-    // For kanban cards, clicking changes stage via AJAX
+    // ========== STAGE UPDATE ==========
     document.querySelectorAll('.kanban-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             var dealUrl = this.dataset.url;
@@ -141,40 +148,95 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fetch(this.dataset.url || '/deals/update-stage', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'deal_id=' + dealId + '&stage_id=' + stageId
             })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                if (data.success) {
-                    location.reload();
-                }
+                if (data.success) { location.reload(); }
             })
             .catch(function(err) { console.error(err); });
         });
     });
 
-    // ========== AJAX FORM SUBMIT (for quick actions) ==========
-    document.querySelectorAll('.ajax-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.message || 'خطا در اجرای درخواست');
+    // ========== DATA-AJAX FORM HANDLER ==========
+    // Handles forms with data-ajax="true" attribute
+    // Supports: modal forms (auto-close on success), inline forms (show errors)
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (!form.matches('form[data-ajax="true"]')) return;
+        e.preventDefault();
+
+        var submitBtn = form.querySelector('[type="submit"]');
+        var originalText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '⏳ ...'; }
+
+        var formData = new FormData(form);
+        var errorDiv = form.querySelector('.ajax-error');
+        if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.innerHTML = ''; }
+
+        fetch(form.action, {
+            method: form.method || 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
+
+            if (data.success) {
+                // Check if this is a contact create modal form
+                if (data.contact) {
+                    // Auto-select the contact in the parent form
+                    var contactSelect = document.getElementById('contactSelect');
+                    if (contactSelect) {
+                        var opt = document.createElement('option');
+                        opt.value = data.contact.id;
+                        opt.textContent = data.contact.full_name + ' - ' + data.contact.phone;
+                        opt.selected = true;
+                        contactSelect.appendChild(opt);
+                    }
+                    // Close the modal
+                    var modal = form.closest('.modal-overlay');
+                    if (modal) {
+                        modal.classList.remove('show');
+                        document.body.style.overflow = '';
+                        modal.querySelectorAll('.ajax-error').forEach(function(e) {
+                            e.style.display = 'none'; e.innerHTML = '';
+                        });
+                    }
+                    // Reset form
+                    form.reset();
+                    return;
                 }
-            })
-            .catch(function(err) { console.error(err); });
+
+                // If has redirect, go there
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                // Otherwise reload
+                location.reload();
+            } else {
+                // Show error
+                var msg = data.message || 'خطا در اجرای درخواست';
+                if (errorDiv) {
+                    errorDiv.innerHTML = msg;
+                    errorDiv.style.display = 'block';
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        .catch(function(err) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
+            if (errorDiv) {
+                errorDiv.innerHTML = 'خطا در ارتباط با سرور';
+                errorDiv.style.display = 'block';
+            } else {
+                alert('خطا در ارتباط با سرور');
+            }
+            console.error(err);
         });
     });
 
@@ -208,19 +270,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fetch(this.dataset.url || '/settings/toggle-feature', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'feature=' + feature + '&enabled=' + enabled
             })
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                if (data.success) {
-                    location.reload();
-                }
+                if (data.success) { location.reload(); }
             })
             .catch(function(err) { console.error(err); });
         });
     });
+
+    // ========== ACTIVITY TOGGLE ==========
+    // Already handled by data-ajax handler above
 
 });
