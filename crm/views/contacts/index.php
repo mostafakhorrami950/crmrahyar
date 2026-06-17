@@ -24,7 +24,7 @@
                     <td><small><?php echo htmlspecialchars($c->national_code ?? ''); ?><?php echo $c->passport_number ? ' | ' . htmlspecialchars($c->passport_number) : ''; ?></small></td>
                     <td><span class="badge bg-info"><?php echo $c->deals_count; ?></span></td>
                     <td><strong><?php echo number_format($c->total_purchases ?? 0); ?></strong></td>
-                    <td><small style="color:#888;"><?php echo date('Y/m/d', strtotime($c->created_at)); ?></small></td>
+                    <td><small style="color:#888;"><?php echo \Core\JDate::displayDate($c->created_at); ?></small></td>
                     <td>
                         <a href="<?php echo $config['url']; ?>/contacts/edit/<?php echo $c->id; ?>" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
                         <form method="POST" action="<?php echo $config['url']; ?>/contacts/delete/<?php echo $c->id; ?>" style="display:inline;" onsubmit="return confirm('حذف مخاطب؟')">

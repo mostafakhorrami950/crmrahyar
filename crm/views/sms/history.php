@@ -14,7 +14,7 @@
                     <td><?php echo htmlspecialchars($h->deal_title ?? '-'); ?></td>
                     <td><?php echo htmlspecialchars($h->sent_by_name ?? '-'); ?></td>
                     <td><span class="badge bg-<?php echo $h->status == 'sent' ? 'success' : 'danger'; ?>"><?php echo $h->status == 'sent' ? 'ارسال' : 'خطا'; ?></span></td>
-                    <td><small style="color:#888;"><?php echo date('Y/m/d H:i', strtotime($h->created_at)); ?></small></td>
+                    <td><small style="color:#888;"><?php echo \Core\JDate::displayDateTime($h->created_at); ?></small></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

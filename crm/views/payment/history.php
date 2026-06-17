@@ -28,7 +28,7 @@
                             <?php echo $p->status == 'success' ? 'موفق' : ($p->status == 'pending' ? 'در انتظار' : 'ناموفق'); ?>
                         </span>
                     </td>
-                    <td><small style="color:#888;"><?php echo date('Y/m/d H:i', strtotime($p->created_at)); ?></small></td>
+                    <td><small style="color:#888;"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

@@ -63,7 +63,7 @@
                     <td><strong><?php echo htmlspecialchars($act->subject ?? '-'); ?></strong></td>
                     <td><a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" style="color:var(--primary);"><?php echo htmlspecialchars($act->deal_title ?? '-'); ?></a></td>
                     <td><?php echo htmlspecialchars($act->user_name ?? '-'); ?></td>
-                    <td style="font-size:12px;color:var(--gray-500);"><?php echo date('Y/m/d H:i', strtotime($act->activity_date ?? $act->created_at)); ?></td>
+                    <td style="font-size:12px;color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($act->activity_date ?? $act->created_at); ?></td>
                     <td><a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" class="btn btn-primary btn-sm">👁️</a></td>
                 </tr>
                 <?php endforeach; ?>

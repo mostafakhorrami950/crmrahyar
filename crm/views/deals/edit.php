@@ -148,11 +148,11 @@
                     </div>
                     <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray-50);border-radius:8px;font-size:13px;">
                         <span style="color:var(--gray-500);">تاریخ ایجاد</span>
-                        <strong><?php echo date('Y/m/d', strtotime($deal->created_at)); ?></strong>
+                        <strong><?php echo \Core\JDate::displayDate($deal->created_at); ?></strong>
                     </div>
                     <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray-50);border-radius:8px;font-size:13px;">
                         <span style="color:var(--gray-500);">آخرین بروزرسانی</span>
-                        <strong><?php echo date('Y/m/d', strtotime($deal->updated_at)); ?></strong>
+                        <strong><?php echo \Core\JDate::displayDate($deal->updated_at); ?></strong>
                     </div>
                 </div>
             </div>

@@ -46,11 +46,11 @@
 
             <div class="row g-3">
                 <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">👤 مسئول</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->assigned_name ?? 'تعیین نشده'); ?></strong></div></div>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 ایجاد</small><strong style="font-size:13px;"><?php echo date('Y/m/d', strtotime($deal->created_at)); ?></strong></div></div>
+                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 ایجاد</small><strong style="font-size:13px;"><?php echo \Core\JDate::displayDate($deal->created_at); ?></strong></div></div>
                 <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🎯 منبع</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->source ?? '-'); ?></strong></div></div>
                 <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">👤 ایجادکننده</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->creator_name ?? '-'); ?></strong></div></div>
                 <?php if ($deal->expected_close_date): ?>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 پیش‌بینی</small><strong style="font-size:13px;"><?php echo date('Y/m/d', strtotime($deal->expected_close_date)); ?></strong></div></div>
+                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 پیش‌بینی</small><strong style="font-size:13px;"><?php echo \Core\JDate::displayDate($deal->expected_close_date); ?></strong></div></div>
                 <?php endif; ?>
                 <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📊 احتمال</small><strong style="font-size:13px;"><?php echo $deal->probability; ?>%</strong></div></div>
                 <?php if ($deal->is_lost && $deal->lost_reason): ?>

@@ -10,7 +10,7 @@
     <div class="table-responsive">
         <table class="table">
             <thead><tr><th>عنوان</th><th>مخاطب</th><th>مرحله</th><th>مسئول</th><th>مبلغ</th><th>تاریخ</th><th>وضعیت</th></tr></thead>
-            <tbody><?php foreach ($deals as $d): ?><tr><td><?php echo htmlspecialchars($d->title); ?></td><td><?php echo htmlspecialchars($d->contact_name ?? '-'); ?></td><td><?php echo htmlspecialchars($d->stage_name); ?></td><td><?php echo htmlspecialchars($d->assigned_name ?? '-'); ?></td><td><strong><?php echo number_format($d->amount); ?></strong></td><td><small><?php echo date('Y/m/d', strtotime($d->created_at)); ?></small></td><td><?php if($d->is_won):?><span class="badge bg-success">موفق</span><?php elseif($d->is_lost):?><span class="badge bg-danger">ناموفق</span><?php else:?><span class="badge bg-warning">در جریان</span><?php endif;?></td></tr><?php endforeach; ?></tbody>
+            <tbody><?php foreach ($deals as $d): ?><tr><td><?php echo htmlspecialchars($d->title); ?></td><td><?php echo htmlspecialchars($d->contact_name ?? '-'); ?></td><td><?php echo htmlspecialchars($d->stage_name); ?></td><td><?php echo htmlspecialchars($d->assigned_name ?? '-'); ?></td><td><strong><?php echo number_format($d->amount); ?></strong></td><td><small><?php echo \Core\JDate::displayDate($d->created_at); ?></small></td><td><?php if($d->is_won):?><span class="badge bg-success">موفق</span><?php elseif($d->is_lost):?><span class="badge bg-danger">ناموفق</span><?php else:?><span class="badge bg-warning">در جریان</span><?php endif;?></td></tr><?php endforeach; ?></tbody>
         </table>
     </div>
 </div>

@@ -92,7 +92,7 @@
                         </span>
                     </td>
                     <td class="amount-value"><?php echo number_format($deal->amount); ?></td>
-                    <td style="font-size:12px;color:var(--gray-500);"><?php echo date('Y/m/d', strtotime($deal->created_at)); ?></td>
+                    <td style="font-size:12px;color:var(--gray-500);"><?php echo \Core\JDate::displayDate($deal->created_at); ?></td>
                     <td>
                         <?php if ($deal->is_won): ?>
                         <span class="badge badge-success">✅ موفق</span>

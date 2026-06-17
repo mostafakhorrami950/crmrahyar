@@ -23,7 +23,7 @@
             <h6 style="font-weight:bold;margin-bottom:15px;">لیست فعالیت‌ها</h6>
             <div class="table-responsive"><table class="table table-sm">
                 <thead><tr><th>کاربر</th><th>نوع</th><th>موضوع</th><th>معامله</th><th>تاریخ</th></tr></thead>
-                <tbody><?php foreach ($activities as $a): ?><tr><td><?php echo htmlspecialchars($a->user_name ?? '-'); ?></td><td><?php echo $a->type; ?></td><td><?php echo htmlspecialchars($a->subject ?? '-'); ?></td><td><?php echo htmlspecialchars($a->deal_title ?? '-'); ?></td><td><small><?php echo date('Y/m/d', strtotime($a->created_at)); ?></small></td></tr><?php endforeach; ?></tbody>
+                <tbody><?php foreach ($activities as $a): ?><tr><td><?php echo htmlspecialchars($a->user_name ?? '-'); ?></td><td><?php echo $a->type; ?></td><td><?php echo htmlspecialchars($a->subject ?? '-'); ?></td><td><?php echo htmlspecialchars($a->deal_title ?? '-'); ?></td><td><small><?php echo \Core\JDate::displayDate($a->created_at); ?></small></td></tr><?php endforeach; ?></tbody>
             </table></div>
         </div>
     </div>
