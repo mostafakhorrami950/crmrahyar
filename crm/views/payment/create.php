@@ -83,7 +83,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:10px;">
                     <div>
                         <strong style="font-size:14px;"><?php echo number_format($p->amount); ?> تومان</strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo date('Y/m/d H:i', strtotime($p->created_at)); ?></small>
+                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
                         <?php if ($p->track_id): ?><br><small style="color:var(--gray-400);font-size:11px;">کد: <?php echo $p->track_id; ?></small><?php endif; ?>
                     </div>
                     <div style="text-align:left;">

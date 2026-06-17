@@ -116,7 +116,7 @@
                     <h4><?php echo $title ?? 'داشبورد'; ?></h4>
                 </div>
                 <div class="user-area">
-                    <span class="date"><?php echo date('Y/m/d'); ?></span>
+                    <span class="date">📅 <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
                     <div class="user-dropdown">
                         <button class="user-dropdown-btn">
                             <span>👤</span>

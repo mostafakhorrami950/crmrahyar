@@ -438,7 +438,7 @@
                     <?php endif; ?>
                     <div class="row">
                         <span class="label">📅 تاریخ</span>
-                        <span class="value"><?php echo date('Y/m/d'); ?></span>
+                        <span class="value"><?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
                     </div>
                     <div class="row" style="margin-top:4px;">
                         <span class="amount-label">💰 مبلغ</span>

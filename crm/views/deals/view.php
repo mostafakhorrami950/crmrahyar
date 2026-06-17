@@ -111,7 +111,7 @@
                     </div>
                     <div style="flex:1;min-width:0;">
                         <strong style="font-size:14px;"><?php echo htmlspecialchars($act->subject ?? ($act->type == 'call' ? 'تماس تلفنی' : ($act->type == 'meeting' ? 'جلسه' : ($act->type == 'sms' ? 'پیامک' : ($act->type == 'email' ? 'ایمیل' : 'یادداشت'))))); ?></strong>
-                        <br><small style="color:var(--gray-400);font-size:12px;"><?php echo htmlspecialchars($act->user_name ?? ''); ?> | <?php echo date('Y/m/d H:i', strtotime($act->created_at)); ?></small>
+                        <br><small style="color:var(--gray-400);font-size:12px;"><?php echo htmlspecialchars($act->user_name ?? ''); ?> | <?php echo \Core\JDate::displayDateTime($act->created_at); ?></small>
                         <?php if ($act->description): ?><p style="margin:6px 0 0 0;font-size:13px;color:var(--gray-600);line-height:1.7;"><?php echo nl2br(htmlspecialchars($act->description)); ?></p><?php endif; ?>
                     </div>
                 </div>
@@ -229,7 +229,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--gray-50);border-radius:10px;flex-wrap:wrap;gap:4px;">
                     <div>
                         <strong style="font-size:13px;"><?php echo number_format($p->amount); ?> تومان</strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo date('Y/m/d', strtotime($p->created_at)); ?></small>
+                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDate($p->created_at); ?></small>
                         <?php if (!empty($p->public_token) && $p->status == 'pending'): ?>
                         <br><a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" target="_blank" style="font-size:11px;color:var(--primary);font-weight:600;">🔗 لینک پرداخت</a>
                         <?php endif; ?>
@@ -253,7 +253,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--gray-50);border-radius:10px;">
                     <div>
                         <strong style="font-size:13px;"><?php echo htmlspecialchars($sms->recipient); ?></strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo date('Y/m/d', strtotime($sms->created_at)); ?></small>
+                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDate($sms->created_at); ?></small>
                     </div>
                     <span style="padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;<?php echo $sms->status == 'sent' ? 'background:#d4edda;color:#155724;' : 'background:#f8d7da;color:#721c24;'; ?>">
                         <?php echo $sms->status == 'sent' ? 'ارسال' : 'خطا'; ?>
