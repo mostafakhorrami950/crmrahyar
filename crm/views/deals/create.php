@@ -126,7 +126,7 @@
 
 <!-- Modal: New Contact -->
 <div class="modal-overlay" id="newContactModal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:550px;">
         <div class="modal-header">
             <h5>➕ مخاطب جدید</h5>
             <button type="button" class="modal-close" onclick="closeModal('newContactModal')">&times;</button>
@@ -135,17 +135,38 @@
         <form method="POST" action="<?php echo $config['url']; ?>/contacts/store" data-ajax="true">
             <div class="modal-body">
                 <input type="hidden" name="quick" value="1">
-                <div class="form-group">
-                    <label class="form-label">نام و نام خانوادگی *</label>
-                    <input type="text" name="full_name" class="form-input" required placeholder="مثال: سعید محمدی">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">نام و نام خانوادگی *</label>
+                        <input type="text" name="full_name" class="form-input" required placeholder="مثال: سعید محمدی">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📞 شماره تماس *</label>
+                        <input type="text" name="phone" class="form-input" required placeholder="0912xxxxxxx" dir="ltr" style="text-align:left;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">🏢 تلفن شرکت</label>
+                        <input type="text" name="company_phone" class="form-input" placeholder="021xxxxxxxx" dir="ltr" style="text-align:left;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">✉️ ایمیل</label>
+                        <input type="email" name="email" class="form-input" placeholder="example@mail.com">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">شماره موبایل *</label>
-                    <input type="text" name="phone" class="form-input" required placeholder="0912xxxxxxx">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ایمیل</label>
-                    <input type="email" name="email" class="form-input" placeholder="example@mail.com">
+                    <label class="form-label">🎯 نحوه آشنایی</label>
+                    <select name="source" class="form-input">
+                        <option value="">انتخاب کنید</option>
+                        <?php 
+                        $db = \Core\Database::getInstance();
+                        $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                        foreach ($sources as $s): 
+                        ?>
+                        <option value="<?php echo htmlspecialchars($s->name); ?>"><?php echo htmlspecialchars($s->icon . ' ' . $s->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">

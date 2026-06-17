@@ -27,6 +27,9 @@
                         <?php if ($contact->phone): ?>
                         <span>📞 <strong dir="ltr" style="display:inline-block;"><?php echo htmlspecialchars($contact->phone); ?></strong></span>
                         <?php endif; ?>
+                        <?php if ($contact->company_phone): ?>
+                        <span>🏢 <strong dir="ltr" style="display:inline-block;"><?php echo htmlspecialchars($contact->company_phone); ?></strong></span>
+                        <?php endif; ?>
                         <?php if ($contact->email): ?>
                         <span>✉️ <?php echo htmlspecialchars($contact->email); ?></span>
                         <?php endif; ?>

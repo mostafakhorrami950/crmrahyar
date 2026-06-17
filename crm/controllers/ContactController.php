@@ -112,6 +112,7 @@ class ContactController
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
+        $companyPhone = trim($_POST['company_phone'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $nationalCode = trim($_POST['national_code'] ?? '');
         $passportNumber = trim($_POST['passport_number'] ?? '');
@@ -153,6 +154,7 @@ class ContactController
         $contactId = $db->insert('contacts', [
             'full_name' => $fullName,
             'phone' => $phone,
+            'company_phone' => $companyPhone,
             'email' => $email,
             'national_code' => $nationalCode,
             'passport_number' => $passportNumber,
@@ -194,6 +196,7 @@ class ContactController
     {
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
+        $companyPhone = trim($_POST['company_phone'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $nationalCode = trim($_POST['national_code'] ?? '');
         $passportNumber = trim($_POST['passport_number'] ?? '');
@@ -217,6 +220,7 @@ class ContactController
         $db->update('contacts', [
             'full_name' => $fullName,
             'phone' => $phone,
+            'company_phone' => $companyPhone,
             'email' => $email,
             'national_code' => $nationalCode,
             'passport_number' => $passportNumber,
