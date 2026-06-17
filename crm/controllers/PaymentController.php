@@ -83,15 +83,21 @@ class PaymentController
         if ($result && isset($result->trackId) && $result->result == 100) {
             // Save payment record
             $db = Database::getInstance();
+            $publicToken = $this->generatePublicToken();
             $paymentId = $db->insert('payments', [
                 'deal_id' => $dealId,
                 'amount' => $amountToman,
                 'payment_type' => 'online',
                 'status' => 'pending',
                 'track_id' => $result->trackId,
+                'public_token' => $publicToken,
                 'description' => $description,
                 'created_by' => Auth::id(),
             ]);
+
+            // Get public payment URL
+            $config = $GLOBALS['app_config'];
+            $publicPayUrl = $config['url'] . '/pay/' . $publicToken;
 
             ActivityLog::log('create_payment', 'payment', $paymentId, "لینک پرداخت به مبلغ " . number_format($amountToman) . " تومان ایجاد شد");
 
@@ -99,8 +105,10 @@ class PaymentController
                 // Return JSON with redirect URL to payment gateway
                 echo json_encode([
                     'success' => true,
-                    'message' => 'در حال اتصال به درگاه پرداخت...',
-                    'redirect' => 'https://gateway.zibal.ir/start/' . $result->trackId
+                    'message' => 'لینک پرداخت ایجاد شد. می‌توانید لینک را کپی کرده و برای مشتری ارسال کنید.',
+                    'redirect' => 'https://gateway.zibal.ir/start/' . $result->trackId,
+                    'public_link' => $publicPayUrl,
+                    'payment_id' => $paymentId,
                 ]);
                 exit;
             }
@@ -296,5 +304,233 @@ class PaymentController
             'title' => 'تاریخچه پرداخت‌ها',
             'payments' => $payments,
         ]);
+    }
+
+    // ============================================
+    // Public Payment Page (no authentication)
+    // ============================================
+
+    /**
+     * Show public payment page by token
+     */
+    public function publicPayPage(array $params): void
+    {
+        $token = $params['token'] ?? '';
+        if (empty($token)) {
+            $this->showPublicError('لینک پرداخت نامعتبر است.');
+            return;
+        }
+
+        $db = Database::getInstance();
+        $payment = $db->fetch(
+            "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+            [':token' => $token]
+        );
+
+        if (!$payment) {
+            $this->showPublicError('لینک پرداخت نامعتبر یا منقضی شده است.');
+            return;
+        }
+
+        // Get deal info
+        $deal = null;
+        if ($payment->deal_id) {
+            $deal = $db->fetch(
+                "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone
+                 FROM deals d
+                 LEFT JOIN contacts c ON d.contact_id = c.id
+                 WHERE d.id = :id",
+                [':id' => $payment->deal_id]
+            );
+        }
+
+        // Render public view without layout
+        $GLOBALS['app_config']['features'] = [];
+        require __DIR__ . '/../views/payment/public.php';
+        exit;
+    }
+
+    /**
+     * Submit payment from public page (AJAX) - creates Zibal request
+     */
+    public function publicSubmit(): void
+    {
+        $token = $_POST['token'] ?? '';
+
+        if (empty($token)) {
+            echo json_encode(['success' => false, 'message' => 'لینک پرداخت نامعتبر است.']);
+            exit;
+        }
+
+        $db = Database::getInstance();
+        $payment = $db->fetch(
+            "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+            [':token' => $token]
+        );
+
+        if (!$payment) {
+            echo json_encode(['success' => false, 'message' => 'لینک پرداخت نامعتبر یا منقضی شده است.']);
+            exit;
+        }
+
+        // Convert Toman to Rial for Zibal
+        $amountRial = $payment->amount * 10;
+
+        $config = $GLOBALS['app_config'];
+        $merchant = $config['zibal']['merchant'];
+        $callbackUrl = $config['zibal']['callback_url'];
+
+        $data = [
+            'merchant' => $merchant,
+            'amount' => $amountRial,
+            'callbackUrl' => $callbackUrl,
+            'description' => $payment->description ?: 'پرداخت آنلاین',
+            'orderId' => 'PUB-' . $payment->id . '-' . time(),
+        ];
+
+        // Get mobile from deal contact
+        if ($payment->deal_id) {
+            $deal = $db->fetch("SELECT c.phone FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id WHERE d.id = :id", [':id' => $payment->deal_id]);
+            if ($deal && !empty($deal->phone)) {
+                $data['mobile'] = $deal->phone;
+            }
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://gateway.zibal.ir/v1/request');
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $result = json_decode($response);
+
+        if ($result && isset($result->trackId) && $result->result == 100) {
+            // Update payment with track ID
+            $db->update('payments', [
+                'track_id' => $result->trackId,
+            ], 'id = :id', [':id' => $payment->id]);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'در حال اتصال به درگاه پرداخت...',
+                'redirect' => 'https://gateway.zibal.ir/start/' . $result->trackId
+            ]);
+        } else {
+            $errorMsg = 'خطا در اتصال به درگاه پرداخت';
+            if ($result && isset($result->message)) {
+                $errorMsg = $result->message;
+            }
+            echo json_encode(['success' => false, 'message' => $errorMsg]);
+        }
+        exit;
+    }
+
+    /**
+     * Public verify result page - shown after payment completes
+     */
+    public function publicVerifyResult(): void
+    {
+        $trackId = $_GET['trackId'] ?? '';
+
+        $success = false;
+        $message = '';
+        $refNumber = '';
+        $amount = 0;
+        $returnUrl = '';
+
+        if (!empty($trackId)) {
+            $db = Database::getInstance();
+            $payment = $db->fetch("SELECT * FROM payments WHERE track_id = :track_id", [':track_id' => $trackId]);
+
+            if ($payment) {
+                $success = ($payment->status === 'success');
+                $refNumber = $payment->ref_number ?? '';
+                $amount = $payment->amount;
+                
+                // If still pending, verify with Zibal
+                if ($payment->status === 'pending' || empty($payment->status === 'success')) {
+                    // Re-verify
+                    $config = $GLOBALS['app_config'];
+                    $merchant = $config['zibal']['merchant'];
+
+                    $data = [
+                        'merchant' => $merchant,
+                        'trackId' => $trackId,
+                    ];
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, 'https://gateway.zibal.ir/v1/verify');
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    
+                    $response = curl_exec($ch);
+                    curl_close($ch);
+
+                    $result = json_decode($response);
+                    if ($result && $result->result == 100) {
+                        $db->update('payments', [
+                            'status' => 'success',
+                            'ref_number' => $result->refNumber ?? '',
+                            'card_number' => $result->cardNumber ?? '',
+                            'paid_at' => date('Y-m-d H:i:s'),
+                        ], 'id = :id', [':id' => $payment->id]);
+
+                        if ($payment->deal_id) {
+                            $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
+                        }
+
+                        $success = true;
+                        $refNumber = $result->refNumber ?? '';
+                    } else {
+                        $message = 'پرداخت ناموفق بود.';
+                    }
+                }
+
+                // Get return URL from payment
+                $returnUrl = $payment->return_url ?? '';
+
+                if ($success) {
+                    $message = 'پرداخت شما با موفقیت انجام شد.';
+                }
+            } else {
+                $message = 'اطلاعات پرداخت یافت نشد.';
+            }
+        } else {
+            $message = 'اطلاعات پرداخت نامعتبر است.';
+        }
+
+        require __DIR__ . '/../views/payment/result.php';
+        exit;
+    }
+
+    /**
+     * Generate public token for a payment
+     */
+    private function generatePublicToken(): string
+    {
+        return bin2hex(random_bytes(32));
+    }
+
+    /**
+     * Show error page for public payment
+     */
+    private function showPublicError(string $message): void
+    {
+        $success = false;
+        $trackId = '';
+        $refNumber = '';
+        $amount = 0;
+        $returnUrl = '';
+        require __DIR__ . '/../views/payment/result.php';
+        exit;
     }
 }

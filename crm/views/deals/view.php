@@ -156,10 +156,13 @@
             <?php else: ?>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 <?php foreach ($payments as $p): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--gray-50);border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--gray-50);border-radius:8px;flex-wrap:wrap;gap:4px;">
                     <div>
                         <strong style="font-size:13px;"><?php echo number_format($p->amount); ?> تومان</strong>
                         <br><small style="color:var(--gray-400);font-size:11px;"><?php echo date('Y/m/d', strtotime($p->created_at)); ?></small>
+                        <?php if (!empty($p->public_token) && $p->status == 'pending'): ?>
+                        <br><a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" target="_blank" style="font-size:11px;color:var(--primary);">🔗 لینک پرداخت</a>
+                        <?php endif; ?>
                     </div>
                     <span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;
                         <?php echo $p->status == 'success' ? 'background:#d4edda;color:#155724;' : ($p->status == 'pending' ? 'background:#fff3cd;color:#856404;' : 'background:#f8d7da;color:#721c24;'); ?>">

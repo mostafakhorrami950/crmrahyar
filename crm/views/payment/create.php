@@ -20,6 +20,7 @@
             </div>
 
             <div class="ajax-error alert alert-danger" style="display:none;"></div>
+            <div class="ajax-success alert alert-success" style="display:none;"></div>
             <form method="POST" action="<?php echo $config['url']; ?>/payment/request" data-ajax="true">
                 <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
                 
@@ -39,13 +40,27 @@
                     <textarea name="description" class="form-textarea" rows="2" placeholder="توضیحات این پرداخت..."><?php echo htmlspecialchars($deal->title); ?></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:16px;font-weight:bold;">
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:16px;font-weight:bold;" id="submitPayBtn">
                     💳 اتصال به درگاه پرداخت زیبال
                 </button>
                 <p style="text-align:center;color:var(--gray-400);font-size:12px;margin-top:8px;">
                     🔒 پرداخت امن توسط درگاه زیبال
                 </p>
             </form>
+
+            <!-- Public Payment Link Section (hidden by default) -->
+            <div id="publicLinkSection" style="display:none;margin-top:20px;padding:16px;background:#d4edda;border-radius:12px;border:2px dashed #28a745;">
+                <h6 style="margin:0 0 10px 0;color:#155724;">✅ لینک پرداخت اختصاصی مشتری</h6>
+                <p style="font-size:13px;color:#155724;margin:0 0 10px 0;">این لینک را برای مشتری ارسال کنید. مشتری با کلیک روی آن می‌تواند مستقیماً پرداخت کند:</p>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="publicPayLink" style="flex:1;padding:10px;border:1px solid #28a745;border-radius:8px;font-size:13px;direction:ltr;text-align:left;background:#fff;" readonly>
+                    <button type="button" class="btn btn-success" onclick="copyPublicLink()" style="white-space:nowrap;">📋 کپی</button>
+                </div>
+                <p style="font-size:12px;color:#155724;margin:10px 0 0 0;">
+                    همچنین می‌توانید مستقیماً به درگاه پرداخت متصل شوید:
+                    <button type="button" class="btn btn-sm btn-primary" id="directPayBtn" style="margin-top:6px;">💳 پرداخت مستقیم</button>
+                </p>
+            </div>
         </div>
     </div>
 

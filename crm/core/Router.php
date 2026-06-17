@@ -55,8 +55,17 @@ class Router
             if ($route['method'] !== $method) continue;
 
             if (preg_match($route['pattern'], $url, $matches)) {
-                // Check authentication
-                if (strpos($url, '/login') === false && strpos($url, '/install') === false && strpos($url, '/setup') === false) {
+                // Check authentication - skip for public routes
+                $publicPrefixes = ['/login', '/install', '/setup', '/pay', '/payment/result', '/payment/verify', '/payment/callback'];
+                $isPublic = false;
+                foreach ($publicPrefixes as $prefix) {
+                    if (strpos($url, $prefix) === 0) {
+                        $isPublic = true;
+                        break;
+                    }
+                }
+                
+                if (!$isPublic) {
                     Auth::requireAuth();
                 }
 

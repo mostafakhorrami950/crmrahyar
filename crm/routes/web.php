@@ -102,6 +102,11 @@ Router::group('/payment', function() {
     Router::get('/history', [PaymentController::class, 'history'], 'payments.view');
 });
 
+// Public payment routes (no auth required)
+Router::get('/pay/{token}', [PaymentController::class, 'publicPayPage']);
+Router::post('/pay/submit', [PaymentController::class, 'publicSubmit']);
+Router::get('/payment/result', [PaymentController::class, 'publicVerifyResult']);
+
 // SMS routes
 Router::group('/sms', function() {
     Router::get('/send/{deal_id}', [SmsController::class, 'showSendForm'], 'sms.send');

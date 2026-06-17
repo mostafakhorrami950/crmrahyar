@@ -77,6 +77,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== COPY PUBLIC LINK ==========
+    window.copyPublicLink = function() {
+        var input = document.getElementById('publicPayLink');
+        if (!input) return;
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value).then(function() {
+            var btn = input.nextElementSibling;
+            if (btn) {
+                var original = btn.innerHTML;
+                btn.innerHTML = '✅ کپی شد!';
+                btn.style.background = '#28a745';
+                setTimeout(function() {
+                    btn.innerHTML = original;
+                    btn.style.background = '';
+                }, 2000);
+            }
+        }).catch(function() {
+            document.execCommand('copy');
+        });
+    };
+
     // ========== DATA-AJAX FORM HANDLER ==========
     document.addEventListener('submit', function(e) {
         var form = e.target;
@@ -115,6 +137,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (modal) { modal.classList.remove('show'); document.body.style.overflow = ''; clearModalErrors(modal); }
                     form.reset();
                     return;
+                }
+
+                // Handle public payment link (show on payment create page)
+                if (data.public_link) {
+                    var linkInput = document.getElementById('publicPayLink');
+                    var linkSection = document.getElementById('publicLinkSection');
+                    var directBtn = document.getElementById('directPayBtn');
+                    if (linkInput && linkSection) {
+                        linkInput.value = data.public_link;
+                        linkSection.style.display = 'block';
+                        if (data.redirect && directBtn) {
+                            directBtn.onclick = function() {
+                                window.location.href = data.redirect;
+                            };
+                        }
+                        // Show success message
+                        var successDiv = form.querySelector('.ajax-success');
+                        if (successDiv && data.message) {
+                            successDiv.innerHTML = '✅ ' + data.message;
+                            successDiv.style.display = 'block';
+                        }
+                        // Enable submit button so user can create another
+                        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
+                        return;
+                    }
                 }
 
                 // Redirect (fix base path)
