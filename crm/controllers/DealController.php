@@ -263,6 +263,21 @@ class DealController
 
         $logs = ActivityLog::getByEntity('deal', $params['id']);
 
+        // Pipeline progress data
+        $allStages = $db->fetchAll(
+            "SELECT * FROM stages WHERE pipeline_id = :pid AND is_active = 1 ORDER BY order_index",
+            [':pid' => $deal->pipeline_id]
+        );
+        $currentOrder = 0;
+        $totalStages = count($allStages);
+        foreach ($allStages as $idx => $s) {
+            if ($s->id == $deal->stage_id) { $currentOrder = $idx + 1; break; }
+        }
+        $progressPct = $totalStages > 0 ? round(($currentOrder / $totalStages) * 100) : 0;
+
+        $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
+        $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :pid AND is_active = 1 ORDER BY order_index", [':pid' => $deal->pipeline_id]);
+
         View::render('deals/view', [
             'title' => "معامله: {$deal->title}",
             'deal' => $deal,
@@ -270,6 +285,12 @@ class DealController
             'payments' => $payments,
             'smsHistory' => $smsHistory,
             'logs' => $logs,
+            'allStages' => $allStages,
+            'currentOrder' => $currentOrder,
+            'totalStages' => $totalStages,
+            'progressPct' => $progressPct,
+            'users' => $users,
+            'stages' => $stages,
         ]);
     }
 
@@ -299,6 +320,7 @@ class DealController
 
     public function update(array $params): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $amount = str_replace(',', '', $_POST['amount'] ?? '0');
@@ -346,6 +368,11 @@ class DealController
         $db->update('deals', $updateData, 'id = :id', [':id' => $params['id']]);
 
         ActivityLog::log('update_deal', 'deal', $params['id'], "معامله {$title} ویرایش شد");
+
+        if ($isAjax) {
+            echo json_encode(['success' => true, 'message' => 'معامله با موفقیت ویرایش شد.', 'redirect' => '/deals/view/' . $params['id']]);
+            exit;
+        }
         Session::setFlash('success', 'معامله با موفقیت ویرایش شد.');
         View::redirect('/deals/view/' . $params['id']);
     }
