@@ -121,6 +121,7 @@ class ContactController
         $notes = trim($_POST['notes'] ?? '');
         $source = trim($_POST['source'] ?? '');
         $tags = trim($_POST['tags'] ?? '');
+        $categoryId = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
 
         if (empty($fullName)) {
             if ($isAjax) {
@@ -151,6 +152,12 @@ class ContactController
             }
         }
 
+        // If no category specified, assign default category
+        if (!$categoryId) {
+            $defaultCat = $db->fetch("SELECT id FROM contact_categories WHERE is_default = 1");
+            $categoryId = $defaultCat ? (int)$defaultCat->id : null;
+        }
+
         $contactId = $db->insert('contacts', [
             'full_name' => $fullName,
             'phone' => $phone,
@@ -163,6 +170,7 @@ class ContactController
             'notes' => $notes,
             'source' => $source,
             'tags' => $tags,
+            'category_id' => $categoryId,
             'created_by' => Auth::id(),
         ]);
 
@@ -205,6 +213,7 @@ class ContactController
         $notes = trim($_POST['notes'] ?? '');
         $source = trim($_POST['source'] ?? '');
         $tags = trim($_POST['tags'] ?? '');
+        $categoryId = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
 
         $db = Database::getInstance();
         
@@ -229,6 +238,7 @@ class ContactController
             'notes' => $notes,
             'source' => $source,
             'tags' => $tags,
+            'category_id' => $categoryId,
         ], 'id = :id', [':id' => $params['id']]);
 
         ActivityLog::log('update_contact', 'contact', $params['id'], "مخاطب {$fullName} ویرایش شد");

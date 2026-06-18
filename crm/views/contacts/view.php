@@ -76,6 +76,16 @@
                         <strong style="font-size:13px;"><?php echo htmlspecialchars($contact->created_by_name ?? '-'); ?></strong>
                     </div>
                 </div>
+                <?php if ($contact->category_id): 
+                    $catInfo = $db->fetch("SELECT name, color FROM contact_categories WHERE id = :cid", [':cid' => $contact->category_id]);
+                ?>
+                <div class="col-6 col-md-4">
+                    <div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;">
+                        <small style="color:var(--gray-500);display:block;font-size:11px;">📂 دسته‌بندی</small>
+                        <strong style="font-size:13px;"><span style="background:<?php echo htmlspecialchars($catInfo->color ?? '#6B7280'); ?>;color:white;padding:2px 10px;border-radius:12px;font-size:12px;"><?php echo htmlspecialchars($catInfo->name ?? '-'); ?></span></strong>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <?php if ($contact->source): ?>
                 <div class="col-6 col-md-4">
                     <div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;">

@@ -1,6 +1,7 @@
 <?php
-$db = \Core\Database::getInstance();
-$sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        $db = \Core\Database::getInstance();
+        $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+        $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
 ?>
 <div class="page-header">
     <h5>✏️ ویرایش مخاطب: <?php echo htmlspecialchars($contact->full_name); ?></h5>
@@ -48,6 +49,17 @@ $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_activ
                 <label class="form-label">🏢 شرکت</label>
                 <input type="text" name="company" class="form-input" value="<?php echo htmlspecialchars($contact->company ?? ''); ?>">
             </div>
+            <div class="form-group">
+                <label class="form-label">📂 دسته‌بندی</label>
+                <select name="category_id" class="form-input">
+                    <?php foreach ($categories as $cat): ?>
+                    <option value="<?php echo $cat->id; ?>" <?php echo ($cat->id == ($contact->category_id ?? 0)) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat->name); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
             <div class="form-group">
                 <label class="form-label">🎯 نحوه آشنایی</label>
                 <select name="source" class="form-input">

@@ -17,6 +17,7 @@ use Controllers\ReportController;
 use Controllers\SettingController;
 use Controllers\DatabaseRepairController;
 use Controllers\CustomFieldController;
+use Controllers\CategoryController;
 
 // Auth routes
 Router::get('/login', [AuthController::class, 'loginForm']);
@@ -150,6 +151,15 @@ Router::group('/custom-fields', function() {
     Router::post('/store', [CustomFieldController::class, 'store'], 'settings.manage');
     Router::post('/update/{id}', [CustomFieldController::class, 'update'], 'settings.manage');
     Router::post('/delete/{id}', [CustomFieldController::class, 'delete'], 'settings.manage');
+});
+
+// Contact Categories Management
+Router::group('/settings/categories', function() {
+    Router::get('', [CategoryController::class, 'index'], 'settings.manage');
+    Router::post('/store', [CategoryController::class, 'store'], 'settings.manage');
+    Router::post('/update/{id}', [CategoryController::class, 'update'], 'settings.manage');
+    Router::post('/delete/{id}', [CategoryController::class, 'delete'], 'settings.manage');
+    Router::get('/api', [CategoryController::class, 'getCategories']);
 });
 
 // Deal Sources Management

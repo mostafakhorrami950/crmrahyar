@@ -124,6 +124,8 @@ class DatabaseRepairController
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'contacts', 'company_phone', 'VARCHAR(20) DEFAULT NULL');
             if ($result) $repairs[] = $result;
+            $result = $this->ensureColumn($db, 'contacts', 'category_id', 'INT DEFAULT NULL');
+            if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'pipelines', 'is_default', 'TINYINT(1) DEFAULT 0');
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'pipelines', 'is_active', 'TINYINT(1) DEFAULT 1');
