@@ -76,6 +76,11 @@
                     <?php if ($c->company): ?>
                     <span style="font-size:11px;color:var(--gray-400);background:var(--gray-50);padding:3px 8px;border-radius:6px;">🏢 <?php echo htmlspecialchars($c->company); ?></span>
                     <?php endif; ?>
+                    <?php if ($c->category_id): 
+                        $catInfo = $db->fetch("SELECT name, color FROM contact_categories WHERE id = :cid", [':cid' => $c->category_id]);
+                        if ($catInfo): ?>
+                        <span style="font-size:11px;background:<?php echo htmlspecialchars($catInfo->color); ?>;color:white;padding:3px 8px;border-radius:6px;">📂 <?php echo htmlspecialchars($catInfo->name); ?></span>
+                    <?php endif; endif; ?>
                 </div>
                 <div style="display:flex;gap:4px;">
                     <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $c->id; ?>" class="btn btn-sm btn-primary" onclick="event.stopPropagation();" title="مشاهده">👁️</a>

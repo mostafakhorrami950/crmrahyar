@@ -1,23 +1,118 @@
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 style="margin:0;font-weight:bold;">تاریخچه پیامک‌ها</h5>
+<?php $config = $GLOBALS['app_config']; ?>
+<div class="page-header">
+    <h5>📱 تاریخچه پیامک‌ها</h5>
+    <div class="d-flex gap-8">
+        <a href="<?php echo $config['url']; ?>/sms/send/0" class="btn btn-primary btn-sm">📤 ارسال انبوه</a>
+    </div>
 </div>
-<div class="table-container">
+
+<div class="stats-row" style="margin-bottom:16px;">
+    <div class="stat-box" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+        <div class="stat-value"><?php echo number_format($stats['total']); ?></div>
+        <div class="stat-label">کل پیامک‌ها</div>
+    </div>
+    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+        <div class="stat-value"><?php echo number_format($stats['sent']); ?></div>
+        <div class="stat-label">ارسال موفق</div>
+    </div>
+    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+        <div class="stat-value"><?php echo number_format($stats['failed']); ?></div>
+        <div class="stat-label">ارسال ناموفق</div>
+    </div>
+</div>
+
+<div class="card" style="padding:12px;">
+    <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" name="search" class="form-input" style="flex:2;min-width:200px;" placeholder="🔍 جستجو: نام مخاطب، شماره، متن پیام، معامله..." value="<?php echo htmlspecialchars($search); ?>">
+        <select name="status" class="form-input" style="width:auto;">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="sent" <?php echo $selectedStatus === 'sent' ? 'selected' : ''; ?>>✅ موفق</option>
+            <option value="failed" <?php echo $selectedStatus === 'failed' ? 'selected' : ''; ?>>❌ ناموفق</option>
+        </select>
+        <button type="submit" class="btn btn-primary">🔍</button>
+    </form>
+</div>
+
+<div class="card" style="padding:0;">
     <div class="table-responsive">
-        <table class="table">
-            <thead><tr><th>گیرنده</th><th>متن</th><th>معامله</th><th>ارسال کننده</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
-            <tbody>
-                <?php if (empty($history)): ?><tr><td colspan="6" class="text-center py-4">پیامکی ارسال نشده است.</td></tr><?php endif; ?>
-                <?php foreach ($history as $h): ?>
+        <table class="table" id="smsTable">
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars($h->recipient); ?></td>
-                    <td><small><?php echo htmlspecialchars(mb_substr($h->message ?? '', 0, 50)); ?>...</small></td>
-                    <td><?php echo htmlspecialchars($h->deal_title ?? '-'); ?></td>
-                    <td><?php echo htmlspecialchars($h->sent_by_name ?? '-'); ?></td>
-                    <td><span class="badge bg-<?php echo $h->status == 'sent' ? 'success' : 'danger'; ?>"><?php echo $h->status == 'sent' ? 'ارسال' : 'خطا'; ?></span></td>
-                    <td><small style="color:#888;"><?php echo \Core\JDate::displayDateTime($h->created_at); ?></small></td>
+                    <th style="width:40px;">#</th>
+                    <th>مخاطب</th>
+                    <th>شماره</th>
+                    <th>متن پیامک</th>
+                    <th>معامله</th>
+                    <th>ارسال‌کننده</th>
+                    <th>وضعیت</th>
+                    <th>تاریخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($messages)): ?>
+                <tr><td colspan="8" class="text-center py-5">
+                    <div style="font-size:48px;margin-bottom:10px;">📱</div>
+                    <p style="color:var(--gray-500);">هیچ پیامکی ثبت نشده است.</p>
+                </td></tr>
+                <?php else: $counter = 1; ?>
+                <?php foreach ($messages as $msg): ?>
+                <tr>
+                    <td style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
+                    <td>
+                        <?php if ($msg->contact_name): ?>
+                        <strong><?php echo htmlspecialchars($msg->contact_name); ?></strong>
+                        <?php else: ?>
+                        <span style="color:var(--gray-400);">-</span>
+                        <?php endif; ?>
+                    </td>
+                    <td dir="ltr" style="text-align:left;font-size:13px;"><?php echo htmlspecialchars($msg->phone); ?></td>
+                    <td>
+                        <div class="sms-text" style="max-width:300px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;cursor:pointer;" onclick="this.classList.toggle('expanded')" title="کلیک برای نمایش کامل">
+                            <?php echo htmlspecialchars(mb_substr($msg->message, 0, 100)); ?>
+                            <?php if (mb_strlen($msg->message) > 100): ?>
+                            <span style="color:var(--primary);font-size:11px;">... (کلیک برای نمایش کامل)</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="sms-full" style="display:none;max-width:400px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;padding:8px;background:var(--gray-50);border-radius:8px;margin-top:4px;">
+                            <?php echo htmlspecialchars($msg->message); ?>
+                        </div>
+                    </td>
+                    <td>
+                        <?php if ($msg->deal_id): ?>
+                        <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $msg->deal_id; ?>" style="color:var(--primary);font-weight:600;text-decoration:none;font-size:13px;">
+                            <?php echo htmlspecialchars(mb_substr($msg->deal_title ?? '-', 0, 20)); ?> 🔗
+                        </a>
+                        <?php else: ?>
+                        <span style="color:var(--gray-300);font-size:12px;">-</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><small style="color:var(--gray-500);"><?php echo htmlspecialchars($msg->sender_name ?? '-'); ?></small></td>
+                    <td>
+                        <?php if ($msg->status == 'sent'): ?>
+                        <span class="badge bg-success">✅ موفق</span>
+                        <?php else: ?>
+                        <span class="badge bg-danger" title="<?php echo htmlspecialchars($msg->error_message ?? ''); ?>">❌ ناموفق</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="white-space:nowrap;"><small style="color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($msg->created_at); ?></small></td>
                 </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+.stat-box { color:white; padding:16px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.stat-value { font-weight:800; font-size:24px; }
+.stat-label { font-size:12px; opacity:0.9; }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+.badge.bg-success { background:#d1fae5; color:#065f46; }
+.badge.bg-danger { background:#fee2e2; color:#991b1b; }
+.sms-text { max-height:40px; overflow:hidden; transition:max-height 0.3s; }
+.sms-text.expanded { max-height:600px; }
+.sms-text.expanded + .sms-full { display:block !important; }
+.sms-text.expanded { display:none; }
+</style>

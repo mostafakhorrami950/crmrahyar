@@ -156,6 +156,18 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">📂 دسته‌بندی</label>
+                    <select name="category_id" class="form-input">
+                        <?php 
+                        $categoriesList = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
+                        $defaultCat = $db->fetch("SELECT id FROM contact_categories WHERE is_default = 1");
+                        foreach ($categoriesList as $cat): 
+                        ?>
+                        <option value="<?php echo $cat->id; ?>" <?php echo ($defaultCat && $cat->id == $defaultCat->id) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">🎯 نحوه آشنایی</label>
                     <select name="source" class="form-input">
                         <option value="">انتخاب کنید</option>

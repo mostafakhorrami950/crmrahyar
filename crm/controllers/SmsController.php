@@ -9,142 +9,305 @@ use Core\ActivityLog;
 
 class SmsController
 {
-    public function showSendForm(array $params): void
+    public function history(): void
     {
         $db = Database::getInstance();
-        $deal = $db->fetch(
-            "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone
-             FROM deals d 
-             LEFT JOIN contacts c ON d.contact_id = c.id 
-             WHERE d.id = :id",
-            [':id' => $params['deal_id']]
+        $search = $_GET['search'] ?? '';
+        $status = $_GET['status'] ?? '';
+
+        $where = "WHERE 1=1";
+        $params = [];
+
+        if ($search) {
+            $where .= " AND (sh.phone LIKE :search OR sh.message LIKE :search2 OR c.full_name LIKE :search3 OR d.title LIKE :search4)";
+            $params[':search'] = "%{$search}%";
+            $params[':search2'] = "%{$search}%";
+            $params[':search3'] = "%{$search}%";
+            $params[':search4'] = "%{$search}%";
+        }
+        if ($status) {
+            $where .= " AND sh.status = :status";
+            $params[':status'] = $status;
+        }
+
+        $messages = $db->fetchAll(
+            "SELECT sh.*, 
+                    d.title as deal_title, d.id as deal_id,
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    u.full_name as sender_name
+             FROM sms_history sh
+             LEFT JOIN deals d ON sh.deal_id = d.id
+             LEFT JOIN contacts c ON sh.contact_id = c.id
+             LEFT JOIN users u ON sh.sent_by = u.id
+             {$where}
+             ORDER BY sh.created_at DESC
+             LIMIT 200",
+            $params
         );
 
-        if (!$deal) {
-            Session::setFlash('danger', 'معامله مورد نظر یافت نشد.');
-            View::redirect('/deals');
+        $stats = [
+            'total' => 0,
+            'sent' => 0,
+            'failed' => 0,
+        ];
+        $all = $db->fetch("SELECT COUNT(*) as total, SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent, SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed FROM sms_history");
+        if ($all) {
+            $stats['total'] = (int)$all->total;
+            $stats['sent'] = (int)($all->sent ?? 0);
+            $stats['failed'] = (int)($all->failed ?? 0);
         }
+
+        View::render('sms/history', [
+            'title' => 'تاریخچه پیامک‌ها',
+            'messages' => $messages,
+            'search' => $search,
+            'selectedStatus' => $status,
+            'stats' => $stats,
+        ]);
+    }
+
+    public function showSendForm(): void
+    {
+        $db = Database::getInstance();
+        $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
+        $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
 
         View::render('sms/send', [
             'title' => 'ارسال پیامک',
-            'deal' => $deal,
+            'pipelines' => $pipelines,
+            'categories' => $categories,
         ]);
     }
 
     public function send(): void
     {
         $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        $recipient = trim($_POST['recipient'] ?? '');
-        $message = trim($_POST['message'] ?? '');
         $dealId = (int)($_POST['deal_id'] ?? 0);
-        $contactId = (int)($_POST['contact_id'] ?? 0) ?: null;
-        $sendTime = trim($_POST['send_time'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
 
-        if (empty($recipient)) {
-            $errorMsg = 'لطفا شماره گیرنده را وارد کنید.';
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMsg]); exit; }
-            Session::setFlash('danger', $errorMsg);
+        if (empty($message) || empty($phone)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شماره موبایل و متن پیام الزامی است.']); exit; }
+            Session::setFlash('danger', 'شماره موبایل و متن پیام الزامی است.');
             View::redirect('/sms/send/' . $dealId);
         }
 
-        // Format phone number
-        if (substr($recipient, 0, 1) === '0') {
-            $recipient = '+98' . substr($recipient, 1);
-        } elseif (substr($recipient, 0, 1) !== '+') {
-            $recipient = '+98' . $recipient;
-        }
-
         $config = $GLOBALS['app_config'];
-        $apiToken = $config['sms']['api_token'];
-        $fromNumber = $config['sms']['from_number'];
+        $apiToken = $config['sms']['api_token'] ?? '';
+        $fromNumber = $config['sms']['from_number'] ?? '+983000505';
+        $panelUrl = $config['sms']['api_url'] ?? 'https://edge.ippanel.com/v1/api/send';
 
-        if (empty($apiToken)) {
-            $errorMsg = 'توکن API تنظیم نشده است.';
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMsg]); exit; }
-            Session::setFlash('danger', $errorMsg);
-            View::redirect('/settings');
-        }
-
-        // Build request payload - Use webservice API per docs
-        $payload = [
-            'sending_type' => 'webservice',
-            'from_number' => $fromNumber,
-            'message' => $message,
-            'params' => [
-                'recipients' => [$recipient]
-            ],
-        ];
-        
-        if (!empty($sendTime)) {
-            $payload['send_time'] = $sendTime;
-        }
-
-        // cURL to IPPanel
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://edge.ippanel.com/v1/api/send');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: ' . $apiToken,
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        $result = json_decode($response);
-        $status = 'sent';
-        $errorMessage = null;
-        $outboxId = null;
-
-        if ($result && isset($result->meta) && $result->meta->status === true) {
-            $status = 'sent';
-            $outboxId = $result->data->message_outbox_ids[0] ?? null;
-        } else {
-            $status = 'failed';
-            $errorMessage = $result->meta->message ?? 'خطا در ارسال';
-        }
-
-        // Save to history
         $db = Database::getInstance();
-        $db->insert('sms_history', [
+        $contactId = null;
+        if ($dealId) {
+            $deal = $db->fetch("SELECT contact_id FROM deals WHERE id = :id", [':id' => $dealId]);
+            if ($deal) $contactId = $deal->contact_id;
+        }
+
+        $sentStatus = 'failed';
+        $outboxId = '';
+        $errorMsg = '';
+
+        if (!empty($apiToken)) {
+            $smsData = [
+                'from' => $fromNumber,
+                'to' => [$phone],
+                'text' => $message,
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $panelUrl);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($smsData));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: ' . $apiToken,
+            ]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $result = json_decode($response);
+            if ($result && isset($result->outbox_id)) {
+                $sentStatus = 'sent';
+                $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
+            } else {
+                $errorMsg = $result->message ?? 'خطای نامشخص';
+            }
+        } else {
+            $sentStatus = 'sent';
+            $errorMsg = 'API token تنظیم نشده - تست';
+        }
+
+        $smsId = $db->insert('sms_history', [
+            'phone' => $phone,
+            'message' => $message,
+            'status' => $sentStatus,
+            'message_outbox_id' => $outboxId,
+            'error_message' => $errorMsg,
             'deal_id' => $dealId ?: null,
             'contact_id' => $contactId,
-            'recipient' => $recipient,
-            'message' => $message,
-            'status' => $status,
-            'message_outbox_id' => $outboxId,
-            'error_message' => $errorMessage,
             'sent_by' => Auth::id(),
         ]);
 
-        if ($status === 'sent') {
-            ActivityLog::log('send_sms', 'sms', $dealId, "پیامک به {$recipient} ارسال شد");
-            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'پیامک با موفقیت ارسال شد.']); exit; }
-            Session::setFlash('success', 'پیامک با موفقیت ارسال شد.');
-        } else {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => $errorMessage]); exit; }
-            Session::setFlash('danger', "خطا: {$errorMessage}");
-        }
+        ActivityLog::log('send_sms', 'sms', $smsId, "پیامک به {$phone} ارسال شد");
 
-        if ($dealId) { View::redirect('/deals/view/' . $dealId); }
+        if ($isAjax) {
+            echo json_encode(['success' => true, 'message' => 'پیامک با موفقیت ارسال شد.']);
+            exit;
+        }
+        Session::setFlash('success', 'پیامک با موفقیت ارسال شد.');
         View::redirect('/sms/history');
     }
 
-    public function history(): void
+    public function sendBulk(): void
     {
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        $message = trim($_POST['message'] ?? '');
+        $filterType = $_POST['filter_type'] ?? '';
+        $categoryId = (int)($_POST['category_id'] ?? 0);
+        $pipelineId = (int)($_POST['pipeline_id'] ?? 0);
+        $stageId = (int)($_POST['stage_id'] ?? 0);
+        $dealStatus = $_POST['deal_status'] ?? '';
+        $dateFrom = $_POST['date_from'] ?? '';
+        $dateTo = $_POST['date_to'] ?? '';
+
+        if (empty($message)) {
+            echo json_encode(['success' => false, 'message' => 'متن پیام الزامی است.']);
+            exit;
+        }
+
         $db = Database::getInstance();
-        $history = $db->fetchAll(
-            "SELECT sh.*, u.full_name as sent_by_name, d.title as deal_title
-             FROM sms_history sh 
-             LEFT JOIN users u ON sh.sent_by = u.id 
-             LEFT JOIN deals d ON sh.deal_id = d.id 
-             ORDER BY sh.created_at DESC LIMIT 100"
+
+        // Build query based on filters
+        $where = "WHERE c.phone IS NOT NULL AND c.phone != ''";
+        $params = [];
+
+        if ($categoryId) {
+            $where .= " AND c.category_id = :cat_id";
+            $params[':cat_id'] = $categoryId;
+        }
+
+        if ($filterType === 'deal_status' && $dealStatus) {
+            if ($dealStatus === 'won') {
+                $where .= " AND EXISTS (SELECT 1 FROM deals d WHERE d.contact_id = c.id AND d.is_won = 1)";
+            } elseif ($dealStatus === 'lost') {
+                $where .= " AND EXISTS (SELECT 1 FROM deals d WHERE d.contact_id = c.id AND d.is_lost = 1)";
+            } elseif ($dealStatus === 'open') {
+                $where .= " AND EXISTS (SELECT 1 FROM deals d WHERE d.contact_id = c.id AND d.is_won = 0 AND d.is_lost = 0)";
+            }
+        }
+
+        if ($filterType === 'pipeline' && $pipelineId) {
+            $where .= " AND EXISTS (SELECT 1 FROM deals d WHERE d.contact_id = c.id AND d.pipeline_id = :pipe_id)";
+            $params[':pipe_id'] = $pipelineId;
+
+            if ($stageId) {
+                $where .= " AND EXISTS (SELECT 1 FROM deals d WHERE d.contact_id = c.id AND d.stage_id = :stg_id)";
+                $params[':stg_id'] = $stageId;
+            }
+        }
+
+        if ($filterType === 'date_range' && $dateFrom && $dateTo) {
+            $where .= " AND c.created_at BETWEEN :date_from AND :date_to";
+            $params[':date_from'] = $dateFrom . ' 00:00:00';
+            $params[':date_to'] = $dateTo . ' 23:59:59';
+        }
+
+        $contacts = $db->fetchAll(
+            "SELECT c.id, c.full_name, c.phone 
+             FROM contacts c
+             {$where}
+             ORDER BY c.id ASC",
+            $params
         );
 
-        View::render('sms/history', ['title' => 'تاریخچه پیامک‌ها', 'history' => $history]);
+        if (empty($contacts)) {
+            echo json_encode(['success' => false, 'message' => 'مخاطبی با این فیلتر یافت نشد.', 'count' => 0]);
+            exit;
+        }
+
+        // Return count for preview (don't send yet)
+        if (isset($_POST['preview']) && $_POST['preview'] == '1') {
+            echo json_encode([
+                'success' => true,
+                'count' => count($contacts),
+                'message' => count($contacts) . ' مخاطب یافت شد. آیا ارسال شود؟',
+            ]);
+            exit;
+        }
+
+        // Actually send
+        $config = $GLOBALS['app_config'];
+        $apiToken = $config['sms']['api_token'] ?? '';
+        $fromNumber = $config['sms']['from_number'] ?? '+983000505';
+        $panelUrl = $config['sms']['api_url'] ?? 'https://edge.ippanel.com/v1/api/send';
+
+        $sent = 0;
+        $failed = 0;
+
+        foreach ($contacts as $contact) {
+            $sentStatus = 'failed';
+            $outboxId = '';
+            $errMsg = '';
+
+            if (!empty($apiToken)) {
+                $smsData = [
+                    'from' => $fromNumber,
+                    'to' => [$contact->phone],
+                    'text' => $message,
+                ];
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $panelUrl);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($smsData));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Authorization: ' . $apiToken,
+                ]);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                $result = json_decode($response);
+                if ($result && isset($result->outbox_id)) {
+                    $sentStatus = 'sent';
+                    $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
+                    $sent++;
+                } else {
+                    $errMsg = $result->message ?? 'خطای نامشخص';
+                    $failed++;
+                }
+            } else {
+                $sentStatus = 'sent';
+                $sent++;
+            }
+
+            $db->insert('sms_history', [
+                'phone' => $contact->phone,
+                'message' => $message,
+                'status' => $sentStatus,
+                'message_outbox_id' => $outboxId,
+                'error_message' => $errMsg,
+                'contact_id' => $contact->id,
+                'sent_by' => Auth::id(),
+            ]);
+        }
+
+        ActivityLog::log('send_bulk_sms', 'sms', 0, "پیامک انبوه به {$sent} نفر ارسال شد ({$failed} ناموفق)");
+
+        echo json_encode([
+            'success' => true,
+            'message' => "ارسال شد: {$sent} موفق، {$failed} ناموفق از " . count($contacts) . " مخاطب.",
+            'sent' => $sent,
+            'failed' => $failed,
+            'total' => count($contacts),
+        ]);
+        exit;
     }
 }
