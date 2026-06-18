@@ -59,13 +59,13 @@
                 <tr>
                     <td style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
                     <td>
-                        <?php if ($msg->contact_name): ?>
+                        <?php if (!empty($msg->contact_name)): ?>
                         <strong><?php echo htmlspecialchars($msg->contact_name); ?></strong>
                         <?php else: ?>
                         <span style="color:var(--gray-400);">-</span>
                         <?php endif; ?>
                     </td>
-                    <td dir="ltr" style="text-align:left;font-size:13px;"><?php echo htmlspecialchars($msg->phone); ?></td>
+                    <td dir="ltr" style="text-align:left;font-size:13px;"><?php echo htmlspecialchars($msg->recipient ?? $msg->contact_phone ?? ''); ?></td>
                     <td>
                         <div class="sms-text" style="max-width:300px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;cursor:pointer;" onclick="this.classList.toggle('expanded')" title="کلیک برای نمایش کامل">
                             <?php echo htmlspecialchars(mb_substr($msg->message, 0, 100)); ?>

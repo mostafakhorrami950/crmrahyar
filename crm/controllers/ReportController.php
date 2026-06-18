@@ -156,28 +156,45 @@ class ReportController
         $dateFrom = $_GET['date_from'] ?? date('Y-m-d', strtotime('-7 days'));
         $dateTo = $_GET['date_to'] ?? date('Y-m-d');
         $userId = $_GET['user_id'] ?? '';
+        $type = $_GET['type'] ?? '';
+        $status = $_GET['status'] ?? '';
 
-        $where = "WHERE da.created_at >= :date_from AND da.created_at <= :date_to";
+        $where = "WHERE da.activity_date >= :date_from AND da.activity_date <= :date_to";
         $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo . ' 23:59:59'];
 
         if ($userId) {
             $where .= " AND da.user_id = :user_id";
             $params[':user_id'] = $userId;
         }
+        if ($type) {
+            $where .= " AND da.type = :type";
+            $params[':type'] = $type;
+        }
+        if ($status === 'done') {
+            $where .= " AND da.is_done = 1";
+        } elseif ($status === 'pending') {
+            $where .= " AND da.is_done = 0";
+        } elseif ($status === 'overdue') {
+            $where .= " AND da.is_done = 0 AND da.activity_date < NOW()";
+        }
 
         $activities = $db->fetchAll(
-            "SELECT da.*, u.full_name as user_name, d.title as deal_title
+            "SELECT da.*, u.full_name as user_name, d.title as deal_title, d.id as deal_id,
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    s.name as stage_name, s.color as stage_color
              FROM deal_activities da 
              LEFT JOIN users u ON da.user_id = u.id 
              LEFT JOIN deals d ON da.deal_id = d.id 
+             LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN stages s ON d.stage_id = s.id
              {$where}
-             ORDER BY da.created_at DESC",
+             ORDER BY da.activity_date DESC",
             $params
         );
 
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
 
-        // Activity summary
+        // Activity summary by type
         $activitySummary = $db->fetchAll(
             "SELECT da.type, COUNT(*) as count
              FROM deal_activities da
@@ -187,14 +204,30 @@ class ReportController
             $params
         );
 
-        View::render('reports/activities', [
-            'title' => 'گزارش فعالیت‌ها',
+        // Stats
+        $overdueCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date < NOW()");
+        $todayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE DATE(activity_date) = CURDATE()");
+        $doneTodayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 1 AND DATE(activity_date) = CURDATE()");
+        $upcomingCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date > NOW() AND activity_date <= DATE_ADD(NOW(), INTERVAL 7 DAY)");
+
+        // Pipelines for filter
+        $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
+
+        View::render('activities/index', [
+            'title' => 'مدیریت فعالیت‌ها',
             'activities' => $activities,
             'users' => $users,
             'activitySummary' => $activitySummary,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'selectedUser' => $userId,
+            'selectedType' => $type,
+            'selectedStatus' => $status,
+            'overdueCount' => (int)($overdueCount->cnt ?? 0),
+            'todayCount' => (int)($todayCount->cnt ?? 0),
+            'doneTodayCount' => (int)($doneTodayCount->cnt ?? 0),
+            'upcomingCount' => (int)($upcomingCount->cnt ?? 0),
+            'pipelines' => $pipelines,
         ]);
     }
 

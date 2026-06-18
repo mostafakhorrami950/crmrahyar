@@ -19,7 +19,7 @@ class SmsController
         $params = [];
 
         if ($search) {
-            $where .= " AND (sh.phone LIKE :search OR sh.message LIKE :search2 OR c.full_name LIKE :search3 OR d.title LIKE :search4)";
+            $where .= " AND (sh.recipient LIKE :search OR sh.message LIKE :search2 OR c.full_name LIKE :search3 OR d.title LIKE :search4)";
             $params[':search'] = "%{$search}%";
             $params[':search2'] = "%{$search}%";
             $params[':search3'] = "%{$search}%";
@@ -142,7 +142,7 @@ class SmsController
         }
 
         $smsId = $db->insert('sms_history', [
-            'phone' => $phone,
+            'recipient' => $phone,
             'message' => $message,
             'status' => $sentStatus,
             'message_outbox_id' => $outboxId,
@@ -289,7 +289,7 @@ class SmsController
             }
 
             $db->insert('sms_history', [
-                'phone' => $contact->phone,
+                'recipient' => $contact->phone,
                 'message' => $message,
                 'status' => $sentStatus,
                 'message_outbox_id' => $outboxId,
