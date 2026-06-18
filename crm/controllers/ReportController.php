@@ -53,15 +53,59 @@ class ReportController
              ORDER BY count DESC"
         );
 
+        // Lost deals
+        $lostDeals = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE is_lost = 1");
+        $openDeals = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE is_won = 0 AND is_lost = 0");
+
+        // Payment stats
+        $paymentStats = $db->fetch("SELECT COUNT(*) as total, SUM(CASE WHEN status='success' THEN 1 ELSE 0 END) as successful, COALESCE(SUM(CASE WHEN status='success' THEN amount ELSE 0 END), 0) as total_paid FROM payments");
+
+        // SMS stats
+        $smsStats = $db->fetch("SELECT COUNT(*) as total, SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent FROM sms_history");
+
+        // Contacts stats
+        $contactStats = $db->fetch("SELECT COUNT(*) as total FROM contacts");
+
+        // Deal sources breakdown
+        $dealSources = $db->fetchAll(
+            "SELECT source, COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+             FROM deals 
+             WHERE source IS NOT NULL AND source != ''
+             GROUP BY source 
+             ORDER BY count DESC"
+        );
+
+        // Contact categories breakdown
+        $contactCategories = $db->fetchAll(
+            "SELECT cc.name, cc.color, COUNT(c.id) as count
+             FROM contact_categories cc
+             LEFT JOIN contacts c ON c.category_id = cc.id
+             GROUP BY cc.id, cc.name, cc.color
+             ORDER BY count DESC"
+        );
+
+        // Today's stats
+        $todayDeals = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE DATE(created_at) = CURDATE()");
+        $todayWon = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE is_won = 1 AND DATE(closed_at) = CURDATE()");
+
         View::render('reports/index', [
-            'title' => 'گزارشات',
+            'title' => 'گزارشات و تحلیل‌ها',
             'totalDeals' => $totalDeals,
             'wonDeals' => $wonDeals,
+            'lostDeals' => $lostDeals,
+            'openDeals' => $openDeals,
             'conversionRate' => $conversionRate,
             'monthlySales' => $monthlySales,
             'salesByPipeline' => $salesByPipeline,
             'topUsers' => $topUsers,
             'lostReasons' => $lostReasons,
+            'paymentStats' => $paymentStats,
+            'smsStats' => $smsStats,
+            'contactStats' => $contactStats,
+            'dealSources' => $dealSources,
+            'contactCategories' => $contactCategories,
+            'todayDeals' => $todayDeals,
+            'todayWon' => $todayWon,
         ]);
     }
 

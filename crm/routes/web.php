@@ -26,7 +26,7 @@ Router::get('/logout', [AuthController::class, 'logout']);
 
 // Authenticated routes
 Router::group('/dashboard', function() {
-    Router::get('', [DashboardController::class, 'index'], 'dashboard.view');
+    Router::get('', [DashboardController::class, 'index']);
 });
 
 // Users management (admin only)

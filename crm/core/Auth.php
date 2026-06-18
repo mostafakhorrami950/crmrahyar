@@ -99,7 +99,8 @@ class Auth
         self::requireAuth();
         if (!self::hasPermission($permission)) {
             Session::setFlash('danger', 'شما دسترسی به این بخش را ندارید.');
-            header('Location: ' . $GLOBALS['app_config']['url'] . '/dashboard');
+            $url = $GLOBALS['app_config']['url'] ?? '';
+            header('Location: ' . $url . '/dashboard');
             exit;
         }
     }
