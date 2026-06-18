@@ -79,8 +79,11 @@ class DatabaseRepairController
                     try {
                         $db->query($stmt);
                     } catch (\Exception $e) {
-                        // Table may already exist, that's ok
-                        if (stripos($e->getMessage(), 'already exists') === false) {
+                        $msg = $e->getMessage();
+                        // Table may already exist or column already exists - that's ok
+                        if (stripos($msg, 'already exists') === false && 
+                            stripos($msg, 'Duplicate column') === false && 
+                            stripos($msg, 'Duplicate key') === false) {
                             throw $e;
                         }
                     }
@@ -118,6 +121,8 @@ class DatabaseRepairController
             $result = $this->ensureColumn($db, 'contacts', 'tags', 'VARCHAR(500) DEFAULT NULL');
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'contacts', 'notes', 'TEXT DEFAULT NULL');
+            if ($result) $repairs[] = $result;
+            $result = $this->ensureColumn($db, 'contacts', 'company_phone', 'VARCHAR(20) DEFAULT NULL');
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'pipelines', 'is_default', 'TINYINT(1) DEFAULT 0');
             if ($result) $repairs[] = $result;
