@@ -46,11 +46,13 @@ class ContactController
         $db = Database::getInstance();
         $contact = $db->fetch(
             "SELECT c.*, u.full_name as created_by_name,
+                    cc.name as category_name, cc.color as category_color,
                     (SELECT COUNT(*) FROM deals WHERE contact_id = c.id) as deals_count,
                     (SELECT SUM(amount) FROM deals WHERE contact_id = c.id AND is_won = 1) as total_purchases,
                     (SELECT SUM(amount) FROM deals WHERE contact_id = c.id) as total_deals_amount
              FROM contacts c 
              LEFT JOIN users u ON c.created_by = u.id 
+             LEFT JOIN contact_categories cc ON c.category_id = cc.id
              WHERE c.id = :id",
             [':id' => $params['id']]
         );
