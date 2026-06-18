@@ -55,9 +55,10 @@ class DealController
         }
         
         if ($search) {
-            $where .= " AND (d.title LIKE :search OR c.full_name LIKE :search2)";
+            $where .= " AND (d.title LIKE :search OR c.full_name LIKE :search2 OR c.phone LIKE :search3)";
             $params[':search'] = "%{$search}%";
             $params[':search2'] = "%{$search}%";
+            $params[':search3'] = "%{$search}%";
         }
         if ($stageId) {
             $where .= " AND d.stage_id = :stage_id";

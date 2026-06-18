@@ -12,7 +12,7 @@ class JDate
      */
     public static function date(string $format, ?string $timestamp = null): string
     {
-        if ($timestamp === null) {
+        if ($timestamp === null || empty($timestamp)) {
             $timestamp = date('Y-m-d H:i:s');
         }
         
@@ -20,9 +20,14 @@ class JDate
         $gDate = explode('-', $g[0]);
         $gTime = isset($g[1]) ? explode(':', $g[1]) : [0, 0, 0];
         
-        $gy = (int)$gDate[0];
-        $gm = (int)$gDate[1];
-        $gd = (int)$gDate[2];
+        $gy = (int)($gDate[0] ?? 0);
+        $gm = (int)($gDate[1] ?? 1);
+        $gd = (int)($gDate[2] ?? 1);
+        
+        // Validate date parts
+        if ($gy < 1900 || $gy > 2100 || $gm < 1 || $gm > 12 || $gd < 1 || $gd > 31) {
+            return $timestamp;
+        }
         $gh = isset($gTime[0]) ? (int)$gTime[0] : 0;
         $gi = isset($gTime[1]) ? (int)$gTime[1] : 0;
         $gs = isset($gTime[2]) ? (int)$gTime[2] : 0;
