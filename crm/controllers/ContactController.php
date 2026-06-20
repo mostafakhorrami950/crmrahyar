@@ -17,6 +17,13 @@ class ContactController
         $where = "WHERE 1=1";
         $params = [];
         
+        // Scope-based filtering using permission system
+        $scope = Auth::scopeFilter('contacts.view', ['c.created_by']);
+        if ($scope['where'] !== '1=1') {
+            $where .= " AND " . $scope['where'];
+            $params = array_merge($params, $scope['params']);
+        }
+        
         if ($search) {
             $where .= " AND (c.full_name LIKE :search OR c.phone LIKE :search2 OR c.email LIKE :search3)";
             $params[':search'] = "%{$search}%";

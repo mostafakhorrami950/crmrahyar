@@ -48,10 +48,11 @@ class DealController
         $where = "WHERE 1=1";
         $params = [];
         
-        if ($user->role_slug === 'operator') {
-            $where .= " AND (d.assigned_to = :user_id OR d.created_by = :user_id2)";
-            $params[':user_id'] = $user->id;
-            $params[':user_id2'] = $user->id;
+        // Scope-based filtering using permission system
+        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
+        if ($scope['where'] !== '1=1') {
+            $where .= " AND " . $scope['where'];
+            $params = array_merge($params, $scope['params']);
         }
         
         if ($search) {
@@ -243,11 +244,13 @@ class DealController
             View::redirect('/deals');
         }
 
-        // Operator can only view own deals
-        $user = Auth::user();
-        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
-            Session::setFlash('danger', 'شما فقط به معاملات خودتان دسترسی دارید.');
-            View::redirect('/deals');
+        // Permission-based access check
+        if (!Auth::canAccessAll('deals.view')) {
+            $userId = Auth::id();
+            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+                Session::setFlash('danger', 'شما فقط به معاملات خودتان دسترسی دارید.');
+                View::redirect('/deals');
+            }
         }
 
         $activities = $db->fetchAll(
@@ -310,11 +313,13 @@ class DealController
             View::redirect('/deals');
         }
 
-        // Operator can only edit own deals
-        $user = Auth::user();
-        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
-            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
-            View::redirect('/deals');
+        // Permission-based access check for edit
+        if (!Auth::canAccessAll('deals.edit')) {
+            $userId = Auth::id();
+            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+                Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
+                View::redirect('/deals');
+            }
         }
 
         $pipelines = $db->fetchAll("SELECT * FROM pipelines WHERE is_active = 1");
@@ -345,17 +350,14 @@ class DealController
             View::redirect('/deals');
         }
 
-        // Operator can only update own deals
-        $user = Auth::user();
-        if ($user->role_slug === 'operator' && $existing->assigned_to != $user->id && $existing->created_by != $user->id) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.']); exit; }
-            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
-            View::redirect('/deals');
-        }
-
-        // Operator cannot change assigned_to
-        if ($user->role_slug === 'operator') {
-            $assignedTo = $existing->assigned_to;
+        // Permission-based access check for update
+        if (!Auth::canAccessAll('deals.edit')) {
+            $userId = Auth::id();
+            if ($existing->assigned_to != $userId && $existing->created_by != $userId) {
+                if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.']); exit; }
+                Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
+                View::redirect('/deals');
+            }
         }
 
         // For AJAX, keep existing values if not sent (partial update)
@@ -430,11 +432,13 @@ class DealController
             View::redirect('/deals');
         }
 
-        // Operator can only delete own deals
-        $user = Auth::user();
-        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
-            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را حذف کنید.');
-            View::redirect('/deals');
+        // Permission-based access check for delete
+        if (!Auth::canAccessAll('deals.delete')) {
+            $userId = Auth::id();
+            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+                Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را حذف کنید.');
+                View::redirect('/deals');
+            }
         }
 
         if ($deal) {

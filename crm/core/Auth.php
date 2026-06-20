@@ -85,6 +85,72 @@ class Auth
         return $result && $result->count > 0;
     }
 
+    /**
+     * Get the permission scope for the current user.
+     * Returns 'own', 'all', or null if no permission.
+     */
+    public static function getPermissionScope(string $permission): ?string
+    {
+        $user = self::user();
+        if (!$user) return null;
+
+        // Super admin has 'all' scope for everything
+        if ($user->role_slug === 'super_admin') return 'all';
+
+        $db = Database::getInstance();
+        $result = $db->fetch(
+            "SELECT scope FROM role_permissions 
+             WHERE role_id = :role_id AND permission = :permission",
+            [':role_id' => $user->role_id, ':permission' => $permission]
+        );
+
+        return $result ? $result->scope : null;
+    }
+
+    /**
+     * Check if user can access ALL data (scope = 'all').
+     * If scope is 'own', returns false.
+     * If no permission at all, returns false.
+     */
+    public static function canAccessAll(string $permission): bool
+    {
+        return self::getPermissionScope($permission) === 'all';
+    }
+
+    /**
+     * Build SQL WHERE clause for data filtering based on user's permission scope.
+     * Returns a WHERE clause string and binds the user_id parameter.
+     * For 'own' scope: filters by owner columns.
+     * For 'all' scope: returns "1=1" (no filter).
+     * For no permission: returns "1=0" (no access).
+     * 
+     * @param string $permission The permission slug to check
+     * @param array  $ownerColumns Columns that represent ownership (e.g. ['d.assigned_to', 'd.created_by'])
+     * @return array ['where' => string, 'params' => array]
+     */
+    public static function scopeFilter(string $permission, array $ownerColumns): array
+    {
+        $scope = self::getPermissionScope($permission);
+        
+        if ($scope === 'all') {
+            return ['where' => '1=1', 'params' => []];
+        }
+        
+        if ($scope === 'own') {
+            $userId = self::id();
+            $conditions = [];
+            $params = [];
+            foreach ($ownerColumns as $i => $col) {
+                $paramKey = ':scope_uid_' . $i;
+                $conditions[] = "({$col} = {$paramKey})";
+                $params[$paramKey] = $userId;
+            }
+            return ['where' => '(' . implode(' OR ', $conditions) . ')', 'params' => $params];
+        }
+        
+        return ['where' => '1=0', 'params' => []];
+    }
+
     public static function requireAuth(): void
     {
         if (!self::check()) {
