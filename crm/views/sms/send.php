@@ -189,12 +189,24 @@ function sendBulk() {
     .then(function(d){
         var el = document.getElementById('bulkResult');
         el.style.display = 'block';
-        if(d.success){
+        if(d.failed > 0 && d.sent === 0){
+            var errDetail = d.debug_error ? '<div style="margin-top:8px;font-size:12px;opacity:0.8;">جزئیات خطا: '+d.debug_error+'</div>' : '';
+            el.innerHTML = '<div class="alert" style="background:#fee2e2;color:#991b1b;padding:16px;border-radius:8px;">❌ '+d.message+errDetail+'</div>';
+        } else if(d.failed > 0) {
+            var errDetail = d.debug_error ? '<div style="margin-top:8px;font-size:12px;opacity:0.8;">آخرین خطا: '+d.debug_error+'</div>' : '';
+            el.innerHTML = '<div class="alert" style="background:#fef3c7;color:#92400e;padding:16px;border-radius:8px;font-weight:600;">⚠️ '+d.message+errDetail+'</div>';
+        } else if(d.success) {
             el.innerHTML = '<div class="alert" style="background:#d1fae5;color:#065f46;padding:16px;border-radius:8px;font-weight:600;">✅ '+d.message+'</div>';
         } else {
             el.innerHTML = '<div class="alert" style="background:#fee2e2;color:#991b1b;padding:16px;border-radius:8px;">❌ '+d.message+'</div>';
         }
         document.getElementById('bulkSendBtn').innerHTML = '📤 ارسال انبوه';
+    }).catch(function(err){
+        var el = document.getElementById('bulkResult');
+        el.style.display = 'block';
+        el.innerHTML = '<div class="alert" style="background:#fee2e2;color:#991b1b;padding:16px;border-radius:8px;">❌ خطای شبکه: '+err.message+'</div>';
+        document.getElementById('bulkSendBtn').innerHTML = '📤 ارسال انبوه';
+        document.getElementById('bulkSendBtn').disabled = false;
     });
 }
 

@@ -94,6 +94,21 @@ class Auth
         }
     }
 
+    public static function isOperator(): bool
+    {
+        $user = self::user();
+        return $user && $user->role_slug === 'operator';
+    }
+
+    public static function ownsDeal(int $dealId): bool
+    {
+        if (!self::isOperator()) return true; // Non-operators can access all
+        $db = Database::getInstance();
+        $deal = $db->fetch("SELECT assigned_to, created_by FROM deals WHERE id = :id", [':id' => $dealId]);
+        $userId = self::id();
+        return $deal && ($deal->assigned_to == $userId || $deal->created_by == $userId);
+    }
+
     public static function requirePermission(string $permission): void
     {
         self::requireAuth();

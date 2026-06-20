@@ -25,6 +25,12 @@ class PaymentController
             View::redirect('/deals');
         }
 
+        // Operator can only create payments for own deals
+        if (!Auth::ownsDeal((int)$params['deal_id'])) {
+            Session::setFlash('danger', 'شما فقط برای معاملات خودتان می‌توانید پرداخت ایجاد کنید.');
+            View::redirect('/deals');
+        }
+
         View::render('payment/create', [
             'title' => 'ایجاد لینک پرداخت',
             'deal' => $deal,
@@ -292,12 +298,24 @@ class PaymentController
         $db = Database::getInstance();
         $user = Auth::user();
         
+        $where = "WHERE 1=1";
+        $params = [];
+
+        // Operators can only see payments for their own deals
+        if ($user->role_slug === 'operator') {
+            $where .= " AND (d.assigned_to = :user_id OR d.created_by = :user_id2)";
+            $params[':user_id'] = $user->id;
+            $params[':user_id2'] = $user->id;
+        }
+
         $payments = $db->fetchAll(
             "SELECT p.*, d.title as deal_title, c.full_name as contact_name
              FROM payments p 
              LEFT JOIN deals d ON p.deal_id = d.id 
              LEFT JOIN contacts c ON d.contact_id = c.id 
-             ORDER BY p.created_at DESC"
+             {$where}
+             ORDER BY p.created_at DESC",
+            $params
         );
 
         View::render('payment/history', [

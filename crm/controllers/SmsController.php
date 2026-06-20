@@ -86,6 +86,13 @@ class SmsController
         $message = trim($_POST['message'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
 
+        // Operator can only send SMS for own deals
+        if ($dealId && !Auth::ownsDeal($dealId)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شما فقط برای معاملات خودتان می‌توانید پیامک ارسال کنید.']); exit; }
+            Session::setFlash('danger', 'شما فقط برای معاملات خودتان می‌توانید پیامک ارسال کنید.');
+            View::redirect('/deals');
+        }
+
         if (empty($message) || empty($phone)) {
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شماره موبایل و متن پیام الزامی است.']); exit; }
             Session::setFlash('danger', 'شماره موبایل و متن پیام الزامی است.');
@@ -130,11 +137,17 @@ class SmsController
             curl_close($ch);
 
             $result = json_decode($response);
-            if ($result && isset($result->outbox_id)) {
+            if ($result && isset($result->data->bulk_id)) {
+                $sentStatus = 'sent';
+                $outboxId = (string)$result->data->bulk_id;
+            } elseif ($result && isset($result->data->message_ids)) {
+                $sentStatus = 'sent';
+                $outboxId = is_array($result->data->message_ids) ? implode(',', $result->data->message_ids) : (string)$result->data->message_ids;
+            } elseif ($result && isset($result->outbox_id)) {
                 $sentStatus = 'sent';
                 $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
             } else {
-                $errorMsg = $result->message ?? 'خطای نامشخص';
+                $errorMsg = $result->message ?? $result->error ?? json_encode($result) ?? 'خطای نامشخص';
             }
         } else {
             $sentStatus = 'sent';
@@ -275,12 +288,20 @@ class SmsController
                 curl_close($ch);
 
                 $result = json_decode($response);
-                if ($result && isset($result->outbox_id)) {
+                if ($result && isset($result->data->bulk_id)) {
+                    $sentStatus = 'sent';
+                    $outboxId = (string)$result->data->bulk_id;
+                    $sent++;
+                } elseif ($result && isset($result->data->message_ids)) {
+                    $sentStatus = 'sent';
+                    $outboxId = is_array($result->data->message_ids) ? implode(',', $result->data->message_ids) : (string)$result->data->message_ids;
+                    $sent++;
+                } elseif ($result && isset($result->outbox_id)) {
                     $sentStatus = 'sent';
                     $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
                     $sent++;
                 } else {
-                    $errMsg = $result->message ?? 'خطای نامشخص';
+                    $errMsg = $result->message ?? $result->error ?? json_encode($result) ?? 'خطای نامشخص';
                     $failed++;
                 }
             } else {
@@ -301,12 +322,20 @@ class SmsController
 
         ActivityLog::log('send_bulk_sms', 'sms', 0, "پیامک انبوه به {$sent} نفر ارسال شد ({$failed} ناموفق)");
 
+        // Get last error message for debugging
+        $lastError = '';
+        if ($failed > 0) {
+            $lastErr = $db->fetch("SELECT error_message FROM sms_history WHERE status = 'failed' ORDER BY created_at DESC LIMIT 1");
+            $lastError = $lastErr->error_message ?? '';
+        }
+
         echo json_encode([
-            'success' => true,
+            'success' => $sent > 0,
             'message' => "ارسال شد: {$sent} موفق، {$failed} ناموفق از " . count($contacts) . " مخاطب.",
             'sent' => $sent,
             'failed' => $failed,
             'total' => count($contacts),
+            'debug_error' => $lastError,
         ]);
         exit;
     }

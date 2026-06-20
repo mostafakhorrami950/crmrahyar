@@ -243,6 +243,13 @@ class DealController
             View::redirect('/deals');
         }
 
+        // Operator can only view own deals
+        $user = Auth::user();
+        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
+            Session::setFlash('danger', 'شما فقط به معاملات خودتان دسترسی دارید.');
+            View::redirect('/deals');
+        }
+
         $activities = $db->fetchAll(
             "SELECT da.*, u.full_name as user_name 
              FROM deal_activities da 
@@ -303,6 +310,13 @@ class DealController
             View::redirect('/deals');
         }
 
+        // Operator can only edit own deals
+        $user = Auth::user();
+        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
+            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
+            View::redirect('/deals');
+        }
+
         $pipelines = $db->fetchAll("SELECT * FROM pipelines WHERE is_active = 1");
         $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :id AND is_active = 1 ORDER BY order_index", [':id' => $deal->pipeline_id]);
         $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
@@ -329,6 +343,19 @@ class DealController
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'معامله یافت نشد.']); exit; }
             Session::setFlash('danger', 'معامله یافت نشد.');
             View::redirect('/deals');
+        }
+
+        // Operator can only update own deals
+        $user = Auth::user();
+        if ($user->role_slug === 'operator' && $existing->assigned_to != $user->id && $existing->created_by != $user->id) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.']); exit; }
+            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را ویرایش کنید.');
+            View::redirect('/deals');
+        }
+
+        // Operator cannot change assigned_to
+        if ($user->role_slug === 'operator') {
+            $assignedTo = $existing->assigned_to;
         }
 
         // For AJAX, keep existing values if not sent (partial update)
@@ -398,7 +425,18 @@ class DealController
     public function delete(array $params): void
     {
         $db = Database::getInstance();
-        $deal = $db->fetch("SELECT title FROM deals WHERE id = :id", [':id' => $params['id']]);
+        $deal = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $params['id']]);
+        if (!$deal) {
+            View::redirect('/deals');
+        }
+
+        // Operator can only delete own deals
+        $user = Auth::user();
+        if ($user->role_slug === 'operator' && $deal->assigned_to != $user->id && $deal->created_by != $user->id) {
+            Session::setFlash('danger', 'شما فقط می‌توانید معاملات خودتان را حذف کنید.');
+            View::redirect('/deals');
+        }
+
         if ($deal) {
             $db->delete('deals', 'id = :id', [':id' => $params['id']]);
             ActivityLog::log('delete_deal', 'deal', $params['id'], "معامله {$deal->title} حذف شد");
