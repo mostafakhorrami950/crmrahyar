@@ -120,8 +120,8 @@
                         <span class="status-icon">⏳</span>
                         <span class="status-label">در جریان</span>
                     </label>
-                    <label class="deal-status-card status-won-card <?php echo $deal->is_won ? 'active' : ''; ?>">
-                        <input type="radio" name="deal_status" value="won" <?php echo $deal->is_won ? 'checked' : ''; ?>>
+                    <label class="deal-status-card status-won-card <?php echo ($deal->is_won && !$deal->is_lost) ? 'active' : ''; ?>">
+                        <input type="radio" name="deal_status" value="won" <?php echo ($deal->is_won && !$deal->is_lost) ? 'checked' : ''; ?>>
                         <span class="status-icon">✅</span>
                         <span class="status-label">موفق</span>
                     </label>
@@ -140,7 +140,7 @@
                             <select name="loss_reason_id" class="deal-input">
                                 <option value="">— انتخاب کنید —</option>
                                 <?php
-                                $lossReasons = $db->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                                $lossReasons = \Core\Database::getInstance()->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
                                 foreach ($lossReasons as $lr):
                                 ?>
                                 <option value="<?php echo $lr->id; ?>" <?php echo ($deal->loss_reason_id ?? '') == $lr->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($lr->icon . ' ' . $lr->name); ?></option>
