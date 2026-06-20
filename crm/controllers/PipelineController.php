@@ -321,6 +321,42 @@ class PipelineController
             }
 
             ActivityLog::log('move_deal', 'deal', $dealId, "معامله به مرحله {$stage->name} منتقل شد");
+            
+            // Trigger automation engine
+            $deal = $db->fetch(
+                "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone,
+                        p.name as pipeline_name
+                 FROM deals d 
+                 LEFT JOIN contacts c ON d.contact_id = c.id
+                 LEFT JOIN pipelines p ON d.pipeline_id = p.id
+                 WHERE d.id = :id",
+                [':id' => $dealId]
+            );
+            
+            $extra = [
+                'stage_id' => $stageId,
+                'stage_name' => $stage->name,
+                'pipeline_id' => $deal->pipeline_id ?? 0,
+                'pipeline_name' => $stage->pipeline_name ?? '',
+                'contact_name' => $deal->contact_name ?? '',
+                'contact_phone' => $deal->contact_phone ?? '',
+                'contact_id' => $deal->contact_id ?? 0,
+                'title' => $deal->title ?? '',
+                'amount' => $deal->amount ?? 0,
+                'assigned_to' => $deal->assigned_to ?? 0,
+                'deal_id' => $dealId,
+            ];
+            
+            // Fire stage_change trigger
+            \Controllers\AutomationController::execute('stage_change', 'deal', $dealId, $extra);
+            
+            // Fire deal_won or deal_lost triggers if applicable
+            if ($isWon) {
+                \Controllers\AutomationController::execute('deal_won', 'deal', $dealId, $extra);
+            } elseif ($isLost) {
+                \Controllers\AutomationController::execute('deal_lost', 'deal', $dealId, $extra);
+            }
+            
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'اطلاعات نامعتبر']);
