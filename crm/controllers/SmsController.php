@@ -116,11 +116,16 @@ class SmsController
         $errorMsg = '';
 
         if (!empty($apiToken)) {
+            // Normalize phone to E.164 format
+            $normalizedPhone = $this->normalizePhone($phone);
+            
             $smsData = [
-                'from' => $fromNumber,
-                'to' => [$phone],
-                'text' => $message,
-                'sending_type' => 'simple',
+                'sending_type' => 'webservice',
+                'from_number' => $fromNumber,
+                'message' => $message,
+                'params' => [
+                    'recipients' => [$normalizedPhone],
+                ],
             ];
 
             $ch = curl_init();
@@ -138,17 +143,12 @@ class SmsController
             curl_close($ch);
 
             $result = json_decode($response);
-            if ($result && isset($result->data->bulk_id)) {
+            if ($result && isset($result->meta->status) && $result->meta->status === true) {
                 $sentStatus = 'sent';
-                $outboxId = (string)$result->data->bulk_id;
-            } elseif ($result && isset($result->data->message_ids)) {
-                $sentStatus = 'sent';
-                $outboxId = is_array($result->data->message_ids) ? implode(',', $result->data->message_ids) : (string)$result->data->message_ids;
-            } elseif ($result && isset($result->outbox_id)) {
-                $sentStatus = 'sent';
-                $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
+                $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
+                $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
             } else {
-                $errorMsg = $result->message ?? $result->error ?? json_encode($result) ?? 'خطای نامشخص';
+                $errorMsg = $result->meta->message ?? $result->message ?? json_encode($result) ?? 'خطای نامشخص';
             }
         } else {
             $sentStatus = 'sent';
@@ -268,11 +268,15 @@ class SmsController
             $errMsg = '';
 
             if (!empty($apiToken)) {
+                $normalizedPhone = $this->normalizePhone($contact->phone);
+                
                 $smsData = [
-                    'from' => $fromNumber,
-                    'to' => [$contact->phone],
-                    'text' => $message,
-                    'sending_type' => 'simple',
+                    'sending_type' => 'webservice',
+                    'from_number' => $fromNumber,
+                    'message' => $message,
+                    'params' => [
+                        'recipients' => [$normalizedPhone],
+                    ],
                 ];
 
                 $ch = curl_init();
@@ -290,20 +294,13 @@ class SmsController
                 curl_close($ch);
 
                 $result = json_decode($response);
-                if ($result && isset($result->data->bulk_id)) {
+                if ($result && isset($result->meta->status) && $result->meta->status === true) {
                     $sentStatus = 'sent';
-                    $outboxId = (string)$result->data->bulk_id;
-                    $sent++;
-                } elseif ($result && isset($result->data->message_ids)) {
-                    $sentStatus = 'sent';
-                    $outboxId = is_array($result->data->message_ids) ? implode(',', $result->data->message_ids) : (string)$result->data->message_ids;
-                    $sent++;
-                } elseif ($result && isset($result->outbox_id)) {
-                    $sentStatus = 'sent';
-                    $outboxId = is_array($result->outbox_id) ? implode(',', $result->outbox_id) : (string)$result->outbox_id;
+                    $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
+                    $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
                     $sent++;
                 } else {
-                    $errMsg = $result->message ?? $result->error ?? json_encode($result) ?? 'خطای نامشخص';
+                    $errMsg = $result->meta->message ?? $result->message ?? json_encode($result) ?? 'خطای نامشخص';
                     $failed++;
                 }
             } else {
@@ -340,5 +337,43 @@ class SmsController
             'debug_error' => $lastError,
         ]);
         exit;
+    }
+
+    /**
+     * Normalize phone number to E.164 format (+98...)
+     */
+    private function normalizePhone(string $phone): string
+    {
+        $phone = trim($phone);
+        // Remove any spaces, dashes, parentheses
+        $phone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        
+        // Already in E.164 format
+        if (strpos($phone, '+98') === 0) {
+            return $phone;
+        }
+        
+        // Starts with 0098
+        if (strpos($phone, '0098') === 0) {
+            return '+' . substr($phone, 2);
+        }
+        
+        // Starts with 98 (without +)
+        if (strpos($phone, '98') === 0 && strlen($phone) > 10) {
+            return '+' . $phone;
+        }
+        
+        // Starts with 0 (local format like 0912...)
+        if (strpos($phone, '0') === 0) {
+            return '+98' . substr($phone, 1);
+        }
+        
+        // Just the number without prefix (like 912...)
+        if (strlen($phone) === 10 && $phone[0] === '9') {
+            return '+98' . $phone;
+        }
+        
+        // Default: assume it needs +98 prefix
+        return '+98' . $phone;
     }
 }
