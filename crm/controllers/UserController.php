@@ -13,7 +13,11 @@ class UserController
     {
         $db = Database::getInstance();
         $users = $db->fetchAll(
-            "SELECT u.*, r.name as role_name, r.slug as role_slug
+            "SELECT u.*, r.name as role_name, r.slug as role_slug,
+                    (SELECT COUNT(*) FROM deals WHERE assigned_to = u.id) as deals_count,
+                    (SELECT COALESCE(SUM(amount),0) FROM deals WHERE assigned_to = u.id AND is_won = 1) as won_amount,
+                    (SELECT COUNT(*) FROM contacts WHERE created_by = u.id) as contacts_count,
+                    (SELECT COUNT(*) FROM sms_history WHERE sent_by = u.id) as sms_count
              FROM users u 
              JOIN roles r ON u.role_id = r.id 
              ORDER BY u.created_at DESC"
