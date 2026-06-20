@@ -62,6 +62,12 @@
                 <a href="<?php echo $config['url']; ?>/activities" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/activities') !== false ? 'active' : ''; ?>">
                     <span class="icon">📅</span> فعالیت‌ها
                 </a>
+                <a href="<?php echo $config['url']; ?>/calendar" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/calendar') !== false ? 'active' : ''; ?>">
+                    <span class="icon">🗓️</span> تقویم
+                </a>
+                <a href="<?php echo $config['url']; ?>/targets" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/targets') !== false ? 'active' : ''; ?>">
+                    <span class="icon">🎯</span> هدف‌گذاری
+                </a>
                 <div class="sidebar-section">گزارشات</div>
                 <a href="<?php echo $config['url']; ?>/reports" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/reports') !== false && strpos($_SERVER['REQUEST_URI'], '/reports/sales') === false && strpos($_SERVER['REQUEST_URI'], '/reports/pipeline') === false && strpos($_SERVER['REQUEST_URI'], '/reports/activities') === false && strpos($_SERVER['REQUEST_URI'], '/reports/contacts') === false) ? 'active' : ''; ?>">
                     <span class="icon">📈</span> داشبورد گزارشات
@@ -73,6 +79,9 @@
                 <?php if (\Core\Auth::hasPermission('users.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/users" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/users') !== false ? 'active' : ''; ?>">
                     <span class="icon">👤</span> کاربران
+                </a>
+                <a href="<?php echo $config['url']; ?>/teams" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/teams') !== false ? 'active' : ''; ?>">
+                    <span class="icon">👥</span> تیم‌ها
                 </a>
                 <?php endif; ?>
                 
@@ -93,11 +102,20 @@
                 </a>
                 <?php endif; ?>
                 <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
+                <a href="<?php echo $config['url']; ?>/automation" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/automation') !== false ? 'active' : ''; ?>">
+                    <span class="icon">🤖</span> اتوماسیون
+                </a>
+                <a href="<?php echo $config['url']; ?>/backup" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/backup') !== false ? 'active' : ''; ?>">
+                    <span class="icon">💾</span> بکاپ
+                </a>
                 <a href="<?php echo $config['url']; ?>/system/repair" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/system/repair') !== false) ? 'active' : ''; ?>">
                     <span class="icon">🔧</span> تعمیر دیتابیس
                 </a>
                 <a href="<?php echo $config['url']; ?>/system/error-logs" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/system/error-logs') !== false ? 'active' : ''; ?>">
                     <span class="icon">⚠️</span> گزارش خطاها
+                </a>
+                <a href="<?php echo $config['url']; ?>/system/logs" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/system/logs') !== false ? 'active' : ''; ?>">
+                    <span class="icon">📝</span> لاگ سیستم
                 </a>
                 <?php endif; ?>
             </nav>
@@ -113,9 +131,29 @@
             <header class="top-header">
                 <div class="d-flex align-center gap-12">
                     <button class="mobile-menu-btn" id="sidebarToggle">☰</button>
-                    <h4><?php echo $title ?? 'داشبورد'; ?></h4>
+                    <!-- Global Search -->
+                    <form action="<?php echo $config['url']; ?>/search" method="GET" class="global-search-form">
+                        <input type="text" name="q" class="global-search-input" placeholder="🔍 جستجوی سراسری..." autocomplete="off" id="globalSearchInput">
+                        <div class="search-suggestions" id="searchSuggestions" style="display:none;"></div>
+                    </form>
                 </div>
                 <div class="user-area">
+                    <!-- Export Links -->
+                    <div class="header-export-links" style="display:flex;gap:6px;align-items:center;">
+                        <a href="<?php echo $config['url']; ?>/export/deals" title="خروجی اکسل معاملات" class="header-btn">📊</a>
+                    </div>
+                    <!-- Notification Bell -->
+                    <div class="notification-bell" id="notificationBell">
+                        <a href="<?php echo $config['url']; ?>/notifications" class="notification-bell-btn">
+                            🔔
+                            <span class="notification-badge" id="notifBadge" style="display:none;">0</span>
+                        </a>
+                        <div class="notification-dropdown" id="notifDropdown" style="display:none;">
+                            <div class="notif-header">اعلان‌ها <a href="#" onclick="markAllNotifRead()" class="notif-mark-all">خواندن همه</a></div>
+                            <div class="notif-list" id="notifList"></div>
+                            <a href="<?php echo $config['url']; ?>/notifications" class="notif-view-all">مشاهده همه</a>
+                        </div>
+                    </div>
                     <span class="header-date">📅 <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
                     <div class="user-dropdown">
                         <button class="user-dropdown-btn">
@@ -202,6 +240,111 @@
             overlayEl.addEventListener('click', function() {
                 if (sidebarEl) sidebarEl.classList.remove('open');
                 overlayEl.classList.remove('show');
+            });
+        }
+
+        // ===== NOTIFICATION BELL =====
+        var baseUrl = '<?php echo $config['url']; ?>';
+        var notifBadge = document.getElementById('notifBadge');
+        var notifDropdown = document.getElementById('notifDropdown');
+        var notifList = document.getElementById('notifList');
+        
+        function loadNotifications() {
+            fetch(baseUrl + '/notifications/unread')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.count > 0) {
+                        notifBadge.textContent = data.count;
+                        notifBadge.style.display = 'flex';
+                    } else {
+                        notifBadge.style.display = 'none';
+                    }
+                    if (notifList) {
+                        if (data.notifications && data.notifications.length > 0) {
+                            notifList.innerHTML = data.notifications.slice(0, 8).map(function(n) {
+                                return '<div class="notif-item unread" onclick="markNotifRead(' + n.id + ', \'' + (n.link || '') + '\')">' +
+                                    '<div class="notif-title">' + (n.from_user_name ? n.from_user_name + ': ' : '') + n.title + '</div>' +
+                                    '<div class="notif-msg">' + (n.message || '') + '</div>' +
+                                    '<div class="notif-time">' + (n.created_at || '') + '</div></div>';
+                            }).join('');
+                        } else {
+                            notifList.innerHTML = '<div class="notif-empty">🔔 اعلان جدیدی ندارید</div>';
+                        }
+                    }
+                })
+                .catch(function() {});
+        }
+        
+        // Toggle dropdown on bell click
+        var bellBtn = document.querySelector('.notification-bell-btn');
+        if (bellBtn) {
+            bellBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (notifDropdown) notifDropdown.style.display = notifDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (notifDropdown && !document.getElementById('notificationBell').contains(e.target)) {
+                notifDropdown.style.display = 'none';
+            }
+        });
+        
+        window.markNotifRead = function(id, link) {
+            fetch(baseUrl + '/notifications/mark-read/' + id, {method:'POST'})
+                .then(function() {
+                    if (link) window.location.href = baseUrl + link;
+                    else loadNotifications();
+                });
+        };
+        window.markAllNotifRead = function() {
+            fetch(baseUrl + '/notifications/mark-all-read', {method:'POST'})
+                .then(function() { loadNotifications(); });
+        };
+        
+        loadNotifications();
+        setInterval(loadNotifications, 60000);
+
+        // ===== GLOBAL SEARCH AUTOCOMPLETE =====
+        var searchInput = document.getElementById('globalSearchInput');
+        var suggestions = document.getElementById('searchSuggestions');
+        var searchTimer = null;
+        if (searchInput && suggestions) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                var q = this.value.trim();
+                if (q.length < 2) { suggestions.style.display = 'none'; return; }
+                searchTimer = setTimeout(function() {
+                    fetch(baseUrl + '/search/api?q=' + encodeURIComponent(q))
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            var html = '';
+                            if (data.deals && data.deals.length) {
+                                html += '<div class="search-section-label">معاملات</div>';
+                                data.deals.forEach(function(d) {
+                                    html += '<a href="' + baseUrl + '/deals/view/' + d.id + '" class="search-suggestion-item"><div class="ss-title">💼 ' + d.title + '</div></a>';
+                                });
+                            }
+                            if (data.contacts && data.contacts.length) {
+                                html += '<div class="search-section-label">مخاطبان</div>';
+                                data.contacts.forEach(function(c) {
+                                    html += '<a href="' + baseUrl + '/contacts/view/' + c.id + '" class="search-suggestion-item"><div class="ss-title">👤 ' + c.full_name + '</div><div class="ss-sub">' + (c.phone||'') + '</div></a>';
+                                });
+                            }
+                            if (!html) html = '<div class="notif-empty">نتیجه‌ای یافت نشد</div>';
+                            suggestions.innerHTML = html;
+                            suggestions.style.display = 'block';
+                        })
+                        .catch(function() { suggestions.style.display = 'none'; });
+                }, 300);
+            });
+            searchInput.addEventListener('focus', function() {
+                if (suggestions.innerHTML.trim()) suggestions.style.display = 'block';
+            });
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.style.display = 'none';
+                }
             });
         }
     });

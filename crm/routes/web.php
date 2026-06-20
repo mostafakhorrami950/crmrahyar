@@ -20,6 +20,14 @@ use Controllers\CustomFieldController;
 use Controllers\CategoryController;
 use Controllers\SourceController;
 use Controllers\LossReasonController;
+use Controllers\NotificationController;
+use Controllers\SearchController;
+use Controllers\CalendarController;
+use Controllers\TeamController;
+use Controllers\TargetController;
+use Controllers\AutomationController;
+use Controllers\ExportController;
+use Controllers\BackupController;
 
 // Auth routes
 Router::get('/login', [AuthController::class, 'loginForm']);
@@ -182,3 +190,76 @@ Router::group('/settings/loss-reasons', function() {
     Router::post('/delete', [LossReasonController::class, 'delete'], 'settings.manage');
     Router::get('/active', [LossReasonController::class, 'getActive']);
 });
+
+// Notifications
+Router::group('/notifications', function() {
+    Router::get('', [NotificationController::class, 'index']);
+    Router::get('/unread', [NotificationController::class, 'unread']);
+    Router::post('/mark-read/{id}', [NotificationController::class, 'markRead']);
+    Router::post('/mark-all-read', [NotificationController::class, 'markAllRead']);
+});
+
+// Global Search
+Router::get('/search', [SearchController::class, 'index']);
+Router::get('/search/api', [SearchController::class, 'api']);
+
+// Calendar
+Router::group('/calendar', function() {
+    Router::get('', [CalendarController::class, 'index']);
+    Router::get('/events', [CalendarController::class, 'events']);
+});
+
+// Teams management (admin only)
+Router::group('/teams', function() {
+    Router::get('', [TeamController::class, 'index'], 'users.manage');
+    Router::get('/create', [TeamController::class, 'create'], 'users.manage');
+    Router::post('/store', [TeamController::class, 'store'], 'users.manage');
+    Router::get('/edit/{id}', [TeamController::class, 'edit'], 'users.manage');
+    Router::post('/update/{id}', [TeamController::class, 'update'], 'users.manage');
+    Router::post('/delete/{id}', [TeamController::class, 'delete'], 'users.manage');
+});
+
+// Sales Targets
+Router::group('/targets', function() {
+    Router::get('', [TargetController::class, 'index'], 'reports.view');
+    Router::post('/store', [TargetController::class, 'store'], 'settings.manage');
+    Router::post('/delete/{id}', [TargetController::class, 'delete'], 'settings.manage');
+});
+
+// Automation
+Router::group('/automation', function() {
+    Router::get('', [AutomationController::class, 'index'], 'settings.manage');
+    Router::get('/create', [AutomationController::class, 'create'], 'settings.manage');
+    Router::post('/store', [AutomationController::class, 'store'], 'settings.manage');
+    Router::get('/edit/{id}', [AutomationController::class, 'edit'], 'settings.manage');
+    Router::post('/update/{id}', [AutomationController::class, 'update'], 'settings.manage');
+    Router::post('/toggle/{id}', [AutomationController::class, 'toggle'], 'settings.manage');
+    Router::post('/delete/{id}', [AutomationController::class, 'delete'], 'settings.manage');
+    Router::get('/logs', [AutomationController::class, 'logs'], 'settings.manage');
+});
+
+// Export CSV
+Router::group('/export', function() {
+    Router::get('/deals', [ExportController::class, 'deals'], 'deals.view');
+    Router::get('/contacts', [ExportController::class, 'contacts'], 'contacts.view');
+    Router::get('/payments', [ExportController::class, 'payments'], 'payments.view');
+    Router::get('/users', [ExportController::class, 'users'], 'users.manage');
+});
+
+// Backup
+Router::group('/backup', function() {
+    Router::get('', [BackupController::class, 'index'], 'settings.manage');
+    Router::post('/create', [BackupController::class, 'create'], 'settings.manage');
+    Router::get('/download/{file}', [BackupController::class, 'download'], 'settings.manage');
+    Router::post('/delete/{file}', [BackupController::class, 'delete'], 'settings.manage');
+});
+
+// Logger viewer (admin)
+Router::get('/system/logs', function() {
+    \Core\Auth::requireAdmin();
+    $config = $GLOBALS['app_config'];
+    $files = \Core\Logger::getFiles();
+    $currentFile = $_GET['file'] ?? ($files[0]['name'] ?? '');
+    $content = $currentFile ? \Core\Logger::read($currentFile) : '';
+    \Core\View::render('logs/index', ['title'=>'لاگ سیستم', 'files'=>$files, 'currentFile'=>$currentFile, 'content'=>$content]);
+}, 'settings.manage');

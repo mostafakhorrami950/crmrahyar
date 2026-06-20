@@ -1206,6 +1206,144 @@ table tr:last-child td { border-bottom: none; }
     .page-header .btn { width: 100%; text-align: center; }
 }
 
+/* ========== GLOBAL SEARCH ========== */
+.global-search-form {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+.global-search-input {
+    width: 100%;
+    padding: 6px 14px;
+    border: 2px solid var(--gray-200);
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--gray-50);
+    outline: none;
+    transition: all 0.2s;
+}
+.global-search-input:focus {
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+.search-suggestion-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+.search-suggestion-item:hover { background: var(--primary-light); }
+.search-suggestion-item .ss-title { font-weight: 600; color: var(--gray-800); }
+.search-suggestion-item .ss-sub { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+.search-section-label { padding: 8px 14px; font-size: 11px; font-weight: 700; color: var(--primary); background: var(--gray-50); text-transform: uppercase; }
+
+/* ========== NOTIFICATION BELL ========== */
+.notification-bell { position: relative; }
+.notification-bell-btn {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+}
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 340px;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 8px;
+}
+.notif-header {
+    padding: 12px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.notif-mark-all { font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: none; }
+.notif-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+    cursor: pointer;
+}
+.notif-item:hover { background: var(--gray-50); }
+.notif-item.unread { background: #f0f4ff; border-right: 3px solid var(--primary); }
+.notif-item .notif-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.notif-item .notif-msg { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+.notif-item .notif-time { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+.notif-view-all {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+    color: var(--primary);
+    text-decoration: none;
+    border-top: 1px solid var(--gray-200);
+}
+.notif-view-all:hover { background: var(--gray-50); }
+.notif-empty { padding: 30px; text-align: center; color: var(--gray-400); font-size: 13px; }
+
+.header-btn {
+    font-size: 16px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.header-btn:hover { background: var(--gray-100); }
+
+@media (max-width: 768px) {
+    .global-search-form { max-width: 200px; }
+    .notification-dropdown { width: 280px; left: auto; right: 0; }
+    .header-export-links { display: none !important; }
+}
+@media (max-width: 480px) {
+    .global-search-form { display: none; }
+}
+
 /* ========== PRINT STYLES ========== */
 @media print {
     .sidebar, .mobile-header, .btn, .filter-bar, .modal-overlay { display: none !important; }
