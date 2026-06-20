@@ -190,22 +190,22 @@ class AutomationController
 
             switch ($key) {
                 case 'stage_id':
-                    if (!isset($extra['stage_id'])) continue;
+                    if (!isset($extra['stage_id'])) break;
                     if ((int)$extra['stage_id'] !== (int)$val) return false;
                     break;
 
                 case 'pipeline_id':
-                    if (!isset($extra['pipeline_id'])) continue;
+                    if (!isset($extra['pipeline_id'])) break;
                     if ((int)$extra['pipeline_id'] !== (int)$val) return false;
                     break;
 
                 case 'source':
-                    if (!isset($extra['source'])) continue;
+                    if (!isset($extra['source'])) break;
                     if ($extra['source'] !== $val) return false;
                     break;
 
                 case 'min_amount':
-                    if (!isset($extra['amount'])) continue;
+                    if (!isset($extra['amount'])) break;
                     if ((int)$extra['amount'] < (int)$val) return false;
                     break;
             }

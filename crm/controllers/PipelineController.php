@@ -322,7 +322,7 @@ class PipelineController
 
             ActivityLog::log('move_deal', 'deal', $dealId, "معامله به مرحله {$stage->name} منتقل شد");
             
-            // Trigger automation engine
+            // Trigger automation engine (suppress warnings to protect JSON response)
             $deal = $db->fetch(
                 "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone,
                         p.name as pipeline_name
@@ -347,14 +347,19 @@ class PipelineController
                 'deal_id' => $dealId,
             ];
             
-            // Fire stage_change trigger
+            // Use output buffering to capture any warnings/errors from automation
+            ob_start();
             \Controllers\AutomationController::execute('stage_change', 'deal', $dealId, $extra);
-            
-            // Fire deal_won or deal_lost triggers if applicable
             if ($isWon) {
                 \Controllers\AutomationController::execute('deal_won', 'deal', $dealId, $extra);
             } elseif ($isLost) {
                 \Controllers\AutomationController::execute('deal_lost', 'deal', $dealId, $extra);
+            }
+            $automationOutput = ob_get_clean();
+            
+            // Log any captured warnings/errors
+            if (!empty(trim($automationOutput))) {
+                \Core\Logger::error("Automation warnings for deal {$dealId}: " . $automationOutput);
             }
             
             echo json_encode(['success' => true]);
