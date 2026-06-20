@@ -64,8 +64,9 @@ function runRepair() {
     document.getElementById('repairResult').innerHTML = '<div class="alert alert-info">در حال اجرا...</div>';
     
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', '<?php echo $config['url']; ?>/database/repair/run', true);
+    xhr.open('POST', '<?php echo $config['url']; ?>/system/repair/run', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.onload = function() {
         btn.disabled = false;
         btn.innerHTML = '🛠️ شروع تعمیر خودکار';
