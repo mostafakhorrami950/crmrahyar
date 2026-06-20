@@ -220,30 +220,39 @@ class AutomationController
                 return $result['success'] ? "پیامک به {$phone} ارسال شد" : "خطا: " . $result['message'];
 
             case 'send_notification':
-                $userId = (int)($config['user_id'] ?? ($extra['assigned_to'] ?? 0));
-                if ($userId) {
-                    $title = str_replace(['{deal_title}'], [$extra['title'] ?? ''], $config['title'] ?? 'اعلان');
-                    $msg = str_replace(['{deal_title}', '{amount}'], [$extra['title'] ?? '', $extra['amount'] ?? ''], $config['message'] ?? '');
+                $cfgUserId = !empty($config['user_id']) ? (int)$config['user_id'] : 0;
+                $extraUserId = !empty($extra['assigned_to']) ? (int)$extra['assigned_to'] : 0;
+                $userId = $cfgUserId ?: $extraUserId;
+                if ($userId > 0) {
+                    $title = $config['title'] ?? 'اعلان اتوماسیون';
+                    $title = str_replace(['{deal_title}', '{amount}', '{contact_name}'], 
+                        [$extra['title'] ?? '', $extra['amount'] ?? '', $extra['contact_name'] ?? ''], $title);
+                    $msg = $config['message'] ?? '';
+                    $msg = str_replace(['{deal_title}', '{amount}', '{contact_name}'], 
+                        [$extra['title'] ?? '', $extra['amount'] ?? '', $extra['contact_name'] ?? ''], $msg);
                     Notification::create($userId, 'automation', $title, $msg, "/deals/view/{$entityId}", $entityType, $entityId);
                     return "اعلان به کاربر {$userId} ارسال شد";
                 }
-                return "کاربر مشخص نشده";
+                return "کاربر مشخص نشده (شناسه: 0)";
 
             case 'create_activity':
+                $activityUserId = !empty($extra['assigned_to']) ? (int)$extra['assigned_to'] : (Auth::id() ?: 1);
+                $days = isset($config['days']) && $config['days'] !== '' ? (int)$config['days'] : 1;
                 $db->insert('deal_activities', [
                     'deal_id' => $entityId,
-                    'user_id' => $extra['assigned_to'] ?? Auth::id(),
+                    'user_id' => $activityUserId,
                     'type' => $config['activity_type'] ?? 'reminder',
                     'subject' => $config['subject'] ?? 'فعالیت خودکار',
                     'description' => $config['description'] ?? '',
-                    'activity_date' => date('Y-m-d H:i:s', strtotime('+' . ($config['days'] ?? 1) . ' days')),
+                    'activity_date' => date('Y-m-d H:i:s', strtotime('+' . $days . ' days')),
                 ]);
                 return "فعالیت جدید ایجاد شد";
 
             case 'assign_user':
-                if (!empty($config['assign_to'])) {
-                    $db->update('deals', ['assigned_to' => (int)$config['assign_to']], 'id=:id', [':id'=>$entityId]);
-                    return "معامله به کاربر {$config['assign_to']} اختصاص یافت";
+                $assignTo = !empty($config['assign_to']) ? (int)$config['assign_to'] : 0;
+                if ($assignTo > 0) {
+                    $db->update('deals', ['assigned_to' => $assignTo], 'id=:id', [':id'=>$entityId]);
+                    return "معامله به کاربر {$assignTo} اختصاص یافت";
                 }
                 return "کاربر مشخص نشده";
 
