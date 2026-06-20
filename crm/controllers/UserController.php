@@ -74,7 +74,18 @@ class UserController
     public function edit(array $params): void
     {
         $db = Database::getInstance();
-        $user = $db->fetch("SELECT * FROM users WHERE id = :id", [':id' => $params['id']]);
+        $user = $db->fetch(
+            "SELECT u.*, r.name as role_name, r.slug as role_slug,
+                    (SELECT COUNT(*) FROM deals WHERE assigned_to = u.id) as deals_count,
+                    (SELECT COALESCE(SUM(amount),0) FROM deals WHERE assigned_to = u.id AND is_won = 1) as won_amount,
+                    (SELECT COUNT(*) FROM contacts WHERE created_by = u.id) as contacts_count,
+                    (SELECT COUNT(*) FROM sms_history WHERE sent_by = u.id) as sms_count,
+                    (SELECT COUNT(*) FROM deals WHERE assigned_to = u.id AND is_won = 0 AND is_lost = 0) as open_deals
+             FROM users u 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE u.id = :id",
+            [':id' => $params['id']]
+        );
         if (!$user) {
             Session::setFlash('danger', 'کاربر مورد نظر یافت نشد.');
             View::redirect('/users');
