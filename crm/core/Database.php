@@ -27,7 +27,11 @@ class Database
                 ]
             );
         } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
+            if (($this->config['debug'] ?? false)) {
+                die("Database connection failed: " . $e->getMessage());
+            } else {
+                die("خطا در اتصال به دیتابیس. لطفا با مدیر سیستم تماس بگیرید.");
+            }
         }
     }
 

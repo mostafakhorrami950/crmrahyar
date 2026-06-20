@@ -137,7 +137,8 @@ class SmsController
                 'Authorization: ' . $apiToken,
             ]);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
             $response = curl_exec($ch);
             curl_close($ch);
@@ -148,11 +149,11 @@ class SmsController
                 $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
                 $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
             } else {
-                $errorMsg = $result->meta->message ?? $result->message ?? json_encode($result) ?? 'خطای نامشخص';
+                $errorMsg = 'خطا در ارسال پیامک';
             }
         } else {
-            $sentStatus = 'sent';
-            $errorMsg = 'API token تنظیم نشده - تست';
+            $sentStatus = 'failed';
+            $errorMsg = 'API token تنظیم نشده';
         }
 
         $smsId = $db->insert('sms_history', [
@@ -288,7 +289,8 @@ class SmsController
                     'Authorization: ' . $apiToken,
                 ]);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
                 $response = curl_exec($ch);
                 curl_close($ch);
@@ -300,12 +302,13 @@ class SmsController
                     $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
                     $sent++;
                 } else {
-                    $errMsg = $result->meta->message ?? $result->message ?? json_encode($result) ?? 'خطای نامشخص';
+                    $errMsg = 'خطا در ارسال پیامک';
                     $failed++;
                 }
             } else {
-                $sentStatus = 'sent';
-                $sent++;
+                $sentStatus = 'failed';
+                $errMsg = 'API token تنظیم نشده';
+                $failed++;
             }
 
             $db->insert('sms_history', [

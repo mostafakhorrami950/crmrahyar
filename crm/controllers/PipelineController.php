@@ -278,6 +278,12 @@ class PipelineController
         $stageId = (int)($_POST['stage_id'] ?? 0);
 
         if ($dealId && $stageId) {
+            // Check ownership for non-admin users
+            if (!Auth::ownsDeal($dealId)) {
+                echo json_encode(['success' => false, 'message' => 'شما فقط به معاملات خودتان دسترسی دارید.']);
+                exit;
+            }
+            
             $db = Database::getInstance();
             $db->update('deals', ['stage_id' => $stageId], 'id = :id', [':id' => $dealId]);
             

@@ -1,5 +1,50 @@
 RewriteEngine On
 
+# ========== SECURITY HEADERS ==========
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ========== BLOCK DANGEROUS FILES ==========
+# Block .env files
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block install and repair files
+<FilesMatch "^(install|run_repair|install\.php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block SQL migration files
+<FilesMatch "\.sql$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block .git and .htaccess files
+<FilesMatch "^\.git">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ========== BLOCK DIRECTORY LISTING ==========
+Options -Indexes
+
+# ========== BLOCK ACCESS TO SENSITIVE DIRECTORIES ==========
+# Block direct access to core, controllers, routes, config directories
+RewriteRule ^(core|controllers|routes|config|database)/ - [F,L]
+
+# Block direct access to views directory (except through PHP)
+RewriteRule ^views/ - [F,L]
+
+# ========== ROUTING ==========
 # Serve assets from public/assets/ directory
 RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 

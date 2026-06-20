@@ -81,8 +81,16 @@ class View
 
     public static function back(): void
     {
-        $referer = $_SERVER['HTTP_REFERER'] ?? '/dashboard';
-        header('Location: ' . $referer);
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        $config = $GLOBALS['app_config'];
+        $baseUrl = $config['url'] ?? '';
+        
+        // Only allow redirects to same origin to prevent open redirect
+        if ($referer && strpos($referer, $baseUrl) === 0) {
+            header('Location: ' . $referer);
+        } else {
+            header('Location: ' . $baseUrl . '/dashboard');
+        }
         exit;
     }
 }

@@ -590,6 +590,7 @@ class DealController
 
     public function convertToDeal(): void
     {
+        Auth::requireAuth();
         $db = Database::getInstance();
         $title = trim($_POST['title'] ?? '');
         $pipelineId = (int)($_POST['pipeline_id'] ?? 0);

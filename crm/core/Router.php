@@ -56,7 +56,7 @@ class Router
 
             if (preg_match($route['pattern'], $url, $matches)) {
                 // Check authentication - skip for public routes
-                $publicPrefixes = ['/login', '/install', '/setup', '/pay', '/payment/result', '/payment/verify', '/payment/callback'];
+                $publicPrefixes = ['/login', '/install', '/setup', '/payment/result', '/payment/verify', '/payment/callback'];
                 $isPublic = false;
                 foreach ($publicPrefixes as $prefix) {
                     if (strpos($url, $prefix) === 0) {

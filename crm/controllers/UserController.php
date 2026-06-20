@@ -96,6 +96,18 @@ class UserController
 
     public function update(array $params): void
     {
+        // Prevent admin from deactivating themselves
+        if ((int)$params['id'] === Auth::id() && isset($_POST['is_active']) && !$_POST['is_active']) {
+            Session::setFlash('danger', 'نمی‌توانید حساب خودتان را غیرفعال کنید.');
+            View::redirect('/users/edit/' . $params['id']);
+        }
+        
+        // Prevent changing own role
+        if ((int)$params['id'] === Auth::id() && isset($_POST['role_id']) && (int)$_POST['role_id'] !== Auth::user()->role_id) {
+            Session::setFlash('danger', 'نمی‌توانید نقش خودتان را تغییر دهید.');
+            View::redirect('/users/edit/' . $params['id']);
+        }
+        
         $fullName = trim($_POST['full_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
@@ -126,6 +138,12 @@ class UserController
 
     public function delete(array $params): void
     {
+        // Prevent admin from deleting themselves
+        if ((int)$params['id'] === Auth::id()) {
+            Session::setFlash('danger', 'نمی‌توانید حساب خودتان را حذف کنید.');
+            View::redirect('/users');
+        }
+        
         $db = Database::getInstance();
         $user = $db->fetch("SELECT full_name FROM users WHERE id = :id", [':id' => $params['id']]);
         
