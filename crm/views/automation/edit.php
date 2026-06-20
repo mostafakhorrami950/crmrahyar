@@ -94,14 +94,23 @@ $actionConfig = json_decode($rule->action_config, true) ?: [];
             </div>
 
             <div id="config-sms" class="action-config" style="display:<?php echo $rule->action_type==='send_sms'?'block':'none'; ?>;">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">کد الگوی پیامک</label>
-                        <input type="text" name="action_config[pattern_code]" class="form-input" value="<?php echo htmlspecialchars($actionConfig['pattern_code'] ?? ''); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">شماره گیرنده</label>
-                        <select name="action_config[phone_field]" class="form-select"><option value="contact">شماره مخاطب معامله</option></select>
+                <div class="form-group">
+                    <label class="form-label">شماره گیرنده</label>
+                    <select name="action_config[phone_field]" class="form-select"><option value="contact">شماره مخاطب معامله</option></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📝 متن پیامک *</label>
+                    <textarea name="action_config[message_template]" class="form-textarea" rows="5" placeholder="سلام {contact_name} عزیز..."><?php echo htmlspecialchars($actionConfig['message_template'] ?? ''); ?></textarea>
+                </div>
+                <div style="background:#fff;padding:12px;border-radius:8px;font-size:12px;">
+                    <strong>🔤 متغیرهای قابل استفاده:</strong>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+                        <div><code>{contact_name}</code> → نام مخاطب</div>
+                        <div><code>{deal_title}</code> → عنوان معامله</div>
+                        <div><code>{amount}</code> → مبلغ معامله</div>
+                        <div><code>{payment_link}</code> → لینک پرداخت</div>
+                        <div><code>{stage_name}</code> → نام مرحله فعلی</div>
+                        <div><code>{pipeline_name}</code> → نام پایپ‌لاین</div>
                     </div>
                 </div>
             </div>

@@ -100,17 +100,28 @@
 
             <!-- SMS Config -->
             <div id="config-sms" class="action-config" style="display:none;">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">کد الگوی پیامک (Pattern Code)</label>
-                        <input type="text" name="action_config[pattern_code]" class="form-input" placeholder="کد الگوی پنل پیامکی">
-                        <p class="form-hint">کد الگوی تعریف شده در پنل پیامکی IPPanel</p>
+                <div class="form-group">
+                    <label class="form-label">شماره گیرنده</label>
+                    <select name="action_config[phone_field]" class="form-select">
+                        <option value="contact">شماره مخاطب معامله</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📝 متن پیامک *</label>
+                    <textarea name="action_config[message_template]" class="form-textarea" rows="5" placeholder="سلام {contact_name} عزیز، معامله {deal_title} شما با مبلغ {amount} ثبت شد. لینک پرداخت: {payment_link}"></textarea>
+                </div>
+                <div style="background:#fff;padding:12px;border-radius:8px;font-size:12px;">
+                    <strong>🔤 متغیرهای قابل استفاده (جایگذاری خودکار):</strong>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+                        <div><code>{contact_name}</code> → نام مخاطب</div>
+                        <div><code>{deal_title}</code> → عنوان معامله</div>
+                        <div><code>{amount}</code> → مبلغ معامله</div>
+                        <div><code>{payment_link}</code> → لینک پرداخت</div>
+                        <div><code>{stage_name}</code> → نام مرحله فعلی</div>
+                        <div><code>{pipeline_name}</code> → نام پایپ‌لاین</div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">شماره گیرنده</label>
-                        <select name="action_config[phone_field]" class="form-select">
-                            <option value="contact">شماره مخاطب معامله</option>
-                        </select>
+                    <div style="margin-top:8px;padding:8px;background:var(--warning);border-radius:6px;">
+                        💡 <strong>مثال:</strong> سلام {contact_name} عزیز، سفر {deal_title} شما آماده شد. برای پرداخت {amount} ریال روی لینک کلیک کنید: {payment_link}
                     </div>
                 </div>
             </div>

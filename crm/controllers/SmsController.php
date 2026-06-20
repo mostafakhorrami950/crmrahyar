@@ -343,6 +343,58 @@ class SmsController
     }
 
     /**
+     * Static method to send SMS via webservice API (used by automation engine)
+     * Returns array ['success' => bool, 'message' => string, 'outbox_id' => string]
+     */
+    public static function sendWebservice(string $phone, string $message): array
+    {
+        $config = $GLOBALS['app_config'];
+        $apiToken = $config['sms']['api_token'] ?? '';
+        $fromNumber = $config['sms']['from_number'] ?? '+983000505';
+        $panelUrl = $config['sms']['api_url'] ?? 'https://edge.ippanel.com/v1/api/send';
+
+        if (empty($apiToken)) {
+            return ['success' => false, 'message' => 'API token تنظیم نشده', 'outbox_id' => ''];
+        }
+
+        $normalizedPhone = (new self())->normalizePhone($phone);
+
+        $smsData = [
+            'sending_type' => 'webservice',
+            'from_number' => $fromNumber,
+            'message' => $message,
+            'params' => [
+                'recipients' => [$normalizedPhone],
+            ],
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $panelUrl);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($smsData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: ' . $apiToken,
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $result = json_decode($response);
+        if ($result && isset($result->meta->status) && $result->meta->status === true) {
+            $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
+            $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
+            return ['success' => true, 'message' => 'ارسال شد', 'outbox_id' => $outboxId];
+        }
+
+        $errMsg = $result->meta->message ?? 'خطای نامشخص';
+        return ['success' => false, 'message' => $errMsg, 'outbox_id' => ''];
+    }
+
+    /**
      * Normalize phone number to E.164 format (+98...)
      */
     private function normalizePhone(string $phone): string

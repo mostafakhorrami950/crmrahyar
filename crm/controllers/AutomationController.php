@@ -171,15 +171,53 @@ class AutomationController
         switch ($actionType) {
             case 'send_sms':
                 $phone = $config['phone_field'] === 'contact' ? ($extra['contact_phone'] ?? '') : '';
-                if ($phone && !empty($config['pattern_code'])) {
-                    $params = [];
-                    foreach ($config['params'] ?? [] as $k => $v) {
-                        $params[$k] = str_replace(['{deal_title}', '{amount}'], [$extra['title'] ?? '', $extra['amount'] ?? ''], $v);
+                if (empty($phone)) return "شماره تلفن مخاطب یافت نشد";
+                
+                $msgTemplate = $config['message_template'] ?? '';
+                if (empty($msgTemplate)) return "متن پیامک تعریف نشده";
+                
+                // Build payment links
+                $paymentLinks = '';
+                if (!empty($extra['deal_id'])) {
+                    $dbPay = Database::getInstance();
+                    $payments = $dbPay->fetchAll(
+                        "SELECT p.public_token FROM payments p WHERE p.deal_id = :did AND p.public_token IS NOT NULL AND p.public_token != ''",
+                        [':did' => $extra['deal_id']]
+                    );
+                    $links = [];
+                    foreach ($payments as $pay) {
+                        $links[] = ($GLOBALS['app_config']['url'] ?? '') . '/pay/' . $pay->public_token;
                     }
-                    \Controllers\SmsController::sendPattern($phone, $config['pattern_code'], $params);
-                    return "پیامک به {$phone} ارسال شد";
+                    $paymentLinks = !empty($links) ? implode("\n", $links) : 'ندارد';
                 }
-                return "شماره تلفن یافت نشد";
+                
+                // Replace placeholders
+                $search = ['{contact_name}', '{deal_title}', '{amount}', '{payment_link}', '{stage_name}', '{pipeline_name}'];
+                $replace = [
+                    $extra['contact_name'] ?? $extra['contact_phone'] ?? '',
+                    $extra['title'] ?? '',
+                    isset($extra['amount']) ? number_format($extra['amount']) . ' ریال' : '',
+                    $paymentLinks,
+                    $extra['stage_name'] ?? '',
+                    $extra['pipeline_name'] ?? '',
+                ];
+                $finalMessage = str_replace($search, $replace, $msgTemplate);
+                
+                $result = \Controllers\SmsController::sendWebservice($phone, $finalMessage);
+                
+                // Log to sms_history
+                $dbLog = Database::getInstance();
+                $dbLog->insert('sms_history', [
+                    'recipient' => $phone, 'message' => $finalMessage,
+                    'status' => $result['success'] ? 'sent' : 'failed',
+                    'message_outbox_id' => $result['outbox_id'] ?? '',
+                    'error_message' => $result['success'] ? '' : $result['message'],
+                    'deal_id' => $extra['deal_id'] ?? null,
+                    'contact_id' => $extra['contact_id'] ?? null,
+                    'sent_by' => 0, // system
+                ]);
+                
+                return $result['success'] ? "پیامک به {$phone} ارسال شد" : "خطا: " . $result['message'];
 
             case 'send_notification':
                 $userId = (int)($config['user_id'] ?? ($extra['assigned_to'] ?? 0));
