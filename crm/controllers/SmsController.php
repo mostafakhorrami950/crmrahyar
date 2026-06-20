@@ -120,6 +120,7 @@ class SmsController
                 'from' => $fromNumber,
                 'to' => [$phone],
                 'text' => $message,
+                'sending_type' => 'simple',
             ];
 
             $ch = curl_init();
@@ -271,6 +272,7 @@ class SmsController
                     'from' => $fromNumber,
                     'to' => [$contact->phone],
                     'text' => $message,
+                    'sending_type' => 'simple',
                 ];
 
                 $ch = curl_init();
