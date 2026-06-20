@@ -18,6 +18,8 @@ use Controllers\SettingController;
 use Controllers\DatabaseRepairController;
 use Controllers\CustomFieldController;
 use Controllers\CategoryController;
+use Controllers\SourceController;
+use Controllers\LossReasonController;
 
 // Auth routes
 Router::get('/login', [AuthController::class, 'loginForm']);
@@ -170,4 +172,13 @@ Router::group('/settings/sources', function() {
     Router::post('/update', [SourceController::class, 'update'], 'settings.manage');
     Router::post('/delete', [SourceController::class, 'delete'], 'settings.manage');
     Router::get('/active', [SourceController::class, 'getActive']);
+});
+
+// Deal Loss Reasons Management
+Router::group('/settings/loss-reasons', function() {
+    Router::get('', [LossReasonController::class, 'index'], 'settings.manage');
+    Router::post('/store', [LossReasonController::class, 'store'], 'settings.manage');
+    Router::post('/update', [LossReasonController::class, 'update'], 'settings.manage');
+    Router::post('/delete', [LossReasonController::class, 'delete'], 'settings.manage');
+    Router::get('/active', [LossReasonController::class, 'getActive']);
 });

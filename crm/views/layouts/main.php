@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title ?? 'CRM Travel Agency'; ?> | CRM آژانس مسافرتی</title>
     <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=1.0.0">
-    <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=1.0.0"></script>
+    <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=1.0.1" defer></script>
 </head>
 <body>
     <div class="app-layout">
@@ -186,15 +186,24 @@
                 m.classList.remove('show');
             });
         });
-        // Sidebar toggle
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('show');
-        });
-        document.getElementById('sidebarOverlay')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.remove('open');
-            this.classList.remove('show');
-        });
+        // Sidebar toggle - use direct onclick for reliability
+        var toggleBtn = document.getElementById('sidebarToggle');
+        var sidebarEl = document.getElementById('sidebar');
+        var overlayEl = document.getElementById('sidebarOverlay');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (sidebarEl) sidebarEl.classList.toggle('open');
+                if (overlayEl) overlayEl.classList.toggle('show');
+            });
+        }
+        if (overlayEl) {
+            overlayEl.addEventListener('click', function() {
+                if (sidebarEl) sidebarEl.classList.remove('open');
+                overlayEl.classList.remove('show');
+            });
+        }
     });
     </script>
 </body>

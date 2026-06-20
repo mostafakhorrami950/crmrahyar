@@ -84,6 +84,24 @@
             </div>
         </div>
 
+        <!-- Loss Reason (only shows when deal is lost, but available for tracking) -->
+        <div class="form-group">
+            <label class="form-label">😞 دلیل شکست (در صورت عدم موفقیت)</label>
+            <select name="loss_reason_id" class="form-input" id="lossReasonSelect">
+                <option value="">ناموفق نبوده / انتخاب کنید</option>
+                <?php
+                $db = \Core\Database::getInstance();
+                $lossReasons = $db->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                foreach ($lossReasons as $lr):
+                ?>
+                <option value="<?php echo $lr->id; ?>"><?php echo htmlspecialchars($lr->icon . ' ' . $lr->name); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <div id="lossReasonNoteWrap" style="display:none;margin-top:8px;">
+                <textarea name="loss_reason_note" class="form-textarea" rows="2" placeholder="توضیحات تکمیلی درباره دلیل شکست..."></textarea>
+            </div>
+        </div>
+
         <!-- Description -->
         <div class="form-group">
             <label class="form-label">📋 توضیحات</label>
@@ -243,6 +261,14 @@ function formatAmountInput(el) {
     var v = el.value.replace(/[^\d]/g, '');
     if (v) el.value = parseInt(v).toLocaleString('en-US');
 }
+
+// Show/hide loss reason note
+document.getElementById('lossReasonSelect')?.addEventListener('change', function() {
+    var noteWrap = document.getElementById('lossReasonNoteWrap');
+    if (noteWrap) {
+        noteWrap.style.display = this.value ? 'block' : 'none';
+    }
+});
 </script>
 
 <style>

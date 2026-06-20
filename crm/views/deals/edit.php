@@ -104,6 +104,29 @@
                 </div>
             </div>
 
+            <!-- Loss Reason Card -->
+            <div class="card" style="padding:24px;margin-bottom:16px;border-radius:16px;">
+                <h5 style="margin:0 0 16px 0;font-weight:bold;font-size:15px;">😞 دلیل شکست</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:12px;font-weight:600;">دلیل شکست</label>
+                        <select name="loss_reason_id" class="form-select" id="lossReasonSelect" style="padding:10px;border-radius:10px;">
+                            <option value="">— ناموفق نبوده —</option>
+                            <?php
+                            $lossReasons = $db->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                            foreach ($lossReasons as $lr):
+                            ?>
+                            <option value="<?php echo $lr->id; ?>" <?php echo ($deal->loss_reason_id ?? '') == $lr->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($lr->icon . ' ' . $lr->name); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:12px;font-weight:600;">توضیحات شکست</label>
+                        <textarea name="loss_reason_note" class="form-control" rows="2" style="border-radius:10px;padding:10px;font-size:13px;" placeholder="توضیحات تکمیلی..."><?php echo htmlspecialchars($deal->loss_reason_note ?? ''); ?></textarea>
+                    </div>
+                </div>
+            </div>
+
             <!-- Description Card -->
             <div class="card" style="padding:24px;margin-bottom:16px;border-radius:16px;">
                 <h5 style="margin:0 0 16px 0;font-weight:bold;font-size:15px;">📝 توضیحات</h5>
