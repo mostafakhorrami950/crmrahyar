@@ -272,6 +272,27 @@ class PipelineController
         ]);
     }
 
+    /**
+     * API: Return all pipelines with their stages as JSON
+     */
+    public function apiAll(): void
+    {
+        header('Content-Type: application/json');
+        $db = Database::getInstance();
+        $pipelines = $db->fetchAll(
+            "SELECT p.id, p.name, p.description, p.is_active
+             FROM pipelines p ORDER BY p.is_active DESC, p.name ASC"
+        );
+        foreach ($pipelines as &$p) {
+            $p->stages = $db->fetchAll(
+                "SELECT id, name, color, probability, order_index FROM stages WHERE pipeline_id = :pid ORDER BY order_index ASC",
+                [':pid' => $p->id]
+            );
+        }
+        echo json_encode(['success' => true, 'pipelines' => $pipelines]);
+        exit;
+    }
+
     public function updateStage(): void
     {
         $dealId = (int)($_POST['deal_id'] ?? 0);

@@ -68,6 +68,7 @@ Router::group('/pipelines', function() {
     Router::post('/update/{id}', [PipelineController::class, 'update'], 'pipelines.edit');
     Router::post('/delete/{id}', [PipelineController::class, 'delete'], 'pipelines.delete');
     Router::get('/kanban/{id}', [PipelineController::class, 'kanban'], 'pipelines.view');
+    Router::get('/api/all', [PipelineController::class, 'apiAll']);
     Router::post('/update-stage', [PipelineController::class, 'updateStage'], 'pipelines.edit');
     // Stage management (AJAX)
     Router::get('/{id}/stages', [PipelineController::class, 'stages'], 'pipelines.view');

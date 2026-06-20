@@ -97,6 +97,14 @@ class JDate
     }
     
     /**
+     * Public wrapper: Convert Gregorian Y/M/D to Jalali array [jy, jm, jd]
+     */
+    public static function toJalali(int $gy, int $gm, int $gd): array
+    {
+        return self::gregorianToJalali($gy, $gm, $gd);
+    }
+    
+    /**
      * Get Jalali year, month, day from Gregorian
      */
     private static function gregorianToJalali(int $gy, int $gm, int $gd): array

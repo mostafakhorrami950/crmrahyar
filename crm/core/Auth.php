@@ -160,6 +160,23 @@ class Auth
         }
     }
 
+    public static function requireAdmin(): void
+    {
+        self::requireAuth();
+        $user = self::user();
+        if (!$user || $user->role_slug !== 'super_admin') {
+            Session::setFlash('danger', 'فقط مدیر اصلی به این بخش دسترسی دارد.');
+            header('Location: ' . ($GLOBALS['app_config']['url'] ?? '') . '/dashboard');
+            exit;
+        }
+    }
+
+    public static function isAdmin(): bool
+    {
+        $user = self::user();
+        return $user && $user->role_slug === 'super_admin';
+    }
+
     public static function isOperator(): bool
     {
         $user = self::user();
