@@ -285,7 +285,7 @@ class PipelineController
         );
         foreach ($pipelines as &$p) {
             $p->stages = $db->fetchAll(
-                "SELECT id, name, color, probability, order_index FROM stages WHERE pipeline_id = :pid ORDER BY order_index ASC",
+                "SELECT id, name, color, order_index FROM stages WHERE pipeline_id = :pid ORDER BY order_index ASC",
                 [':pid' => $p->id]
             );
         }
