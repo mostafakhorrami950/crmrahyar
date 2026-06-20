@@ -84,5 +84,5 @@ CREATE TABLE IF NOT EXISTS automation_logs (
 -- Add team_id to users if not exists
 ALTER TABLE users ADD COLUMN team_id INT NULL;
 
--- Add index on activity_date for calendar queries
-ALTER TABLE deal_activities ADD INDEX IF NOT EXISTS idx_activity_date (activity_date);
+-- Add index on activity_date for calendar queries (will be skipped if already exists)
+ALTER TABLE deal_activities ADD INDEX idx_activity_date (activity_date);
