@@ -151,6 +151,11 @@ class DealController
         $source = trim($_POST['source'] ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? null;
 
+        // If user only has 'own' scope for deals.create, force assigned_to to themselves
+        if (!Auth::canAccessAll('deals.create')) {
+            $assignedTo = Auth::id();
+        }
+
         if (empty($title) || empty($pipelineId) || empty($stageId)) {
             if ($isAjax) {
                 echo json_encode(['success' => false, 'message' => 'لطفا فیلدهای ضروری را پر کنید.']);
@@ -369,6 +374,12 @@ class DealController
         $stageId = (int)($_POST['stage_id'] ?? $existing->stage_id ?? 0);
         $contactId = (int)($_POST['contact_id'] ?? 0) ?: $existing->contact_id ?: null;
         $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: $existing->assigned_to ?: null;
+        
+        // If user only has 'own' scope for deals.edit, prevent changing assigned_to
+        if (!Auth::canAccessAll('deals.edit')) {
+            $assignedTo = $existing->assigned_to; // Keep original
+        }
+        
         $source = trim($_POST['source'] ?? $existing->source ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? $existing->expected_close_date ?? null;
         $probability = (int)($_POST['probability'] ?? $existing->probability ?? 0);

@@ -68,6 +68,7 @@
                     </div>
                     
                     <div class="col-md-6">
+                        <?php if (\Core\Auth::canAccessAll('deals.edit')): ?>
                         <label class="form-label" style="font-size:12px;font-weight:600;">👨‍💼 مسئول</label>
                         <select name="assigned_to" class="form-select" style="padding:10px;border-radius:10px;">
                             <option value="">— انتخاب کنید —</option>
@@ -75,6 +76,15 @@
                             <option value="<?php echo $u->id; ?>" <?php echo $u->id == $deal->assigned_to ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <?php else: ?>
+                        <input type="hidden" name="assigned_to" value="<?php echo $deal->assigned_to; ?>">
+                        <label class="form-label" style="font-size:12px;font-weight:600;">👨‍💼 مسئول</label>
+                        <div style="padding:10px 14px;background:var(--gray-50);border-radius:10px;font-size:14px;font-weight:600;color:var(--primary);">
+                            👤 <?php 
+                            foreach ($users as $u) { if ($u->id == $deal->assigned_to) { echo htmlspecialchars($u->full_name); break; } }
+                            ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="col-md-6">

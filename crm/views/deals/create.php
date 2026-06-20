@@ -58,6 +58,7 @@
                 </select>
             </div>
             <div class="form-group">
+                <?php if (\Core\Auth::canAccessAll('deals.create')): ?>
                 <label class="form-label">👨‍💼 مسئول</label>
                 <select name="assigned_to" class="form-input">
                     <option value="">انتخاب مسئول</option>
@@ -65,6 +66,13 @@
                     <option value="<?php echo $u->id; ?>" <?php echo (\Core\Auth::id() == $u->id) ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
                     <?php endforeach; ?>
                 </select>
+                <?php else: ?>
+                <input type="hidden" name="assigned_to" value="<?php echo \Core\Auth::id(); ?>">
+                <label class="form-label">👨‍💼 مسئول</label>
+                <div style="padding:10px 14px;background:var(--gray-50);border-radius:10px;font-size:14px;font-weight:600;color:var(--primary);">
+                    👤 <?php echo htmlspecialchars(\Core\Auth::user()->full_name ?? 'شما'); ?> (خودتان)
+                </div>
+                <?php endif; ?>
                 
                 <label class="form-label" style="margin-top:16px;">🎯 نحوه آشنایی</label>
                 <select name="source" class="form-input">
