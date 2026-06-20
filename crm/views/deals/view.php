@@ -36,7 +36,7 @@
                 </div>
                 <div style="text-align:left;direction:ltr;background:linear-gradient(135deg,#667eea08,#764ba208);padding:12px 20px;border-radius:14px;border:1px solid #667eea15;">
                     <div style="font-size:30px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                        <?php echo number_format($deal->amount); ?>
+                        <?php echo number_format($deal->amount ?? 0); ?>
                     </div>
                     <div style="font-size:12px;color:var(--gray-500);font-weight:500;text-align:center;">تومان</div>
                 </div>
@@ -129,7 +129,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                 <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
                     <span style="font-size:11px;color:var(--gray-500);">مبلغ</span>
-                    <strong style="font-size:15px;color:var(--primary);"><?php echo number_format($deal->amount); ?></strong>
+                    <strong style="font-size:15px;color:var(--primary);"><?php echo number_format($deal->amount ?? 0); ?></strong>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
                     <span style="font-size:11px;color:var(--gray-500);">مرحله</span>
@@ -282,7 +282,7 @@
             <div class="modal-body">
                 <div class="form-group" style="margin-bottom:12px;">
                     <label class="form-label">شماره گیرنده *</label>
-                    <input type="text" name="recipient" class="form-input" required 
+                    <input type="text" name="phone" class="form-input" required 
                            value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" 
                            placeholder="0912xxxxxxx" style="direction:ltr;text-align:left;">
                 </div>
