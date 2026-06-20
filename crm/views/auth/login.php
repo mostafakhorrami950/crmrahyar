@@ -52,6 +52,12 @@
         .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .flash-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .version { text-align: center; margin-top: 25px; color: #999; font-size: 12px; }
+        @media (max-width: 480px) {
+            .login-box { padding: 28px 20px; border-radius: 14px; }
+            .login-logo h2 { font-size: 18px; }
+            .form-input { padding: 10px 12px; font-size: 16px; /* prevent iOS zoom */ }
+            .btn-login { padding: 10px; font-size: 15px; }
+        }
     </style>
 </head>
 <body>

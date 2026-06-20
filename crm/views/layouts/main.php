@@ -116,12 +116,12 @@
                     <h4><?php echo $title ?? 'داشبورد'; ?></h4>
                 </div>
                 <div class="user-area">
-                    <span class="date">📅 <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
+                    <span class="header-date">📅 <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
                     <div class="user-dropdown">
                         <button class="user-dropdown-btn">
-                            <span>👤</span>
-                            <?php echo \Core\Auth::user()->full_name ?? ''; ?>
-                            <span style="font-size:10px;">▼</span>
+                            <span class="user-avatar">👤</span>
+                            <span class="user-name"><?php echo \Core\Auth::user()->full_name ?? ''; ?></span>
+                            <span class="user-arrow">▼</span>
                         </button>
                         <div class="user-dropdown-menu">
                             <span class="item-text"><?php echo \Core\Auth::user()->role_name ?? ''; ?></span>

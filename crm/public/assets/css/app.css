@@ -905,6 +905,30 @@ table tr:last-child td { border-bottom: none; }
     border-color: var(--primary);
 }
 
+/* ========== HEADER MOBILE IMPROVEMENTS ========== */
+.header-date {
+    color: var(--gray-500);
+    font-size: 13px;
+    white-space: nowrap;
+}
+.user-avatar { font-size: 16px; }
+.user-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-arrow { font-size: 10px; }
+
+@media (max-width: 768px) {
+    .header-date { display: none; }
+    .user-name { max-width: 80px; font-size: 12px; }
+    .user-arrow { display: none; }
+    .top-header { padding: 8px 12px; min-height: 48px; }
+    .top-header h4 { font-size: 14px; }
+    .page-content { padding: 12px; }
+}
+
+@media (max-width: 480px) {
+    .user-name { display: none; }
+    .user-dropdown-btn { padding: 4px 8px; }
+}
+
 /* ========== RESPONSIVE: TABLETS (max-width: 992px) ========== */
 @media (max-width: 992px) {
     .page-header {
@@ -965,12 +989,14 @@ table tr:last-child td { border-bottom: none; }
 @media (max-width: 576px) {
     body { font-size: 14px; }
     
-    .main-content { padding: 10px; }
+    .main-content { padding: 0; }
+    .page-content { padding: 10px; }
     
-    .page-header { padding: 12px; }
+    .page-header { padding: 10px; margin-bottom: 12px; }
     .page-header h5 { font-size: 15px; }
     
-    .card { padding: 14px !important; border-radius: 10px !important; }
+    .card { padding: 12px !important; border-radius: 10px !important; margin-bottom: 10px; }
+    .card-header { font-size: 14px; padding-bottom: 8px; margin-bottom: 12px; }
     
     /* Buttons */
     .btn { padding: 8px 14px; font-size: 13px; }
@@ -987,12 +1013,21 @@ table tr:last-child td { border-bottom: none; }
     }
     
     /* Tables - horizontal scroll */
-    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .data-table { min-width: 600px; }
+    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 500px; }
+    table th { padding: 8px 10px; font-size: 11px; }
+    table td { padding: 8px 10px; font-size: 13px; }
     
-    /* Kanban */
-    .kanban-board { flex-direction: column; }
-    .kanban-column { min-width: 100%; margin-bottom: 16px; }
+    /* Kanban - horizontal scroll on mobile */
+    .kanban-board { 
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 12px;
+    }
+    .kanban-column { min-width: 260px; max-width: 260px; }
+    .kanban-card .card-title { font-size: 13px; }
+    .kanban-card .card-amount { font-size: 13px; }
     
     /* Quick edit sidebar */
     .col-md-4, .col-md-5, .col-md-7, .col-md-8 {
@@ -1015,9 +1050,11 @@ table tr:last-child td { border-bottom: none; }
     .row.g-3 > [class*="col-"] { 
         flex: 0 0 100%; 
         max-width: 100%; 
-        padding: 0 4px;
+        padding: 0 2px;
+        margin-bottom: 8px;
     }
     .row.g-3 > .col-6 { flex: 0 0 50%; max-width: 50%; }
+    .row.g-3 { --bs-gutter-x: 8px; }
     
     /* Stats */
     .row.g-3 > [class*="col-md-2"] { flex: 0 0 50%; max-width: 50%; }
@@ -1028,6 +1065,40 @@ table tr:last-child td { border-bottom: none; }
     /* Header actions */
     .header-actions { flex-wrap: wrap; gap: 4px; }
     .header-actions .btn { font-size: 12px; padding: 5px 10px; }
+    
+    /* Stat cards mobile */
+    .stat-card { padding: 12px; }
+    .stat-card .stat-icon { width: 36px; height: 36px; font-size: 16px; margin-bottom: 8px; }
+    .stat-card .stat-label { font-size: 11px; }
+    .stat-card .stat-value { font-size: 18px; }
+    .stat-card .stat-sub { font-size: 11px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    
+    /* Empty state mobile */
+    .empty-state { padding: 30px 10px; }
+    .empty-state .empty-icon { font-size: 40px; }
+    .empty-state h5 { font-size: 14px; }
+    .empty-state p { font-size: 12px; }
+    
+    /* Badges */
+    .badge { font-size: 11px; padding: 3px 8px; }
+    
+    /* Detail grid */
+    .detail-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    
+    /* Buttons */
+    .btn-block-mobile { width: 100%; }
+    
+    /* Filter bar mobile */
+    .filter-bar { padding: 10px; }
+    .filter-bar .form-select, .filter-bar .form-input { 
+        font-size: 14px; 
+        padding: 8px 10px; 
+    }
+    
+    /* Pipeline selector mobile */
+    .pipeline-selector { padding: 10px; flex-direction: column; }
+    .pipeline-selector label { font-size: 12px; }
     
     /* Fix overflow */
     .container { padding: 0 8px; overflow-x: hidden; }
