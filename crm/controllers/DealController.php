@@ -385,6 +385,10 @@ class DealController
         $expectedCloseDate = $_POST['expected_close_date'] ?? $existing->expected_close_date ?? null;
         $probability = (int)($_POST['probability'] ?? $existing->probability ?? 0);
         $lostReason = trim($_POST['lost_reason'] ?? $existing->lost_reason ?? '');
+        $lossReasonId = (int)($_POST['loss_reason_id'] ?? $existing->loss_reason_id ?? 0) ?: null;
+        $lossReasonNote = trim($_POST['loss_reason_note'] ?? $existing->loss_reason_note ?? '');
+        $winReasonId = (int)($_POST['win_reason_id'] ?? $existing->win_reason_id ?? 0) ?: null;
+        $winReasonNote = trim($_POST['win_reason_note'] ?? $existing->win_reason_note ?? '');
         $dealStatus = $_POST['deal_status'] ?? 'open';
 
         if (empty($title)) {
@@ -405,6 +409,10 @@ class DealController
             'expected_close_date' => $expectedCloseDate,
             'probability' => $probability,
             'lost_reason' => $lostReason,
+            'loss_reason_id' => $lossReasonId,
+            'loss_reason_note' => $lossReasonNote,
+            'win_reason_id' => $winReasonId,
+            'win_reason_note' => $winReasonNote,
         ];
 
         // Handle deal status - is_won, is_lost, or open

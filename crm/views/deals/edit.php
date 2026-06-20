@@ -132,6 +132,32 @@
                     </label>
                 </div>
                 
+                <!-- Win reason (shown when status=won) -->
+                <div id="winReasonBox" style="display:<?php echo ($deal->is_won && !$deal->is_lost) ? 'block' : 'none'; ?>;">
+                    <div class="deal-form-grid" style="margin-top:12px;">
+                        <div class="deal-form-field">
+                            <label>دلیل موفقیت</label>
+                            <select name="win_reason_id" class="deal-input">
+                                <option value="">— انتخاب کنید —</option>
+                                <?php
+                                try {
+                                    $winReasons = \Core\Database::getInstance()->fetchAll("SELECT id, name, icon FROM deal_win_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                                    foreach ($winReasons as $wr):
+                                ?>
+                                <option value="<?php echo $wr->id; ?>" <?php echo ($deal->win_reason_id ?? '') == $wr->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($wr->icon . ' ' . $wr->name); ?></option>
+                                <?php
+                                    endforeach;
+                                } catch (\Exception $e) { /* table may not exist yet */ }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="deal-form-field full">
+                            <label>توضیحات موفقیت</label>
+                            <textarea name="win_reason_note" class="deal-input" rows="2" placeholder="دلیل موفقیت معامله..."><?php echo htmlspecialchars($deal->win_reason_note ?? ''); ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Lost reason (shown when status=lost) -->
                 <div id="lostReasonBox" style="display:<?php echo $deal->is_lost ? 'block' : 'none'; ?>;">
                     <div class="deal-form-grid" style="margin-top:12px;">
@@ -500,7 +526,10 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             var radio = this.querySelector('input[type="radio"]');
             radio.checked = true;
-            document.getElementById('lostReasonBox').style.display = radio.value === 'lost' ? 'block' : 'none';
+            var winBox = document.getElementById('winReasonBox');
+            var lostBox = document.getElementById('lostReasonBox');
+            if (winBox) winBox.style.display = radio.value === 'won' ? 'block' : 'none';
+            if (lostBox) lostBox.style.display = radio.value === 'lost' ? 'block' : 'none';
         });
     });
 
