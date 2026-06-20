@@ -108,6 +108,10 @@ class DatabaseRepairController
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'deals', 'lost_reason', 'TEXT DEFAULT NULL');
             if ($result) $repairs[] = $result;
+            $result = $this->ensureColumn($db, 'deals', 'source_id', 'INT DEFAULT NULL');
+            if ($result) $repairs[] = $result;
+            $result = $this->ensureColumn($db, 'deals', 'loss_reason_id', 'INT DEFAULT NULL');
+            if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'contacts', 'national_code', 'VARCHAR(20) DEFAULT NULL');
             if ($result) $repairs[] = $result;
             $result = $this->ensureColumn($db, 'contacts', 'passport_number', 'VARCHAR(50) DEFAULT NULL');

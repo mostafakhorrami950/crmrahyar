@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS `deal_sources` (
     UNIQUE KEY `unique_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Add source_id to deals table
+ALTER TABLE `deals` ADD COLUMN `source_id` INT DEFAULT NULL AFTER `probability`;
+ALTER TABLE `deals` ADD COLUMN `loss_reason_id` INT DEFAULT NULL AFTER `source_id`;
+
 -- Default sources
 INSERT IGNORE INTO `deal_sources` (`name`, `icon`, `sort_order`, `is_active`) VALUES
 ('اینستاگرام', '📸', 1, 1),
