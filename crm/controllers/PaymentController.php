@@ -91,8 +91,10 @@ class PaymentController
             // Save payment record
             $db = Database::getInstance();
             $publicToken = $this->generatePublicToken();
+            $shortCode = $this->generateShortCode();
             $paymentId = $db->insert('payments', [
                 'deal_id' => $dealId,
+                'short_code' => $shortCode,
                 'amount' => $amountToman,
                 'payment_type' => 'online',
                 'status' => 'pending',
@@ -104,7 +106,7 @@ class PaymentController
 
             // Get public payment URL
             $config = $GLOBALS['app_config'];
-            $publicPayUrl = $config['url'] . '/pay/' . $publicToken;
+            $publicPayUrl = $config['url'] . '/p/' . $shortCode;
 
             ActivityLog::log('create_payment', 'payment', $paymentId, "لینک پرداخت به مبلغ " . number_format($amountToman) . " تومان ایجاد شد");
 
@@ -345,9 +347,15 @@ class PaymentController
 
         $db = Database::getInstance();
         $payment = $db->fetch(
-            "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+            "SELECT * FROM payments WHERE short_code = :token AND status = 'pending'",
             [':token' => $token]
         );
+        if (!$payment) {
+            $payment = $db->fetch(
+                "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+                [':token' => $token]
+            );
+        }
 
         if (!$payment) {
             $this->showPublicError('لینک پرداخت نامعتبر یا منقضی شده است.');
@@ -387,9 +395,15 @@ class PaymentController
 
         $db = Database::getInstance();
         $payment = $db->fetch(
-            "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+            "SELECT * FROM payments WHERE short_code = :token AND status = 'pending'",
             [':token' => $token]
         );
+        if (!$payment) {
+            $payment = $db->fetch(
+                "SELECT * FROM payments WHERE public_token = :token AND status = 'pending'",
+                [':token' => $token]
+            );
+        }
 
         if (!$payment) {
             echo json_encode(['success' => false, 'message' => 'لینک پرداخت نامعتبر یا منقضی شده است.']);
@@ -546,6 +560,19 @@ class PaymentController
     private function generatePublicToken(): string
     {
         return bin2hex(random_bytes(32));
+    }
+
+    /**
+     * Generate a short unique code for payment links (7 chars)
+     */
+    private function generateShortCode(): string
+    {
+        $chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+        $code = '';
+        for ($i = 0; $i < 7; $i++) {
+            $code .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+        return $code;
     }
 
     /**

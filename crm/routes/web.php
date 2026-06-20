@@ -106,6 +106,7 @@ Router::group('/payment', function() {
 
 // Public payment routes (no auth required)
 Router::get('/pay/{token}', [PaymentController::class, 'publicPayPage']);
+Router::get('/p/{token}', [PaymentController::class, 'publicPayPage']); // Short URL
 Router::post('/pay/submit', [PaymentController::class, 'publicSubmit']);
 Router::get('/payment/result', [PaymentController::class, 'publicVerifyResult']);
 
