@@ -121,7 +121,7 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a href="<?php echo $config['url']; ?>/database/repair" style="text-decoration:none;">
+            <a href="<?php echo $config['url']; ?>/system/repair" style="text-decoration:none;">
                 <div class="card" style="padding:20px;text-align:center;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;" onmouseover="this.style.borderColor='#EF4444';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent';this.style.transform='none'">
                     <div style="font-size:32px;margin-bottom:8px;">🗄️</div>
                     <strong style="font-size:14px;color:var(--gray-800);">تعمیر دیتابیس</strong>
@@ -130,7 +130,7 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a href="<?php echo $config['url']; ?>/database/error-logs" style="text-decoration:none;">
+            <a href="<?php echo $config['url']; ?>/system/error-logs" style="text-decoration:none;">
                 <div class="card" style="padding:20px;text-align:center;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;" onmouseover="this.style.borderColor='#F97316';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent';this.style.transform='none'">
                     <div style="font-size:32px;margin-bottom:8px;">📝</div>
                     <strong style="font-size:14px;color:var(--gray-800);">لاگ خطاها</strong>

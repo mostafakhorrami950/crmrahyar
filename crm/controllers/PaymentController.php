@@ -39,8 +39,9 @@ class PaymentController
 
     public function requestPayment(): void
     {
-        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $dealId = (int)($_POST['deal_id'] ?? 0);
+        
         $amountToman = (int)str_replace(',', '', $_POST['amount'] ?? '0');
         $description = trim($_POST['description'] ?? '');
         $mobile = trim($_POST['mobile'] ?? '');

@@ -179,6 +179,13 @@ class Auth
     {
         self::requireAuth();
         if (!self::hasPermission($permission)) {
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'شما دسترسی به این بخش را ندارید.']);
+                exit;
+            }
             Session::setFlash('danger', 'شما دسترسی به این بخش را ندارید.');
             $url = $GLOBALS['app_config']['url'] ?? '';
             header('Location: ' . $url . '/dashboard');
