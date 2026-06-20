@@ -57,27 +57,27 @@
                 <?php else: $counter = 1; ?>
                 <?php foreach ($messages as $msg): ?>
                 <tr>
-                    <td style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
-                    <td>
+                    <td data-label="#" style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
+                    <td data-label="مخاطب">
                         <?php if (!empty($msg->contact_name)): ?>
                         <strong><?php echo htmlspecialchars($msg->contact_name); ?></strong>
                         <?php else: ?>
                         <span style="color:var(--gray-400);">-</span>
                         <?php endif; ?>
                     </td>
-                    <td dir="ltr" style="text-align:left;font-size:13px;"><?php echo htmlspecialchars($msg->recipient ?? $msg->contact_phone ?? ''); ?></td>
-                    <td>
+                    <td data-label="شماره" dir="ltr" style="text-align:left;font-size:13px;"><?php echo htmlspecialchars($msg->recipient ?? $msg->contact_phone ?? ''); ?></td>
+                    <td data-label="متن پیامک">
                         <div class="sms-text" style="max-width:300px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;cursor:pointer;" onclick="this.classList.toggle('expanded')" title="کلیک برای نمایش کامل">
                             <?php echo htmlspecialchars(mb_substr($msg->message, 0, 100)); ?>
                             <?php if (mb_strlen($msg->message) > 100): ?>
-                            <span style="color:var(--primary);font-size:11px;">... (کلیک برای نمایش کامل)</span>
+                            <span style="color:var(--primary);font-size:11px;">... (کلیک)</span>
                             <?php endif; ?>
                         </div>
-                        <div class="sms-full" style="display:none;max-width:400px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;padding:8px;background:var(--gray-50);border-radius:8px;margin-top:4px;">
+                        <div class="sms-full" style="display:none;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;padding:8px;background:var(--gray-50);border-radius:8px;margin-top:4px;">
                             <?php echo htmlspecialchars($msg->message); ?>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="معامله">
                         <?php if ($msg->deal_id): ?>
                         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $msg->deal_id; ?>" style="color:var(--primary);font-weight:600;text-decoration:none;font-size:13px;">
                             <?php echo htmlspecialchars(mb_substr($msg->deal_title ?? '-', 0, 20)); ?> 🔗
@@ -86,15 +86,15 @@
                         <span style="color:var(--gray-300);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td><small style="color:var(--gray-500);"><?php echo htmlspecialchars($msg->sender_name ?? '-'); ?></small></td>
-                    <td>
+                    <td data-label="ارسال‌کننده"><small style="color:var(--gray-500);"><?php echo htmlspecialchars($msg->sender_name ?? '-'); ?></small></td>
+                    <td data-label="وضعیت">
                         <?php if ($msg->status == 'sent'): ?>
                         <span class="badge bg-success">✅ موفق</span>
                         <?php else: ?>
                         <span class="badge bg-danger" title="<?php echo htmlspecialchars($msg->error_message ?? ''); ?>">❌ ناموفق</span>
                         <?php endif; ?>
                     </td>
-                    <td style="white-space:nowrap;"><small style="color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($msg->created_at); ?></small></td>
+                    <td data-label="تاریخ" style="white-space:nowrap;"><small style="color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($msg->created_at); ?></small></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php endif; ?>

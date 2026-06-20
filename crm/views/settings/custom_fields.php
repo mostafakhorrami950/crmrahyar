@@ -2,23 +2,23 @@
     <h5>📋 فیلدهای اختصاصی</h5>
 </div>
 
-<div class="filter-section mb-4">
-    <div class="row g-3">
-        <div class="col-md-3">
+<div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:1;min-width:180px;">
             <label class="form-label">نوع موجودیت</label>
             <select class="form-select" onchange="location.href='?entity='+this.value">
                 <option value="deals" <?php echo $entityType === 'deals' ? 'selected' : ''; ?>>معاملات</option>
                 <option value="contacts" <?php echo $entityType === 'contacts' ? 'selected' : ''; ?>>اشخاص</option>
             </select>
         </div>
-        <div class="col-md-6">
+        <div style="flex:2;min-width:200px;">
             <label class="form-label">&nbsp;</label>
-            <button type="button" class="btn btn-primary btn-block" onclick="showAddFieldModal()">➕ افزودن فیلد جدید</button>
+            <button type="button" class="btn btn-primary" style="width:100%;" onclick="showAddFieldModal()">➕ افزودن فیلد جدید</button>
         </div>
     </div>
 </div>
 
-<div class="table-container">
+<div class="card" style="padding:0;">
     <div class="table-responsive">
         <table class="table">
             <thead>
@@ -32,17 +32,19 @@
             </thead>
             <tbody>
                 <?php if (empty($fields)): ?>
-                <tr><td colspan="5" class="text-center py-4">هیچ فیلد اختصاصی تعریف نشده است.</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:30px;">هیچ فیلد اختصاصی تعریف نشده است.</td></tr>
                 <?php else: ?>
                 <?php foreach ($fields as $f): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($f->field_label); ?></td>
-                    <td><?php echo $f->field_type; ?></td>
-                    <td><?php echo $f->is_required ? '✅' : '❌'; ?></td>
-                    <td><?php echo $f->is_active ? '✅' : '❌'; ?></td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editField(<?php echo $f->id; ?>, '<?php echo htmlspecialchars($f->field_label, ENT_QUOTES); ?>', '<?php echo $f->field_type; ?>', '<?php echo htmlspecialchars($f->field_options ?? '', ENT_QUOTES); ?>', <?php echo $f->is_required; ?>, <?php echo $f->is_active; ?>)">✏️</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteField(<?php echo $f->id; ?>)">🗑️</button>
+                    <td data-label="عنوان"><?php echo htmlspecialchars($f->field_label); ?></td>
+                    <td data-label="نوع"><?php echo $f->field_type; ?></td>
+                    <td data-label="اجباری"><?php echo $f->is_required ? '✅' : '❌'; ?></td>
+                    <td data-label="فعال"><?php echo $f->is_active ? '✅' : '❌'; ?></td>
+                    <td data-label="عملیات">
+                        <div style="display:flex;gap:4px;">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="editField(<?php echo $f->id; ?>, '<?php echo htmlspecialchars($f->field_label, ENT_QUOTES); ?>', '<?php echo $f->field_type; ?>', '<?php echo htmlspecialchars($f->field_options ?? '', ENT_QUOTES); ?>', <?php echo $f->is_required; ?>, <?php echo $f->is_active; ?>)">✏️</button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteField(<?php echo $f->id; ?>)">🗑️</button>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>

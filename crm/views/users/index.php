@@ -55,7 +55,7 @@
             <tbody>
                 <?php foreach ($users as $u): ?>
                 <tr style="<?php echo !$u->is_active ? 'opacity:0.5;' : ''; ?>">
-                    <td>
+                    <td data-label="کاربر">
                         <div style="display:flex;align-items:center;gap:10px;">
                             <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,<?php echo $u->role_slug === 'super_admin' ? '#EF4444,#DC2626' : ($u->role_slug === 'admin' ? '#F59E0B,#D97706' : ($u->role_slug === 'operator' ? '#3B82F6,#2563EB' : '#10B981,#059669')); ?>);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:700;flex-shrink:0;">
                                 <?php echo mb_substr($u->full_name, 0, 1); ?>
@@ -69,39 +69,39 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="نقش">
                         <span style="background:<?php echo $u->role_slug === 'super_admin' ? '#fee2e2' : ($u->role_slug === 'admin' ? '#fef3c7' : ($u->role_slug === 'operator' ? '#dbeafe' : '#d1fae5')); ?>;color:<?php echo $u->role_slug === 'super_admin' ? '#991b1b' : ($u->role_slug === 'admin' ? '#92400e' : ($u->role_slug === 'operator' ? '#1e40af' : '#065f46')); ?>;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">
                             <?php echo $u->role_slug === 'super_admin' ? '👑' : ($u->role_slug === 'admin' ? '🔑' : ($u->role_slug === 'operator' ? '👨‍💼' : '👤')); ?>
                             <?php echo htmlspecialchars($u->role_name); ?>
                         </span>
                     </td>
-                    <td style="text-align:center;">
+                    <td data-label="معاملات" style="text-align:center;">
                         <strong style="font-size:16px;color:var(--primary);"><?php echo $u->deals_count; ?></strong>
                         <?php if ($u->won_amount > 0): ?>
                         <div style="font-size:10px;color:#059669;"><?php echo number_format($u->won_amount); ?> ت</div>
                         <?php endif; ?>
                     </td>
-                    <td style="text-align:center;">
+                    <td data-label="مخاطبین" style="text-align:center;">
                         <strong><?php echo $u->contacts_count; ?></strong>
                     </td>
-                    <td style="text-align:center;">
+                    <td data-label="پیامک" style="text-align:center;">
                         <strong><?php echo $u->sms_count; ?></strong>
                     </td>
-                    <td>
+                    <td data-label="وضعیت">
                         <?php if ($u->is_active): ?>
                         <span style="background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">✅ فعال</span>
                         <?php else: ?>
                         <span style="background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">❌ غیرفعال</span>
                         <?php endif; ?>
                     </td>
-                    <td style="white-space:nowrap;">
+                    <td data-label="آخرین ورود" style="white-space:nowrap;">
                         <?php if ($u->last_login): ?>
                         <small style="color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($u->last_login); ?></small>
                         <?php else: ?>
                         <small style="color:var(--gray-300);">هرگز</small>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="عملیات">
                         <div style="display:flex;gap:4px;">
                             <a href="<?php echo $config['url']; ?>/users/edit/<?php echo $u->id; ?>" class="btn btn-sm btn-secondary" title="ویرایش">✏️</a>
                             <?php if ($u->id !== \Core\Auth::id()): ?>

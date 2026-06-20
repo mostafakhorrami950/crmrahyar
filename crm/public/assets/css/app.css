@@ -1136,6 +1136,76 @@ table tr:last-child td { border-bottom: none; }
     .main-content { padding-top: 72px; }
 }
 
+/* ========== RESPONSIVE: TABLE-TO-CARD MOBILE (max-width: 768px) ========== */
+@media (max-width: 768px) {
+    /* Make all table containers horizontally scrollable */
+    .table-responsive, .card > .table-responsive, div[style*="overflow"] {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Convert tables to card layout on mobile */
+    .table-responsive table,
+    .card table.table,
+    table.table {
+        min-width: 100% !important;
+    }
+    
+    .table-responsive table thead {
+        display: none;
+    }
+    
+    .table-responsive table tbody tr,
+    .card table.table tbody tr {
+        display: block;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+        margin-bottom: 12px;
+        padding: 12px;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .table-responsive table tbody td,
+    .card table.table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 4px;
+        border-bottom: 1px solid var(--gray-100);
+        text-align: left;
+        font-size: 13px;
+        position: relative;
+        gap: 8px;
+    }
+    
+    .table-responsive table tbody td:last-child,
+    .card table.table tbody td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+        padding-top: 10px;
+    }
+    
+    /* Add data-label attribute content before each td */
+    .table-responsive table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 11px;
+        color: var(--gray-500);
+        min-width: 80px;
+        flex-shrink: 0;
+        text-align: right;
+    }
+    
+    /* Page header responsive */
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    .page-header .btn { width: 100%; text-align: center; }
+}
+
 /* ========== PRINT STYLES ========== */
 @media print {
     .sidebar, .mobile-header, .btn, .filter-bar, .modal-overlay { display: none !important; }

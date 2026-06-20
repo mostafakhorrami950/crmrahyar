@@ -62,7 +62,7 @@
             <tbody>
                 <?php foreach ($contacts as $c): ?>
                 <tr>
-                    <td>
+                    <td data-label="مخاطب">
                         <div style="display:flex;align-items:center;gap:10px;">
                             <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:700;flex-shrink:0;">
                                 <?php echo mb_substr($c->full_name, 0, 1); ?>
@@ -77,7 +77,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="تماس">
                         <?php if ($c->phone): ?>
                         <span dir="ltr" style="font-size:13px;"><?php echo htmlspecialchars($c->phone); ?></span>
                         <?php else: ?>
@@ -87,10 +87,10 @@
                         <div style="font-size:11px;color:var(--gray-400);" dir="ltr">🏢 <?php echo htmlspecialchars($c->company_phone); ?></div>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="شرکت">
                         <?php echo $c->company ? '<span style="font-size:13px;">🏢 ' . htmlspecialchars($c->company) . '</span>' : '<span style="color:var(--gray-300);">-</span>'; ?>
                     </td>
-                    <td>
+                    <td data-label="دسته‌بندی">
                         <?php if (!empty($c->category_name)): ?>
                         <span style="background:<?php echo htmlspecialchars($c->category_color ?? '#6B7280'); ?>;color:white;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;">
                             <?php echo htmlspecialchars($c->category_name); ?>
@@ -99,10 +99,10 @@
                         <span style="color:var(--gray-300);font-size:11px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td style="text-align:center;">
+                    <td data-label="معاملات" style="text-align:center;">
                         <span style="font-weight:700;color:var(--primary);font-size:16px;"><?php echo $c->deals_count; ?></span>
                     </td>
-                    <td>
+                    <td data-label="مبلغ خرید">
                         <?php if ($c->total_purchases > 0): ?>
                         <span style="color:#059669;font-weight:600;font-size:13px;"><?php echo number_format($c->total_purchases); ?></span>
                         <small style="color:var(--gray-400);font-size:10px;">تومان</small>
@@ -110,10 +110,10 @@
                         <span style="color:var(--gray-300);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td style="white-space:nowrap;">
+                    <td data-label="تاریخ" style="white-space:nowrap;">
                         <small style="color:var(--gray-500);font-size:12px;"><?php echo \Core\JDate::displayDate($c->created_at); ?></small>
                     </td>
-                    <td>
+                    <td data-label="عملیات">
                         <div style="display:flex;gap:4px;">
                             <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $c->id; ?>" class="btn btn-sm btn-primary" title="مشاهده">👁️</a>
                             <a href="<?php echo $config['url']; ?>/contacts/edit/<?php echo $c->id; ?>" class="btn btn-sm btn-secondary" title="ویرایش">✏️</a>

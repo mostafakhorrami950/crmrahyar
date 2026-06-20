@@ -56,8 +56,8 @@
                 <?php $counter = 1; ?>
                 <?php foreach ($payments as $p): ?>
                 <tr class="payment-row" data-search="<?php echo htmlspecialchars(($p->deal_title ?? '') . ' ' . ($p->contact_name ?? '') . ' ' . ($p->track_id ?? '') . ' ' . ($p->ref_number ?? '') . ' ' . number_format($p->amount)); ?>">
-                    <td style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
-                    <td>
+                    <td data-label="#" style="color:var(--gray-400);font-size:12px;"><?php echo $counter++; ?></td>
+                    <td data-label="معامله">
                         <?php if ($p->deal_id): ?>
                         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $p->deal_id; ?>" class="deal-link" style="font-weight:600;color:var(--primary);text-decoration:none;">
                             <?php echo htmlspecialchars($p->deal_title ?? 'بدون عنوان'); ?>
@@ -67,29 +67,29 @@
                         <span style="color:var(--gray-400);">-</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="مشتری">
                         <?php if ($p->contact_name): ?>
                         <span style="font-size:13px;"><?php echo htmlspecialchars($p->contact_name); ?></span>
                         <?php else: ?>
                         <span style="color:var(--gray-400);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td><strong style="color:var(--gray-800);"><?php echo number_format($p->amount); ?></strong> <small style="color:var(--gray-400);font-size:11px;">تومان</small></td>
-                    <td>
+                    <td data-label="مبلغ"><strong style="color:var(--gray-800);"><?php echo number_format($p->amount); ?></strong> <small style="color:var(--gray-400);font-size:11px;">تومان</small></td>
+                    <td data-label="کد پیگیری">
                         <?php if ($p->track_id): ?>
                         <span class="badge bg-info" style="font-size:11px;direction:ltr;display:inline-block;"><?php echo htmlspecialchars($p->track_id); ?></span>
                         <?php else: ?>
                         <span style="color:var(--gray-300);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="مرجع">
                         <?php if ($p->ref_number): ?>
                         <span style="font-size:12px;direction:ltr;display:inline-block;"><?php echo htmlspecialchars($p->ref_number); ?></span>
                         <?php else: ?>
                         <span style="color:var(--gray-300);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="وضعیت">
                         <?php if ($p->status == 'success'): ?>
                         <span class="badge bg-success">✅ موفق</span>
                         <?php elseif ($p->status == 'pending'): ?>
@@ -98,7 +98,7 @@
                         <span class="badge bg-danger">❌ ناموفق</span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td data-label="لینک">
                         <?php if (!empty($p->public_token) && $p->status == 'pending'): ?>
                         <div class="d-flex gap-4" style="align-items:center;">
                             <div class="input-group" style="width:140px;">
@@ -112,7 +112,7 @@
                         <span style="color:var(--gray-300);font-size:12px;">-</span>
                         <?php endif; ?>
                     </td>
-                    <td style="white-space:nowrap;">
+                    <td data-label="تاریخ" style="white-space:nowrap;">
                         <small style="color:var(--gray-500);">
                             <?php echo \Core\JDate::displayDateTime($p->created_at); ?>
                         </small>

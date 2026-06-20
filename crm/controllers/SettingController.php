@@ -71,8 +71,9 @@ class SettingController
 
     public function toggleFeature(): void
     {
+        header('Content-Type: application/json; charset=utf-8');
         $feature = $_POST['feature'] ?? '';
-        $enabled = isset($_POST['enabled']) ? 1 : 0;
+        $enabled = (int)($_POST['enabled'] ?? 0);
 
         if (empty($feature)) {
             echo json_encode(['success' => false, 'message' => 'ویژگی نامعتبر است']);

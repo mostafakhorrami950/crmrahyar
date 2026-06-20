@@ -2,51 +2,47 @@
     <h5>🔧 تعمیر دیتابیس</h5>
 </div>
 
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="table-container" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">
-            <h6 style="font-weight:bold;margin-bottom:10px;color:#fff;">وضعیت جداول</h6>
-            <div style="font-size:28px;font-weight:bold;"><?php echo $existsCount; ?> / <?php echo $totalExpected; ?></div>
-            <small>جدول موجود</small>
-            <?php if (!empty($missingTables)): ?>
-            <div style="background:rgba(255,255,255,0.2);border-radius:8px;padding:8px;margin-top:10px;">
-                <small>جداول缺失: <?php echo implode(', ', $missingTables); ?></small>
-            </div>
-            <?php endif; ?>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;">
+    <div class="card" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;">
+        <h6 style="font-weight:bold;margin-bottom:10px;color:#fff;">وضعیت جداول</h6>
+        <div style="font-size:28px;font-weight:bold;"><?php echo $existsCount; ?> / <?php echo $totalExpected; ?></div>
+        <small>جدول موجود</small>
+        <?php if (!empty($missingTables)): ?>
+        <div style="background:rgba(255,255,255,0.2);border-radius:8px;padding:8px;margin-top:10px;">
+            <small>جداول گمشده: <?php echo implode(', ', $missingTables); ?></small>
         </div>
+        <?php endif; ?>
     </div>
-    <div class="col-md-8">
-        <div class="table-container">
-            <h6 style="font-weight:bold;margin-bottom:15px;">عملیات تعمیر</h6>
-            <p style="font-size:14px;color:#666;margin-bottom:15px;">
-                این ابزار به صورت خودکار جداول و فیلدهای مورد نیاز را بررسی و ایجاد می‌کند.
-            </p>
-            <button type="button" class="btn btn-primary btn-lg" onclick="runRepair()">
-                🛠️ شروع تعمیر خودکار
-            </button>
-            <div id="repairResult" style="margin-top:15px;display:none;"></div>
-        </div>
+    <div class="card">
+        <h6 style="font-weight:bold;margin-bottom:15px;">عملیات تعمیر</h6>
+        <p style="font-size:14px;color:#666;margin-bottom:15px;">
+            این ابزار به صورت خودکار جداول و فیلدهای مورد نیاز را بررسی و ایجاد می‌کند.
+        </p>
+        <button type="button" class="btn btn-primary btn-lg" onclick="runRepair()">
+            🛠️ شروع تعمیر خودکار
+        </button>
+        <div id="repairResult" style="margin-top:15px;display:none;"></div>
     </div>
 </div>
 
-<div class="table-container mt-4">
+<div class="card">
     <h6 style="font-weight:bold;margin-bottom:15px;">📋 گزارش تعمیرات قبلی</h6>
     <div class="table-responsive">
-        <table class="table table-sm">
+        <table class="table">
             <thead>
                 <tr><th>جدول</th><th>عملیات</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr>
             </thead>
             <tbody>
                 <?php if (empty($repairLog)): ?>
-                <tr><td colspan="5" class="text-center py-3">هنوز تعمیری انجام نشده</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:30px;">هنوز تعمیری انجام نشده</td></tr>
                 <?php else: ?>
                 <?php foreach ($repairLog as $log): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($log->table_name); ?></td>
-                    <td><?php echo htmlspecialchars($log->action); ?></td>
-                    <td><?php echo htmlspecialchars($log->description); ?></td>
-                    <td><span class="badge badge-<?php echo $log->status === 'success' ? 'success' : 'danger'; ?>"><?php echo $log->status; ?></span></td>
-                    <td><?php echo $log->created_at; ?></td>
+                    <td data-label="جدول"><?php echo htmlspecialchars($log->table_name); ?></td>
+                    <td data-label="عملیات"><?php echo htmlspecialchars($log->action); ?></td>
+                    <td data-label="توضیحات"><?php echo htmlspecialchars($log->description); ?></td>
+                    <td data-label="وضعیت"><span class="badge badge-<?php echo $log->status === 'success' ? 'success' : 'danger'; ?>"><?php echo $log->status; ?></span></td>
+                    <td data-label="تاریخ"><?php echo $log->created_at; ?></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php endif; ?>
