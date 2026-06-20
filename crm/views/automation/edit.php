@@ -143,8 +143,8 @@ $actionConfig = json_decode($rule->action_config, true) ?: [];
                 </div>
                 <div class="form-group">
                     <label class="form-label">نوع فعالیت</label>
-                    <select name="action_config[activity_type]" class="form-select">
-                        <?php foreach (['reminder'=>'یادآوری','call'=>'تماس تلفنی','meeting'=>'جلسه','todo'=>'کار انجام دادنی'] as $k=>$v): ?>
+                        <select name="action_config[activity_type]" class="form-select">
+                        <?php foreach (['follow_up'=>'یادآوری / پیگیری','call'=>'تماس تلفنی','meeting'=>'جلسه','note'=>'یادداشت','email'=>'ایمیل','other'=>'سایر'] as $k=>$v): ?>
                         <option value="<?php echo $k; ?>" <?php echo ($actionConfig['activity_type'] ?? '') === $k ? 'selected' : ''; ?>><?php echo $v; ?></option>
                         <?php endforeach; ?>
                     </select>

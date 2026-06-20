@@ -160,10 +160,12 @@
                 <div class="form-group">
                     <label class="form-label">نوع فعالیت</label>
                     <select name="action_config[activity_type]" class="form-select">
-                        <option value="reminder">یادآوری</option>
+                        <option value="follow_up">یادآوری / پیگیری</option>
                         <option value="call">تماس تلفنی</option>
                         <option value="meeting">جلسه</option>
-                        <option value="todo">کار انجام دادنی</option>
+                        <option value="note">یادداشت</option>
+                        <option value="email">ایمیل</option>
+                        <option value="other">سایر</option>
                     </select>
                 </div>
             </div>
