@@ -8,9 +8,10 @@ CREATE TABLE IF NOT EXISTS deal_win_reasons (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Add win_reason_id and win_reason_note to deals if not exists
-ALTER TABLE deals ADD COLUMN IF NOT EXISTS win_reason_id INT NULL AFTER loss_reason_id;
-ALTER TABLE deals ADD COLUMN IF NOT EXISTS win_reason_note TEXT NULL AFTER win_reason_id;
+-- Add win_reason_id and win_reason_note columns to deals
+-- (Migration engine will ignore "duplicate column" errors if already applied)
+ALTER TABLE deals ADD COLUMN win_reason_id INT NULL AFTER loss_reason_id;
+ALTER TABLE deals ADD COLUMN win_reason_note TEXT NULL AFTER win_reason_id;
 
 -- Insert default win reasons for travel agency
 INSERT INTO deal_win_reasons (name, icon, sort_order) VALUES

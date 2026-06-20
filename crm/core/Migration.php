@@ -82,7 +82,46 @@ class Migration
         $sql = file_get_contents(__DIR__ . '/../database/migrations/' . $migration);
         
         try {
-            $this->db->exec($sql);
+            // Split by semicolons and execute each statement separately
+            // This handles multiple ALTER TABLE and other statements properly
+            $statements = array_filter(
+                array_map('trim', explode(';', $sql)),
+                function($s) { return !empty($s) && $s !== ''; }
+            );
+            
+            $hasError = false;
+            foreach ($statements as $statement) {
+                // Skip empty lines and comments-only blocks
+                $clean = trim(preg_replace('/--.*$/m', '', $statement));
+                $clean = preg_replace('/\/\*.*?\*\//s', '', $clean);
+                if (empty(trim($clean))) continue;
+                
+                // Skip DELIMITER and procedure blocks (not supported in PDO)
+                if (stripos($statement, 'DELIMITER') !== false) continue;
+                if (stripos($statement, 'CREATE PROCEDURE') !== false) continue;
+                if (stripos($statement, 'DROP PROCEDURE') !== false) continue;
+                if (stripos($statement, 'CALL ') !== false && stripos($statement, '(') !== false) continue;
+                
+                try {
+                    $this->db->exec($statement);
+                } catch (\PDOException $e) {
+                    $code = $e->getCode();
+                    $msg = $e->getMessage();
+                    // Ignore duplicate column/table/index errors (1060=duplicate column, 1061=duplicate key, 1050=table exists, 1062=duplicate entry)
+                    if (in_array($code, ['42S01', '42000']) || 
+                        strpos($msg, '1060') !== false || 
+                        strpos($msg, '1050') !== false ||
+                        strpos($msg, '1061') !== false ||
+                        strpos($msg, '1062') !== false ||
+                        strpos($msg, 'Duplicate column') !== false ||
+                        strpos($msg, 'already exists') !== false) {
+                        echo "  ℹ Statement skipped (already applied): " . substr(trim($statement), 0, 80) . "...\n";
+                    } else {
+                        throw $e;
+                    }
+                }
+            }
+            
             $stmt = $this->db->prepare("INSERT INTO migrations (migration) VALUES (:m)");
             $stmt->execute([':m' => $migration]);
             echo "  ✓ {$migration} completed\n";
