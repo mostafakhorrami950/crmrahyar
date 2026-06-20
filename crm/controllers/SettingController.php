@@ -27,10 +27,25 @@ class SettingController
             $features[$featureName] = $fs->setting_value == '1';
         }
 
+        // Get counts for dashboard stats
+        $stats = [
+            'users' => $db->fetch("SELECT COUNT(*) as c FROM users")->c ?? 0,
+            'contacts' => $db->fetch("SELECT COUNT(*) as c FROM contacts")->c ?? 0,
+            'deals' => $db->fetch("SELECT COUNT(*) as c FROM deals")->c ?? 0,
+            'pipelines' => $db->fetch("SELECT COUNT(*) as c FROM pipelines")->c ?? 0,
+            'categories' => $db->fetch("SELECT COUNT(*) as c FROM contact_categories")->c ?? 0,
+            'sources' => $db->fetch("SELECT COUNT(*) as c FROM deal_sources")->c ?? 0,
+            'roles' => $db->fetch("SELECT COUNT(*) as c FROM roles")->c ?? 0,
+            'custom_fields' => $db->fetch("SELECT COUNT(*) as c FROM custom_fields")->c ?? 0,
+            'payments' => $db->fetch("SELECT COUNT(*) as c FROM payments")->c ?? 0,
+            'sms_sent' => $db->fetch("SELECT COUNT(*) as c FROM sms_history")->c ?? 0,
+        ];
+
         View::render('settings/index', [
             'title' => 'تنظیمات سیستم',
             'groupedSettings' => $groupedSettings,
             'features' => $features,
+            'stats' => $stats,
         ]);
     }
 
