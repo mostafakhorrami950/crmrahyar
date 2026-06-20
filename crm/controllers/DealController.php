@@ -11,6 +11,7 @@ class DealController
 {
     public function getData(array $params): void
     {
+        Auth::requireAuth();
         $db = Database::getInstance();
         $deal = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $params['id']]);
         if (!$deal) {

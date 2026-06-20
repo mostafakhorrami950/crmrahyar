@@ -6,8 +6,43 @@ class Session
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            // Security: Set secure session cookie parameters
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            session_set_cookie_params([
+                'lifetime' => 86400 * 7,
+                'path' => '/',
+                'secure' => $isHttps,
+                'httponly' => true,
+                'samesite' => 'Strict',
+            ]);
             session_start();
+            
+            // Regenerate session ID periodically to prevent session fixation
+            if (!isset($_SESSION['_created'])) {
+                $_SESSION['_created'] = time();
+            } elseif (time() - $_SESSION['_created'] > 1800) {
+                session_regenerate_id(true);
+                $_SESSION['_created'] = time();
+            }
         }
+    }
+
+    public static function generateCsrfToken(): string
+    {
+        if (!isset($_SESSION['_csrf_token'])) {
+            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['_csrf_token'];
+    }
+
+    public static function validateCsrfToken(string $token): bool
+    {
+        return isset($_SESSION['_csrf_token']) && hash_equals($_SESSION['_csrf_token'], $token);
+    }
+
+    public static function regenerateCsrfToken(): void
+    {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
     }
 
     public static function set(string $key, $value): void
