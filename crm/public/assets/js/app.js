@@ -62,20 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ========== MOBILE SIDEBAR ==========
-    var sidebarToggle = document.getElementById('sidebarToggle');
-    var sidebar = document.getElementById('sidebar');
-    var sidebarOverlay = document.getElementById('sidebarOverlay');
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('open');
-            if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
-        });
-    }
-    if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.remove('open'); this.classList.remove('show');
-        });
-    }
+    // Sidebar toggle handled in main layout inline script to avoid duplicate listeners
 
     // ========== COPY PUBLIC LINK ==========
     window.copyPublicLink = function() {

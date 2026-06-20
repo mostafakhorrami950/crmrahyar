@@ -4,12 +4,8 @@
 -- Add scope column to role_permissions
 ALTER TABLE `role_permissions` ADD COLUMN `scope` ENUM('own','all') NOT NULL DEFAULT 'all' AFTER `permission`;
 
--- Create permissions seed table (replaces old permissions table if needed)
--- First clear old permissions that lack proper structure
-TRUNCATE TABLE `permissions`;
-
--- Insert comprehensive permissions grouped by module
-INSERT INTO `permissions` (`name`, `slug`, `group_name`, `description`) VALUES
+-- Insert comprehensive permissions grouped by module (INSERT IGNORE = skip if exists)
+INSERT IGNORE INTO `permissions` (`name`, `slug`, `group_name`, `description`) VALUES
 -- Dashboard
 ('مشاهده داشبورد', 'dashboard.view', 'داشبورد', 'مشاهده صفحه داشبورد و آمار کلی'),
 
@@ -62,9 +58,7 @@ INSERT INTO `permissions` (`name`, `slug`, `group_name`, `description`) VALUES
 -- Activity Log (لاگ فعالیت‌ها)
 ('مشاهده لاگ فعالیت‌ها', 'activitylog.view', 'لاگ فعالیت‌ها', 'مشاهده تاریخچه فعالیت‌های سیستم');
 
--- Clean old role_permissions to start fresh with new system
-TRUNCATE TABLE `role_permissions`;
-
--- Seed super_admin with ALL permissions with 'all' scope
-INSERT INTO `role_permissions` (`role_id`, `permission`, `scope`)
-SELECT 1, slug, 'all' FROM permissions;
+-- Seed super_admin with ALL permissions with 'all' scope (only if no role_permissions exist yet)
+INSERT IGNORE INTO `role_permissions` (`role_id`, `permission`, `scope`)
+SELECT 1, p.slug, 'all' FROM permissions p
+WHERE NOT EXISTS (SELECT 1 FROM role_permissions WHERE role_id = 1 LIMIT 1);
