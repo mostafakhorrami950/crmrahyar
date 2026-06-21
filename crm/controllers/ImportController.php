@@ -376,8 +376,14 @@ class ImportController
         $doc = new \SimpleXMLElement($sheetXml);
         $rows = [];
 
+        if (!isset($doc->sheetData) || !isset($doc->sheetData->row)) {
+            $zip->close();
+            return $rows;
+        }
+
         foreach ($doc->sheetData->row as $row) {
             $rowData = [];
+            if (!isset($row->c)) continue;
             foreach ($row->c as $cell) {
                 $ref = (string)$cell['r'];
                 $type = (string)$cell['t'];
