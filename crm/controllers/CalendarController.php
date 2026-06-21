@@ -22,8 +22,17 @@ class CalendarController
         $db = Database::getInstance();
         $userId = Auth::id();
         
+        $isAdmin = Auth::hasPermission('settings.manage');
         $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
         $scopeWhere = $scope['where'] === '1=1' ? '' : " AND {$scope['where']}";
+        
+        // Non-admin users can only see their own activities
+        $userFilter = '';
+        $userFilterParams = [];
+        if (!$isAdmin) {
+            $userFilter = " AND da.user_id = :cal_user_id";
+            $userFilterParams[':cal_user_id'] = Auth::id();
+        }
         
         // Convert Jalali year/month to Gregorian date range for DB query
         list($gy1, $gm1, $gd1) = JDate::toGregorian($year, $month, 1);
@@ -38,9 +47,9 @@ class CalendarController
              FROM deal_activities da 
              LEFT JOIN deals d ON da.deal_id = d.id
              LEFT JOIN users u ON da.user_id = u.id
-             WHERE da.activity_date BETWEEN :start AND :end {$scopeWhere}
+             WHERE da.activity_date BETWEEN :start AND :end {$scopeWhere} {$userFilter}
              ORDER BY da.activity_date ASC",
-            array_merge([':start' => $startDate . ' 00:00:00', ':end' => $endDate . ' 23:59:59'], $scope['params'])
+            array_merge([':start' => $startDate . ' 00:00:00', ':end' => $endDate . ' 23:59:59'], $scope['params'], $userFilterParams)
         );
         
         // Group by Jalali day
@@ -89,17 +98,25 @@ class CalendarController
         
         $db = Database::getInstance();
         
+        $isAdmin = Auth::hasPermission('settings.manage');
         $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
         $scopeWhere = $scope['where'] === '1=1' ? '' : " AND {$scope['where']}";
+        
+        $userFilter = '';
+        $userFilterParams = [];
+        if (!$isAdmin) {
+            $userFilter = " AND da.user_id = :cal_user_id";
+            $userFilterParams[':cal_user_id'] = Auth::id();
+        }
         
         $activities = $db->fetchAll(
             "SELECT da.id, da.type, da.subject, da.activity_date, da.is_done, 
                     d.title as deal_title, d.id as deal_id
              FROM deal_activities da 
              LEFT JOIN deals d ON da.deal_id = d.id
-             WHERE da.activity_date BETWEEN :start AND :end {$scopeWhere}
+             WHERE da.activity_date BETWEEN :start AND :end {$scopeWhere} {$userFilter}
              ORDER BY da.activity_date ASC",
-            array_merge([':start' => $start . ' 00:00:00', ':end' => $end . ' 23:59:59'], $scope['params'])
+            array_merge([':start' => $start . ' 00:00:00', ':end' => $end . ' 23:59:59'], $scope['params'], $userFilterParams)
         );
         
         $events = [];

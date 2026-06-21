@@ -202,11 +202,16 @@ class ReportController
         $userId = $_GET['user_id'] ?? '';
         $type = $_GET['type'] ?? '';
         $status = $_GET['status'] ?? '';
+        $isAdmin = Auth::hasPermission('settings.manage');
 
         $where = "WHERE da.activity_date >= :date_from AND da.activity_date <= :date_to";
         $params = [':date_from' => $dateFrom . ' 00:00:00', ':date_to' => $dateTo . ' 23:59:59'];
 
-        if ($userId) {
+        // Non-admin users can only see their own activities
+        if (!$isAdmin) {
+            $where .= " AND da.user_id = :current_user_id";
+            $params[':current_user_id'] = Auth::id();
+        } elseif ($userId) {
             $where .= " AND da.user_id = :user_id";
             $params[':user_id'] = $userId;
         }
