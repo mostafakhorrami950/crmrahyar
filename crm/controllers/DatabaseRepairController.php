@@ -64,11 +64,34 @@ class DatabaseRepairController
         $results = [];
         
         try {
-            // Run all migration files
+            // Get already executed migrations from migrations table
+            $executedMigrations = [];
+            try {
+                $rows = $db->fetchAll("SELECT migration FROM migrations");
+                foreach ($rows as $row) {
+                    $executedMigrations[] = $row->migration;
+                }
+            } catch (\Exception $e) {
+                // migrations table might not exist yet
+            }
+            
+            // Run only unexecuted migration files
             $migrationFiles = glob(__DIR__ . '/../database/migrations/*.sql');
             sort($migrationFiles);
             
             foreach ($migrationFiles as $file) {
+                $filename = basename($file);
+                
+                // Skip if already executed
+                if (in_array($filename, $executedMigrations)) {
+                    $results[] = [
+                        'table' => $filename,
+                        'status' => 'skipped',
+                        'message' => 'قبلا اجرا شده'
+                    ];
+                    continue;
+                }
+                
                 $sql = file_get_contents($file);
                 $statements = explode(';', $sql);
                 
@@ -83,14 +106,18 @@ class DatabaseRepairController
                         // Table may already exist or column already exists - that's ok
                         if (stripos($msg, 'already exists') === false && 
                             stripos($msg, 'Duplicate column') === false && 
-                            stripos($msg, 'Duplicate key') === false) {
+                            stripos($msg, 'Duplicate key') === false &&
+                            stripos($msg, 'Duplicate entry') === false) {
                             throw $e;
                         }
                     }
                 }
                 
+                // Mark as executed
+                $db->insert('migrations', ['migration' => $filename]);
+                
                 $results[] = [
-                    'table' => basename($file),
+                    'table' => $filename,
                     'status' => 'success',
                     'message' => 'اجرا شد'
                 ];

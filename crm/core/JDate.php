@@ -135,6 +135,91 @@ class JDate
     }
     
     /**
+     * Public wrapper: Convert Jalali Y/M/D to Gregorian array [gy, gm, gd]
+     */
+    public static function toGregorian(int $jy, int $jm, int $jd): array
+    {
+        return self::jalaliToGregorian($jy, $jm, $jd);
+    }
+    
+    /**
+     * Get current Jalali date as array [year, month, day]
+     */
+    public static function now(): array
+    {
+        return self::gregorianToJalali((int)date('Y'), (int)date('m'), (int)date('d'));
+    }
+    
+    /**
+     * Get Jalali month name
+     */
+    public static function monthName(int $month): string
+    {
+        $months = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+        return $months[$month] ?? '';
+    }
+    
+    /**
+     * Get number of days in a Jalali month
+     */
+    public static function daysInMonth(int $jy, int $jm): int
+    {
+        if ($jm <= 6) return 31;
+        if ($jm <= 11) return 30;
+        // Esfand - check leap year
+        return self::isLeapYear($jy) ? 30 : 29;
+    }
+    
+    /**
+     * Check if Jalali year is leap
+     */
+    public static function isLeapYear(int $jy): bool
+    {
+        $breaks = [-1468, -1063, -657, -252, 158, 563, 968, 1373, 1778, 2183, 2588, 2993, 3398, 3803, 4208, 4613, 5018, 5423, 5828, 6233, 6638, 7043, 7448, 7853, 8258, 8663, 9068, 9473, 9878, 10283, 10688, 11093, 11498, 11903, 12308, 12713, 13118, 13523, 13928, 14333, 14738, 15143, 15548, 15953, 16358, 16763, 17168, 17573, 17978, 18383, 18788, 19193, 19598, 20003, 20408, 20813, 21218, 21623, 22028, 22433, 22838, 23243, 23648, 24053, 24458, 24863, 25268, 25673, 26078, 26483, 26888, 27293, 27698, 28103, 28508, 28913, 29318, 29723, 30128, 30533, 30938, 31343, 31748, 32153, 32558, 32963, 33368, 33773, 34178];
+        $jump = 0;
+        for ($i = 0; $i < count($breaks); $i++) {
+            if ($jy < $breaks[$i]) { $jump = $i; break; }
+        }
+        $breaks_mod = [];
+        foreach ($breaks as $b) { $breaks_mod[] = $b % 2820; }
+        return ($jy % 4 === 0 && !in_array($jy % 2820, [0, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97]));
+    }
+    
+    /**
+     * Convert Jalali Y/M/D to Gregorian array [gy, gm, gd]
+     */
+    private static function jalaliToGregorian(int $jy, int $jm, int $jd): array
+    {
+        $jy += 1595;
+        $days = -355668 + (365 * $jy) + ((int)($jy / 33)) * 8 + (int)((($jy % 33) + 3) / 4) + $jd + (($jm < 7) ? ($jm - 1) * 31 : (($jm - 7) * 30 + 186));
+        $gy = 400 * (int)($days / 146097);
+        $days %= 146097;
+        $leap = true;
+        if ($days >= 36525) {
+            $days--;
+            $gy += 100 * (int)($days / 36524);
+            $days %= 36524;
+            if ($days >= 365) $days++;
+            else $leap = false;
+        }
+        $gy += 4 * (int)($days / 1461);
+        $days %= 1461;
+        if ($days >= 366) {
+            $leap = false;
+            $days--;
+            $gy += (int)($days / 365);
+            $days %= 365;
+        }
+        $gd = $days + 1;
+        $g_d_m = [0, 31, ($leap ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        for ($gm = 1; $gm <= 12; $gm++) {
+            if ($gd <= $g_d_m[$gm]) break;
+            $gd -= $g_d_m[$gm];
+        }
+        return [$gy, $gm, $gd];
+    }
+    
+    /**
      * Get day of week (0=Sunday, 6=Saturday)
      */
     private static function dayOfWeek(int $y, int $m, int $d): int

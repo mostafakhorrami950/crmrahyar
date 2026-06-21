@@ -133,33 +133,34 @@ class Migration
     
     private function seed(): void
     {
-        // Check if super admin exists
-        $stmt = $this->db->query("SELECT COUNT(*) as count FROM users");
-        $result = $stmt->fetch(PDO::FETCH_OBJ);
+        echo "  Seeding default data (INSERT IGNORE - safe to re-run)...\n";
         
-        if ($result->count == 0) {
-            echo "  Seeding default data...\n";
-            
-            // Create default admin role
-            $this->db->exec("INSERT INTO roles (name, slug, description, is_system) VALUES 
-                ('مدیر اصلی', 'super_admin', 'دسترسی کامل به تمام بخش‌ها', 1),
-                ('اپراتور', 'operator', 'مدیریت معاملات و مشتریان خود', 1),
-                ('مدیر فروش', 'sales_manager', 'مدیریت تیم فروش و مشاهده گزارشات', 1)
-            ");
-            
-            // Create super admin user (username: admin, password: admin123)
+        // Create default admin role (INSERT IGNORE = skip if exists)
+        $this->db->exec("INSERT IGNORE INTO roles (name, slug, description, is_system) VALUES 
+            ('مدیر اصلی', 'super_admin', 'دسترسی کامل به تمام بخش‌ها', 1),
+            ('اپراتور', 'operator', 'مدیریت معاملات و مشتریان خود', 1),
+            ('مدیر فروش', 'sales_manager', 'مدیریت تیم فروش و مشاهده گزارشات', 1)
+        ");
+        
+        // Create super admin user only if not exists (username: admin, password: admin123)
+        $existingAdmin = $this->db->query("SELECT id FROM users WHERE username = 'admin' LIMIT 1")->fetch(PDO::FETCH_OBJ);
+        if (!$existingAdmin) {
             $password = password_hash('admin123', PASSWORD_BCRYPT);
             $stmt = $this->db->prepare("INSERT INTO users (username, password, full_name, role_id, is_active) VALUES 
                 ('admin', :pass, 'مدیر اصلی', 1, 1)
             ");
             $stmt->execute([':pass' => $password]);
-            
-            // Create default pipeline for travel agency
-            $this->db->exec("INSERT INTO pipelines (name, description, is_default) VALUES 
-                ('فروش تور', 'پایپ لاین فروش تورهای مسافرتی', 1)
-            ");
-            
-            // Create default stages
+            echo "  ✓ Admin user created (admin/admin123)\n";
+        }
+        
+        // Create default pipeline for travel agency (INSERT IGNORE)
+        $this->db->exec("INSERT IGNORE INTO pipelines (name, description, is_default) VALUES 
+            ('فروش تور', 'پایپ لاین فروش تورهای مسافرتی', 1)
+        ");
+        
+        // Create default stages only if pipeline 1 has no stages
+        $stageCount = $this->db->query("SELECT COUNT(*) as cnt FROM stages WHERE pipeline_id = 1")->fetch(PDO::FETCH_OBJ);
+        if ($stageCount->cnt == 0) {
             $this->db->exec("INSERT INTO stages (pipeline_id, name, color, order_index) VALUES 
                 (1, 'مشتری جدید', '#6B7280', 1),
                 (1, 'در حال مذاکره', '#F59E0B', 2),
@@ -168,28 +169,27 @@ class Migration
                 (1, 'پرداخت شده', '#10B981', 5),
                 (1, 'لغو شده', '#EF4444', 6)
             ");
-            
-            // Set permissions for roles
-            // Super admin gets all permissions
-            $this->db->exec("INSERT INTO role_permissions (role_id, permission) 
-                SELECT 1, slug FROM permissions");
-            
-            // Operator permissions
-            $this->db->exec("INSERT INTO role_permissions (role_id, permission) VALUES 
-                (2, 'deals.view'), (2, 'deals.create'), (2, 'deals.edit'), (2, 'deals.delete'),
-                (2, 'contacts.view'), (2, 'contacts.create'), (2, 'contacts.edit'),
-                (2, 'pipelines.view')
-            ");
-            
-            // Sales manager permissions
-            $this->db->exec("INSERT INTO role_permissions (role_id, permission) VALUES 
-                (3, 'deals.view'), (3, 'deals.create'), (3, 'deals.edit'), (3, 'deals.delete'),
-                (3, 'contacts.view'), (3, 'contacts.create'), (3, 'contacts.edit'), (3, 'contacts.delete'),
-                (3, 'pipelines.view'), (3, 'pipelines.create'), (3, 'pipelines.edit'),
-                (3, 'reports.view'), (3, 'reports.export')
-            ");
-            
-            echo "  ✓ Default data seeded (admin/admin123)\n";
         }
+        
+        // Set permissions for roles (INSERT IGNORE)
+        $this->db->exec("INSERT IGNORE INTO role_permissions (role_id, permission, scope) 
+            SELECT 1, slug, 'all' FROM permissions");
+        
+        // Operator permissions (INSERT IGNORE)
+        $this->db->exec("INSERT IGNORE INTO role_permissions (role_id, permission, scope) VALUES 
+            (2, 'deals.view', 'own'), (2, 'deals.create', 'own'), (2, 'deals.edit', 'own'), (2, 'deals.delete', 'own'),
+            (2, 'contacts.view', 'own'), (2, 'contacts.create', 'own'), (2, 'contacts.edit', 'own'),
+            (2, 'pipelines.view', 'all')
+        ");
+        
+        // Sales manager permissions (INSERT IGNORE)
+        $this->db->exec("INSERT IGNORE INTO role_permissions (role_id, permission, scope) VALUES 
+            (3, 'deals.view', 'all'), (3, 'deals.create', 'all'), (3, 'deals.edit', 'all'), (3, 'deals.delete', 'all'),
+            (3, 'contacts.view', 'all'), (3, 'contacts.create', 'all'), (3, 'contacts.edit', 'all'), (3, 'contacts.delete', 'all'),
+            (3, 'pipelines.view', 'all'), (3, 'pipelines.create', 'all'), (3, 'pipelines.edit', 'all'),
+            (3, 'reports.view', 'all'), (3, 'reports.export', 'all')
+        ");
+        
+        echo "  ✓ Default data seeded (safe re-run)\n";
     }
 }

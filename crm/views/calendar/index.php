@@ -1,20 +1,34 @@
 <?php $config = $GLOBALS['app_config'];
-$monthNames = ['','فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-$daysInMonth = date('t', mktime(0,0,0,$month,1,$year));
-$firstDay = date('w', mktime(0,0,0,$month,1,$year)); // 0=Sat for Iranian
-// Adjust for Persian week starting Saturday
-$firstDayAdj = ($firstDay + 1) % 7;
-$jalali = \Core\JDate::toJalali($year, $month, 1);
-$jMonth = $monthNames[$jalali[1]] ?? $month;
-$jYear = $jalali[0];
+$jYear = $year;
+$jMonth = $month;
+$monthName = $monthName ?? \Core\JDate::monthName($jMonth);
+$daysInMonth = $daysInMonth ?? \Core\JDate::daysInMonth($jYear, $jMonth);
+
+// Convert 1st day of Jalali month to Gregorian to find day of week
+list($gYear, $gMonth, $gDay) = \Core\JDate::toGregorian($jYear, $jMonth, 1);
+// 0=Sunday ... 6=Saturday in Gregorian, but Persian week starts Saturday
+$gregorianDow = (int)date('w', mktime(0, 0, 0, $gMonth, $gDay, $gYear));
+// Adjust: Saturday=0, Sunday=1, ..., Friday=6
+$firstDayAdj = ($gregorianDow + 1) % 7;
+
+// Current Jalali date for "today" highlight
+list($todayJY, $todayJM, $todayJD) = \Core\JDate::now();
 ?>
 
 <div class="page-header">
     <h5>🗓️ تقویم فعالیت‌ها</h5>
     <div class="d-flex gap-8 align-center">
-        <a href="<?php echo $config['url']; ?>/calendar?month=<?php echo $month - 1; ?>&year=<?php echo $year; ?>" class="btn btn-sm btn-secondary">◀</a>
-        <span class="fw-bold"><?php echo $jMonth . ' ' . $jYear; ?></span>
-        <a href="<?php echo $config['url']; ?>/calendar?month=<?php echo $month + 1; ?>&year=<?php echo $year; ?>" class="btn btn-sm btn-secondary">▶</a>
+        <?php
+        $prevMonth = $jMonth - 1;
+        $prevYear = $jYear;
+        if ($prevMonth < 1) { $prevMonth = 12; $prevYear--; }
+        $nextMonth = $jMonth + 1;
+        $nextYear = $jYear;
+        if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
+        ?>
+        <a href="<?php echo $config['url']; ?>/calendar?month=<?php echo $prevMonth; ?>&year=<?php echo $prevYear; ?>" class="btn btn-sm btn-secondary">◀</a>
+        <span class="fw-bold"><?php echo $monthName . ' ' . $jYear; ?></span>
+        <a href="<?php echo $config['url']; ?>/calendar?month=<?php echo $nextMonth; ?>&year=<?php echo $nextYear; ?>" class="btn btn-sm btn-secondary">▶</a>
     </div>
 </div>
 
@@ -33,13 +47,10 @@ $jYear = $jalali[0];
         <?php endfor; ?>
         
         <?php for ($d = 1; $d <= $daysInMonth; $d++): ?>
-        <?php $isToday = ($d == date('j') && $month == date('n') && $year == date('Y')); ?>
+        <?php $isToday = ($d == $todayJD && $jMonth == $todayJM && $jYear == $todayJY); ?>
         <div style="padding:6px;background:<?php echo $isToday ? '#eef0ff' : '#fff'; ?>;border-radius:6px;min-height:70px;border:1px solid <?php echo $isToday ? 'var(--primary)' : 'var(--gray-200)'; ?>;text-align:right;">
             <div style="font-weight:700;font-size:13px;color:<?php echo $isToday ? 'var(--primary)' : 'var(--gray-700)'; ?>;margin-bottom:4px;">
-                <?php 
-                $jDate = \Core\JDate::toJalali($year, $month, $d);
-                echo $jDate[2]; 
-                ?>
+                <?php echo $d; ?>
             </div>
             <?php if (isset($days[$d])): ?>
             <?php foreach (array_slice($days[$d], 0, 3) as $act): ?>
@@ -59,12 +70,12 @@ $jYear = $jalali[0];
 </div>
 
 <div class="card">
-    <div class="card-header">📋 فعالیت‌های <?php echo $jMonth; ?></div>
+    <div class="card-header">📋 فعالیت‌های <?php echo $monthName; ?></div>
     <?php if (empty($activities)): ?>
     <p class="text-muted" style="padding:20px;text-align:center;">فعالیتی در این ماه ثبت نشده</p>
     <?php else: ?>
     <div class="table-wrapper"><table>
-        <thead><tr><th>تاریخ</th><th>موضوع</th><th>نوع</th><th>معامله</th><th>وضعیت</th></tr></thead>
+        <thead><tr><th>تاریخ شمسی</th><th>موضوع</th><th>نوع</th><th>معامله</th><th>وضعیت</th></tr></thead>
         <tbody>
         <?php foreach ($activities as $a): ?>
         <tr>
