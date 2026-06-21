@@ -3,12 +3,22 @@
     <a href="<?php echo $config['url']; ?>/database/repair" class="btn btn-secondary">🔧 تعمیر دیتابیس</a>
 </div>
 
+<!-- Bulk Actions Bar -->
+<div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
+    <span id="bulkCount">۰ مورد انتخاب شده</span>
+    <div style="display:flex;gap:8px;">
+        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm">🗑️ حذف انتخاب شده‌ها</button>
+        <button onclick="clearSelection()" class="btn btn-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+    </div>
+</div>
+
 <div class="card mb-4">
     <div class="card-header">خطاهای سیستم</div>
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
+                    <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
                     <th>#</th>
                     <th>کاربر</th>
                     <th>عملیات</th>
@@ -23,7 +33,8 @@
                 <tr><td colspan="7" class="text-center py-4" style="color:var(--gray-500);">✅ هیچ خطایی ثبت نشده است.</td></tr>
                 <?php else: ?>
                 <?php foreach ($errorLogs as $log): ?>
-                <tr>
+                <tr data-id="<?php echo $log->id; ?>">
+                    <td><input type="checkbox" class="row-check" value="<?php echo $log->id; ?>" onchange="updateBulkBar()"></td>
                     <td><?php echo $log->id; ?></td>
                     <td><?php echo htmlspecialchars($log->user_name ?? 'سیستم'); ?></td>
                     <td><span class="badge badge-danger"><?php echo htmlspecialchars($log->action); ?></span></td>

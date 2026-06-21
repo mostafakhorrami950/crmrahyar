@@ -38,6 +38,15 @@
 </div>
 
 <!-- Contacts Grid -->
+<!-- Bulk Actions Bar -->
+<div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;">
+    <span id="bulkCount">۰ مورد انتخاب شده</span>
+    <div style="display:flex;gap:8px;">
+        <button onclick="bulkDelete('contacts')" class="btn btn-danger btn-sm">🗑️ حذف انتخاب شده‌ها</button>
+        <button onclick="clearSelection()" class="btn btn-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+    </div>
+</div>
+
 <?php if (empty($contacts)): ?>
 <div class="card">
     <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
@@ -52,8 +61,9 @@
     <div class="table-responsive">
         <table class="table">
             <thead>
-                <tr>
-                    <th>مخاطب</th>
+                    <tr>
+                        <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
+                        <th>مخاطب</th>
                     <th>تماس</th>
                     <th>شرکت</th>
                     <th>دسته‌بندی</th>
@@ -65,7 +75,8 @@
             </thead>
             <tbody>
                 <?php foreach ($contacts as $c): ?>
-                <tr>
+                <tr data-id="<?php echo $c->id; ?>">
+                    <td data-label=""><input type="checkbox" class="row-check" value="<?php echo $c->id; ?>" onchange="updateBulkBar()"></td>
                     <td data-label="مخاطب">
                         <div style="display:flex;align-items:center;gap:10px;">
                             <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:700;flex-shrink:0;">

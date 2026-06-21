@@ -67,8 +67,22 @@
     </form>
 </div>
 
+<!-- Bulk Actions Bar -->
+<div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
+    <span id="bulkCount">۰ مورد انتخاب شده</span>
+    <div style="display:flex;gap:8px;">
+        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm">🗑️ حذف انتخاب شده‌ها</button>
+        <button onclick="clearSelection()" class="btn btn-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+    </div>
+</div>
+
 <!-- Activities List -->
 <div class="card" style="padding:0;">
+    <div style="padding:10px 20px;border-bottom:1px solid var(--gray-200);background:var(--gray-50);">
+        <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <input type="checkbox" id="selectAll" onchange="toggleAll(this)"> انتخاب همه
+        </label>
+    </div>
     <?php if (empty($activities)): ?>
     <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
         <div style="font-size:64px;margin-bottom:16px;">📅</div>
@@ -93,7 +107,9 @@
             </div>
         <?php endif; ?>
         
-        <div class="activity-item" style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);<?php echo $act->is_done ? 'opacity:0.6;' : ''; ?><?php echo $isOverdue ? 'background:#fff5f5;' : ''; ?>">
+        <div class="activity-item" style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);<?php echo $act->is_done ? 'opacity:0.6;' : ''; ?><?php echo $isOverdue ? 'background:#fff5f5;' : ''; ?>" data-id="<?php echo $act->id; ?>">
+            <!-- Checkbox -->
+            <input type="checkbox" class="row-check" value="<?php echo $act->id; ?>" onchange="updateBulkBar()" style="margin-top:12px;flex-shrink:0;">
             <!-- Toggle Done -->
             <form method="POST" action="<?php echo $config['url']; ?>/activities/toggle-done/<?php echo $act->id; ?>" data-ajax="true" style="flex-shrink:0;margin-top:4px;">
                 <button type="submit" class="btn btn-sm <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-secondary'); ?>" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">

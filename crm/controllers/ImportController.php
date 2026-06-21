@@ -109,6 +109,10 @@ class ImportController
         Session::set('import_file_name', $file['name']);
         Session::set('import_ext', $ext);
 
+        // Load categories for selection
+        $db = Database::getInstance();
+        $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY name") ?: [];
+
         View::render('contacts/import_mapping', [
             'title' => 'نگاشت ستون‌ها',
             'headers' => $headers,
@@ -117,6 +121,7 @@ class ImportController
             'contactFields' => self::getContactFields(),
             'autoMap' => $autoMap,
             'fileName' => $file['name'],
+            'categories' => $categories,
         ]);
     }
 
@@ -341,8 +346,9 @@ class ImportController
         $value = trim($value);
         if (empty($value)) return [];
         
-        // Split by common delimiters: comma, semicolon, newline, pipe, slash
-        $parts = preg_split('/[,;|\n\r\/]+/u', $value);
+        // Split by common delimiters: ::: , comma, semicolon, newline, pipe, slash, dash
+        $value = preg_replace('/:{2,}/u', ',', $value); // Convert ::: to comma first
+        $parts = preg_split('/[,;|\n\r\/~]+/u', $value);
         $parts = array_map('trim', $parts);
         $parts = array_filter($parts, function($v) { return $v !== ''; });
         

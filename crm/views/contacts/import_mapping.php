@@ -90,11 +90,21 @@
     </form>
 </div>
 
-<!-- Preview & Import Actions -->
+<!-- Category & Import Actions -->
 <div class="card" style="margin-top:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <div>
+        <div style="display:flex;align-items:center;gap:12px;">
             <span style="font-size:13px;color:var(--gray-600);" id="mappedCount">۰ فیلد نگاشت شده</span>
+            <?php if (!empty($categories)): ?>
+            <span style="color:var(--gray-300);">|</span>
+            <label style="font-size:13px;color:var(--gray-600);">📁 دسته‌بندی:</label>
+            <select id="categorySelect" class="form-select" style="width:auto;min-width:150px;font-size:13px;">
+                <option value="0">— بدون دسته‌بندی —</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?php echo $cat->id; ?>"><?php echo htmlspecialchars($cat->name); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php endif; ?>
         </div>
         <div style="display:flex;gap:8px;">
             <button type="button" class="btn btn-secondary" onclick="doPreview()">👁️ پیش‌نمایش</button>
@@ -241,6 +251,9 @@ function doImport() {
 
     var formData = new FormData();
     for (var k in mapping) formData.append('mapping[' + k + ']', mapping[k]);
+
+    var catId = document.getElementById('categorySelect');
+    if (catId) formData.append('category_id', catId.value);
 
     fetch(baseUrl + '/contacts/import/execute', { 
         method: 'POST', 

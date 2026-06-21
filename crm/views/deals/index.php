@@ -55,11 +55,21 @@
     </form>
 </div>
 
+<!-- Bulk Actions Bar -->
+<div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
+    <span id="bulkCount">۰ مورد انتخاب شده</span>
+    <div style="display:flex;gap:8px;">
+        <button onclick="bulkDelete('deals')" class="btn btn-danger btn-sm">🗑️ حذف انتخاب شده‌ها</button>
+        <button onclick="clearSelection()" class="btn btn-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+    </div>
+</div>
+
 <div class="card" style="padding:0;">
     <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
+                    <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
                     <th>عنوان</th>
                     <th>مخاطب</th>
                     <th>مرحله</th>
@@ -74,7 +84,8 @@
                 <tr><td colspan="7" class="text-center py-4" style="color:var(--gray-500);">هیچ معامله‌ای یافت نشد.</td></tr>
                 <?php else: ?>
                 <?php foreach ($deals as $deal): ?>
-                <tr>
+                <tr data-id="<?php echo $deal->id; ?>">
+                    <td><input type="checkbox" class="row-check" value="<?php echo $deal->id; ?>" onchange="updateBulkBar()"></td>
                     <td>
                         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" style="color:var(--primary);font-weight:500;">
                             <?php echo htmlspecialchars(mb_substr($deal->title, 0, 30)); ?>

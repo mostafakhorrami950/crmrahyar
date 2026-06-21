@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title ?? 'CRM Travel Agency'; ?> | CRM آژانس مسافرتی</title>
     <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=1.0.0">
+    <script>var CRM_BASE_URL = '<?php echo $config['url']; ?>';</script>
     <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=1.0.1" defer></script>
 </head>
 <body>

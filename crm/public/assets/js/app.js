@@ -14,12 +14,92 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() { flash.remove(); }, 300);
         }, 5000);
     });
-
+    
     // Close flash
     document.querySelectorAll('.flash .close-btn').forEach(function(btn) {
         btn.addEventListener('click', function() { this.parentElement.remove(); });
     });
+});
 
+// ========== BULK SELECT & DELETE ==========
+function toggleAll(checkbox) {
+    var checks = document.querySelectorAll('.row-check');
+    checks.forEach(function(c) { c.checked = checkbox.checked; });
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    var checked = document.querySelectorAll('.row-check:checked');
+    var bar = document.getElementById('bulkBar');
+    var count = document.getElementById('bulkCount');
+    if (!bar) return;
+    
+    if (checked.length > 0) {
+        bar.style.display = 'flex';
+        if (count) count.textContent = checked.length + ' مورد انتخاب شده';
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function clearSelection() {
+    document.querySelectorAll('.row-check').forEach(function(c) { c.checked = false; });
+    var selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
+}
+
+function getSelectedIds() {
+    var ids = [];
+    document.querySelectorAll('.row-check:checked').forEach(function(c) { ids.push(c.value); });
+    return ids;
+}
+
+function bulkDelete(entity) {
+    var ids = getSelectedIds();
+    if (ids.length === 0) { alert('آیتمی انتخاب نشده.'); return; }
+    
+    if (!confirm('آیا از حذف ' + ids.length + ' مورد اطمینان دارید؟ این عمل غیرقابل بازگشت است.')) return;
+    
+    var formData = new FormData();
+    formData.append('entity', entity);
+    ids.forEach(function(id) { formData.append('ids[]', id); });
+    
+    fetch(CRM_BASE_URL + '/bulk/delete', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            // Remove deleted rows from table
+            ids.forEach(function(id) {
+                var row = document.querySelector('tr[data-id="' + id + '"]');
+                if (row) row.remove();
+            });
+            clearSelection();
+            showFlash('success', data.message);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function showFlash(type, message) {
+    var flash = document.createElement('div');
+    flash.className = 'flash flash-' + type;
+    flash.innerHTML = '<span>' + message + '</span><button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>';
+    flash.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 20px;border-radius:10px;display:flex;gap:12px;align-items:center;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.15);animation:slideDown 0.3s ease;';
+    if (type === 'success') { flash.style.background='#d4edda'; flash.style.color='#155724'; flash.style.border='1px solid #c3e6cb'; }
+    else { flash.style.background='#f8d7da'; flash.style.color='#721c24'; flash.style.border='1px solid #f5c6cb'; }
+    document.body.appendChild(flash);
+    setTimeout(function() { flash.remove(); }, 3000);
+}
+
+// ========== IN-DOMCONTENTLOADED HELPERS ==========
+document.addEventListener('DOMContentLoaded', function() {
     // ========== USER DROPDOWN ==========
     document.querySelectorAll('.user-dropdown-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {

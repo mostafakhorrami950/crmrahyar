@@ -28,6 +28,7 @@ use Controllers\TargetController;
 use Controllers\AutomationController;
 use Controllers\ExportController;
 use Controllers\ImportController;
+use Controllers\BulkController;
 use Controllers\BackupController;
 
 // Auth routes
@@ -260,6 +261,9 @@ Router::group('/backup', function() {
     Router::get('/download/{file}', [BackupController::class, 'download'], 'settings.manage');
     Router::post('/delete/{file}', [BackupController::class, 'delete'], 'settings.manage');
 });
+
+// Bulk Delete
+Router::post('/bulk/delete', [BulkController::class, 'delete']);
 
 // Logger viewer (admin)
 Router::get('/system/logs', function() {
