@@ -111,6 +111,39 @@ class PaymentController
 
             ActivityLog::log('create_payment', 'payment', $paymentId, "لینک پرداخت به مبلغ " . number_format($amountToman) . " تومان ایجاد شد");
 
+            // Fire automation trigger: payment_created
+            $contact = $db->fetch(
+                "SELECT c.full_name as contact_name, c.phone as contact_phone, c.email as contact_email,
+                        d.title as deal_title, d.amount as deal_amount, d.assigned_to, 
+                        d.pipeline_id, d.source, s.name as stage_name, p.name as pipeline_name
+                 FROM deals d 
+                 LEFT JOIN contacts c ON d.contact_id = c.id
+                 LEFT JOIN stages s ON d.stage_id = s.id
+                 LEFT JOIN pipelines p ON d.pipeline_id = p.id
+                 WHERE d.id = :id", [':id' => $dealId]);
+            
+            $automationExtra = [
+                'deal_id' => $dealId,
+                'contact_id' => $contact->contact_phone ?? 0,
+                'contact_name' => $contact->contact_name ?? '',
+                'contact_phone' => $contact->contact_phone ?? '',
+                'contact_email' => $contact->contact_email ?? '',
+                'title' => $contact->deal_title ?? '',
+                'amount' => $amountToman,
+                'assigned_to' => $contact->assigned_to ?? 0,
+                'pipeline_id' => $contact->pipeline_id ?? 0,
+                'stage_name' => $contact->stage_name ?? '',
+                'pipeline_name' => $contact->pipeline_name ?? '',
+                'source' => $contact->source ?? '',
+                'payment_id' => $paymentId,
+                'payment_link' => $publicPayUrl,
+                'payment_short_link' => $publicPayUrl,
+                'payment_amount' => $amountToman,
+            ];
+            ob_start();
+            \Controllers\AutomationController::execute('payment_created', 'deal', $dealId, $automationExtra);
+            ob_end_clean();
+
             if ($isAjax) {
                 // Return JSON with redirect URL to payment gateway
                 echo json_encode([

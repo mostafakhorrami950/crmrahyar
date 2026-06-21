@@ -10,6 +10,156 @@ use Core\Logger;
 
 class AutomationController
 {
+    // ═══════════════════════════════════════════════════
+    // لیست تمام ماشه‌ها (Triggers) با توضیحات کامل
+    // ═══════════════════════════════════════════════════
+    public static function getTriggerTypes(): array
+    {
+        return [
+            'stage_change' => [
+                'label' => '🔄 تغییر مرحله معامله',
+                'description' => 'وقتی یک معامله از مرحله‌ای به مرحله دیگر منتقل می‌شود (مثلاً از «در حال پیگیری» به «پرداخت شده»)',
+                'conditions' => ['pipeline_id', 'stage_id'],
+                'category' => 'معاملات',
+            ],
+            'deal_created' => [
+                'label' => '💼 ایجاد معامله جدید',
+                'description' => 'وقتی یک معامله جدید در سیستم ثبت می‌شود. می‌توانید برای خوش‌آمدگویی یا اطلاع‌رسانی خودکار استفاده کنید.',
+                'conditions' => ['pipeline_id', 'source', 'min_amount'],
+                'category' => 'معاملات',
+            ],
+            'deal_won' => [
+                'label' => '🏆 موفق شدن معامله (برد)',
+                'description' => 'وقتی یک معامله به مرحله نهایی موفق (مثلاً «پرداخت شده» یا «تکمیل شده») منتقل می‌شود.',
+                'conditions' => ['pipeline_id'],
+                'category' => 'معاملات',
+            ],
+            'deal_lost' => [
+                'label' => '😞 ناموفق شدن معامله (باخت)',
+                'description' => 'وقتی یک معامله به مرحله لغو/ناموفق منتقل می‌شود.',
+                'conditions' => ['pipeline_id'],
+                'category' => 'معاملات',
+            ],
+            'payment_created' => [
+                'label' => '💳 ایجاد لینک پرداخت',
+                'description' => 'وقتی یک لینک پرداخت جدید برای معامله ساخته می‌شود. برای ارسال خودکار لینک کوتاه پرداخت به مشتری عالی است.',
+                'conditions' => ['min_amount'],
+                'extra' => ['payment_link', 'payment_short_link', 'payment_amount'],
+                'category' => 'پرداخت',
+            ],
+            'payment_verified' => [
+                'label' => '✅ تایید پرداخت',
+                'description' => 'وقتی پرداختی با موفقیت تایید و وریفای می‌شود.',
+                'conditions' => ['min_amount'],
+                'category' => 'پرداخت',
+            ],
+            'new_contact' => [
+                'label' => '👤 افزودن مخاطب جدید',
+                'description' => 'وقتی مخاطب (مشتری) جدیدی در سیستم ثبت می‌شود.',
+                'conditions' => [],
+                'category' => 'مخاطبان',
+            ],
+            'activity_reminder' => [
+                'label' => '⏰ یادآوری فعالیت',
+                'description' => 'وقتی زمان انجام یک فعالیت (تماس، جلسه، پیگیری و...) فرا می‌رسد.',
+                'conditions' => [],
+                'category' => 'فعالیت‌ها',
+            ],
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════
+    // لیست تمام اقدام‌ها (Actions) با توضیحات کامل
+    // ═══════════════════════════════════════════════════
+    public static function getActionTypes(): array
+    {
+        return [
+            'send_sms' => [
+                'label' => '✉️ ارسال پیامک سفارشی',
+                'description' => 'ارسال پیامک با متن دلخواه به مخاطب معامله. از متغیرها مانند {contact_name} و {deal_title} استفاده کنید.',
+                'category' => 'ارتباطات',
+            ],
+            'send_payment_sms' => [
+                'label' => '💰 ارسال پیامک لینک پرداخت',
+                'description' => 'ارسال خودکار پیامک حاوی لینک کوتاه پرداخت به مخاطب. لینک از آخرین پرداخت ایجاد شده معامله استخراج می‌شود.',
+                'category' => 'ارتباطات',
+            ],
+            'send_notification' => [
+                'label' => '🔔 ارسال اعلان به کاربر',
+                'description' => 'ارسال اعلان داخلی به یک کاربر سیستم (مثلاً اطلاع‌رسانی به مدیر هنگام پرداخت موفق).',
+                'category' => 'اطلاع‌رسانی',
+            ],
+            'create_activity' => [
+                'label' => '📅 ایجاد فعالیت/یادآوری',
+                'description' => 'ایجاد خودکار یک فعالیت جدید برای معامله (مثلاً «پیگیری تلفنی ۳ روز دیگر» یا «ارسال مدارک سفر»).',
+                'category' => 'فعالیت‌ها',
+            ],
+            'assign_user' => [
+                'label' => '👤 تخصیص معامله به کاربر',
+                'description' => 'تخصیص خودکار معامله به یک کاربر مشخص (مثلاً هنگام ورود به مرحله «رزرو بلیط» به کاربر بخش بلیط اختصاص یابد).',
+                'category' => 'مدیریت',
+            ],
+            'update_deal_field' => [
+                'label' => '✏️ بروزرسانی فیلد معامله',
+                'description' => 'تغییر خودکار فیلدهای معامله مانند اولویت، منبع یا توضیحات.',
+                'category' => 'مدیریت',
+            ],
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════
+    // لیست متغیرهای قابل استفاده در هر ماشه
+    // ═══════════════════════════════════════════════════
+    public static function getPlaceholderHelp(string $triggerType): array
+    {
+        $common = [
+            '{contact_name}' => 'نام مخاطب',
+            '{contact_phone}' => 'تلفن مخاطب',
+            '{deal_title}' => 'عنوان معامله',
+            '{amount}' => 'مبلغ معامله (تومان)',
+            '{stage_name}' => 'نام مرحله فعلی',
+            '{pipeline_name}' => 'نام پایپ‌لاین',
+        ];
+
+        $payment = [
+            '{payment_link}' => 'لینک پرداخت (کامل)',
+            '{payment_short_link}' => 'لینک کوتاه پرداخت',
+            '{payment_amount}' => 'مبلغ پرداخت (تومان)',
+        ];
+
+        $triggerMap = [
+            'payment_created' => array_merge($common, $payment),
+            'payment_verified' => array_merge($common, $payment),
+            'stage_change' => $common,
+            'deal_created' => $common,
+            'deal_won' => $common,
+            'deal_lost' => $common,
+            'new_contact' => ['{contact_name}' => 'نام مخاطب', '{contact_phone}' => 'تلفن مخاطب', '{contact_email}' => 'ایمیل مخاطب'],
+            'activity_reminder' => $common,
+        ];
+
+        return $triggerMap[$triggerType] ?? $common;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // لیست انواع فعالیت (ENUM معتبر)
+    // ═══════════════════════════════════════════════════
+    public static function getActivityTypes(): array
+    {
+        return [
+            'follow_up' => '📌 پیگیری / یادآوری',
+            'call' => '📞 تماس تلفنی',
+            'meeting' => '🤝 جلسه',
+            'note' => '📝 یادداشت',
+            'email' => '📧 ایمیل',
+            'sms' => '✉️ پیامک',
+            'other' => '📋 سایر',
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════
+    // صفحه لیست قوانین
+    // ═══════════════════════════════════════════════════
     public function index(): void
     {
         $db = Database::getInstance();
@@ -19,7 +169,12 @@ class AutomationController
 
     public function create(): void
     {
-        View::render('automation/create', ['title' => 'قانون اتوماسیون جدید']);
+        View::render('automation/create', [
+            'title' => 'قانون اتوماسیون جدید',
+            'triggerTypes' => self::getTriggerTypes(),
+            'actionTypes' => self::getActionTypes(),
+            'activityTypes' => self::getActivityTypes(),
+        ]);
     }
 
     public function store(): void
@@ -33,10 +188,9 @@ class AutomationController
         // Clean trigger conditions - remove empty values
         $rawConditions = $_POST['trigger_conditions'] ?? [];
         $triggerConditions = array_filter($rawConditions, function($v) { return $v !== '' && $v !== null; });
-        $triggerConditionsJson = json_encode($triggerConditions);
 
         // Store action config as-is
-        $actionConfig = json_encode($_POST['action_config'] ?? []);
+        $actionConfig = $_POST['action_config'] ?? [];
 
         if (empty($name) || empty($triggerType) || empty($actionType)) {
             Session::setFlash('danger', 'فیلدهای ضروری را پر کنید.');
@@ -48,9 +202,9 @@ class AutomationController
             'name' => $name,
             'description' => $desc,
             'trigger_type' => $triggerType,
-            'trigger_conditions' => $triggerConditionsJson,
+            'trigger_conditions' => json_encode($triggerConditions),
             'action_type' => $actionType,
-            'action_config' => $actionConfig,
+            'action_config' => json_encode($actionConfig),
         ]);
 
         Session::setFlash('success', 'قانون اتوماسیون ایجاد شد.');
@@ -65,14 +219,19 @@ class AutomationController
             View::redirect('/automation');
             return;
         }
-        View::render('automation/edit', ['title' => 'ویرایش قانون', 'rule' => $rule]);
+        View::render('automation/edit', [
+            'title' => 'ویرایش قانون',
+            'rule' => $rule,
+            'triggerTypes' => self::getTriggerTypes(),
+            'actionTypes' => self::getActionTypes(),
+            'activityTypes' => self::getActivityTypes(),
+        ]);
     }
 
     public function update(array $params): void
     {
         $db = Database::getInstance();
 
-        // Clean trigger conditions - remove empty values
         $rawConditions = $_POST['trigger_conditions'] ?? [];
         $triggerConditions = array_filter($rawConditions, function($v) { return $v !== '' && $v !== null; });
 
@@ -138,14 +297,13 @@ class AutomationController
                     $conditions = json_decode($rule->trigger_conditions, true) ?: [];
                     $config = json_decode($rule->action_config, true) ?: [];
 
-                    // بررسی شرایط ماشه
                     if (!self::checkConditions($conditions, $extra)) {
                         $db->insert('automation_logs', [
                             'rule_id' => $rule->id,
                             'entity_type' => $entityType,
                             'entity_id' => $entityId,
                             'status' => 'skipped',
-                            'result_message' => 'شرایط برقرار نبود (conditions: ' . json_encode($conditions) . ', extra stage_id: ' . ($extra['stage_id'] ?? 'N/A') . ', extra pipeline_id: ' . ($extra['pipeline_id'] ?? 'N/A') . ')',
+                            'result_message' => 'شرایط برقرار نبود',
                         ]);
                         continue;
                     }
@@ -180,11 +338,9 @@ class AutomationController
     // ═══════════════════════════════════════════════════
     private static function checkConditions(array $conditions, array $extra): bool
     {
-        // اگر شرطی وجود ندارد، همیشه مجاز است
         if (empty($conditions)) return true;
 
         foreach ($conditions as $key => $val) {
-            // نادیده گرفتن مقادیر خالی (مثلاً وقتی کاربر "همه" انتخاب کرده)
             if ($val === '' || $val === null) continue;
             if (is_string($val) && trim($val) === '') continue;
 
@@ -193,17 +349,14 @@ class AutomationController
                     if (!isset($extra['stage_id'])) break;
                     if ((int)$extra['stage_id'] !== (int)$val) return false;
                     break;
-
                 case 'pipeline_id':
                     if (!isset($extra['pipeline_id'])) break;
                     if ((int)$extra['pipeline_id'] !== (int)$val) return false;
                     break;
-
                 case 'source':
                     if (!isset($extra['source'])) break;
                     if ($extra['source'] !== $val) return false;
                     break;
-
                 case 'min_amount':
                     if (!isset($extra['amount'])) break;
                     if ((int)$extra['amount'] < (int)$val) return false;
@@ -236,14 +389,20 @@ class AutomationController
     private static function replacePlaceholders(string $template, array $extra, string $paymentLinks = ''): string
     {
         $search = [
-            '{contact_name}', '{deal_title}', '{amount}',
-            '{payment_link}', '{stage_name}', '{pipeline_name}',
+            '{contact_name}', '{contact_phone}', '{contact_email}',
+            '{deal_title}', '{amount}',
+            '{payment_link}', '{payment_short_link}', '{payment_amount}',
+            '{stage_name}', '{pipeline_name}',
         ];
         $replace = [
             $extra['contact_name'] ?? $extra['contact_phone'] ?? '',
+            $extra['contact_phone'] ?? '',
+            $extra['contact_email'] ?? '',
             $extra['title'] ?? '',
-            !empty($extra['amount']) ? number_format((float)$extra['amount']) . ' ریال' : '',
-            $paymentLinks,
+            !empty($extra['amount']) ? number_format((float)$extra['amount']) . ' تومان' : '',
+            $paymentLinks ?: ($extra['payment_link'] ?? ''),
+            $extra['payment_short_link'] ?? '',
+            !empty($extra['payment_amount']) ? number_format((float)$extra['payment_amount']) . ' تومان' : '',
             $extra['stage_name'] ?? '',
             $extra['pipeline_name'] ?? '',
         ];
@@ -252,16 +411,12 @@ class AutomationController
 
     // ═══════════════════════════════════════════════════
     // تبدیل نوع فعالیت به مقادیر معتبر ENUM
-    // ENUM: 'note','call','meeting','email','sms','follow_up','other'
     // ═══════════════════════════════════════════════════
     private static function mapActivityType(string $type): string
     {
         $validTypes = ['note', 'call', 'meeting', 'email', 'sms', 'follow_up', 'other'];
         if (in_array($type, $validTypes)) return $type;
-        $map = [
-            'reminder' => 'follow_up',
-            'todo' => 'other',
-        ];
+        $map = ['reminder' => 'follow_up', 'todo' => 'other'];
         return $map[$type] ?? 'other';
     }
 
@@ -274,11 +429,10 @@ class AutomationController
 
         switch ($actionType) {
 
-            // ─── ارسال پیامک ───────────────────────────
+            // ─── ارسال پیامک سفارشی ──────────────────────
             case 'send_sms':
                 $phone = ($config['phone_field'] ?? 'contact') === 'contact'
-                    ? ($extra['contact_phone'] ?? '')
-                    : '';
+                    ? ($extra['contact_phone'] ?? '') : '';
 
                 if (empty($phone)) return "شماره تلفن مخاطب یافت نشد";
 
@@ -286,16 +440,13 @@ class AutomationController
                 if (empty($msgTemplate)) return "متن پیامک تعریف نشده";
 
                 $paymentLinks = !empty($extra['deal_id'])
-                    ? self::buildPaymentLinks((int)$extra['deal_id'])
-                    : '';
+                    ? self::buildPaymentLinks((int)$extra['deal_id']) : '';
                 $finalMessage = self::replacePlaceholders($msgTemplate, $extra, $paymentLinks);
 
                 $result = \Controllers\SmsController::sendWebservice($phone, $finalMessage);
 
-                // ثبت در تاریخچه پیامک - sent_by = null (سیستم)
                 $db->insert('sms_history', [
-                    'recipient' => $phone,
-                    'message' => $finalMessage,
+                    'recipient' => $phone, 'message' => $finalMessage,
                     'status' => $result['success'] ? 'sent' : 'failed',
                     'message_outbox_id' => $result['outbox_id'] ?? '',
                     'error_message' => $result['success'] ? '' : $result['message'],
@@ -306,39 +457,85 @@ class AutomationController
 
                 return $result['success']
                     ? "پیامک به {$phone} ارسال شد"
-                    : "خطا در ارسال پیامک: " . $result['message'];
+                    : "خطا: " . $result['message'];
 
-            // ─── ارسال اعلان ───────────────────────────
+            // ─── ارسال پیامک لینک پرداخت (کوتاه) ─────────
+            case 'send_payment_sms':
+                $phone = $extra['contact_phone'] ?? '';
+                if (empty($phone)) return "شماره تلفن مخاطب یافت نشد";
+
+                // لینک کوتاه پرداخت از extra یا از آخرین پرداخت معامله
+                $shortLink = $extra['payment_short_link'] ?? '';
+                if (empty($shortLink) && !empty($extra['deal_id'])) {
+                    $latestPayment = $db->fetch(
+                        "SELECT short_code FROM payments WHERE deal_id = :did AND short_code IS NOT NULL AND short_code != '' ORDER BY id DESC LIMIT 1",
+                        [':did' => (int)$extra['deal_id']]
+                    );
+                    if ($latestPayment) {
+                        $shortLink = ($GLOBALS['app_config']['url'] ?? '') . '/p/' . $latestPayment->short_code;
+                    }
+                }
+                if (empty($shortLink)) return "لینک پرداخت یافت نشد. ابتدا لینک پرداخت ایجاد کنید.";
+
+                $paymentAmount = $extra['payment_amount'] ?? $extra['amount'] ?? 0;
+                $formattedAmount = !empty($paymentAmount) ? number_format((float)$paymentAmount) . ' تومان' : '';
+
+                // متن پیامک پیش‌فرض یا سفارشی
+                $msgTemplate = trim($config['message_template'] ?? '');
+                if (empty($msgTemplate)) {
+                    $contactName = $extra['contact_name'] ?? 'مشتری گرامی';
+                    $dealTitle = $extra['title'] ?? '';
+                    $msgTemplate = "{$contactName} عزیز" . ($dealTitle ? "، {$dealTitle}" : "") . ";\n";
+                    $msgTemplate .= "مبلغ قابل پرداخت: {$formattedAmount}\n";
+                    $msgTemplate .= "لینک پرداخت: {$shortLink}";
+                } else {
+                    // اگر متن سفارشی بود، لینک کوتاه را در extra اضافه کن
+                    $extra['payment_short_link'] = $shortLink;
+                    $extra['payment_link'] = $shortLink;
+                    $extra['payment_amount'] = $paymentAmount;
+                }
+
+                $finalMessage = self::replacePlaceholders($msgTemplate, $extra, $shortLink);
+
+                $result = \Controllers\SmsController::sendWebservice($phone, $finalMessage);
+
+                $db->insert('sms_history', [
+                    'recipient' => $phone, 'message' => $finalMessage,
+                    'status' => $result['success'] ? 'sent' : 'failed',
+                    'message_outbox_id' => $result['outbox_id'] ?? '',
+                    'error_message' => $result['success'] ? '' : $result['message'],
+                    'deal_id' => !empty($extra['deal_id']) ? (int)$extra['deal_id'] : null,
+                    'contact_id' => !empty($extra['contact_id']) ? (int)$extra['contact_id'] : null,
+                    'sent_by' => null,
+                ]);
+
+                return $result['success']
+                    ? "پیامک لینک پرداخت به {$phone} ارسال شد (لینک: {$shortLink})"
+                    : "خطا: " . $result['message'];
+
+            // ─── ارسال اعلان به کاربر ───────────────────
             case 'send_notification':
                 $cfgUserId = !empty($config['user_id']) ? (int)$config['user_id'] : 0;
                 $extraUserId = !empty($extra['assigned_to']) ? (int)$extra['assigned_to'] : 0;
                 $userId = $cfgUserId > 0 ? $cfgUserId : $extraUserId;
 
-                if ($userId <= 0) {
-                    return "کاربر گیرنده اعلان مشخص نشده";
-                }
+                if ($userId <= 0) return "کاربر گیرنده اعلان مشخص نشده";
 
                 $title = trim($config['title'] ?? 'اعلان اتوماسیون');
                 $msg = trim($config['message'] ?? '');
                 $title = self::replacePlaceholders($title, $extra);
                 $msg = self::replacePlaceholders($msg, $extra);
 
-                // درج مستقیم در دیتابیس (بدون Auth::id که ممکن null باشد)
                 $db->insert('notifications', [
-                    'user_id' => $userId,
-                    'from_user_id' => null,
-                    'type' => 'automation',
-                    'title' => $title,
-                    'message' => $msg,
+                    'user_id' => $userId, 'from_user_id' => null, 'type' => 'automation',
+                    'title' => $title, 'message' => $msg,
                     'link' => "/deals/view/{$entityId}",
-                    'entity_type' => $entityType,
-                    'entity_id' => $entityId,
-                    'is_read' => 0,
+                    'entity_type' => $entityType, 'entity_id' => $entityId, 'is_read' => 0,
                 ]);
 
                 return "اعلان به کاربر {$userId} ارسال شد";
 
-            // ─── ایجاد فعالیت/یادآوری ──────────────────
+            // ─── ایجاد فعالیت/یادآوری ───────────────────
             case 'create_activity':
                 $activityUserId = !empty($extra['assigned_to']) ? (int)$extra['assigned_to'] : 0;
                 if ($activityUserId <= 0) {
@@ -362,31 +559,42 @@ class AutomationController
                     : date('Y-m-d H:i:s');
 
                 $db->insert('deal_activities', [
-                    'deal_id' => $entityId,
-                    'user_id' => $activityUserId,
-                    'type' => $validType,
-                    'subject' => $subject,
-                    'description' => $description,
-                    'is_done' => 0,
+                    'deal_id' => $entityId, 'user_id' => $activityUserId,
+                    'type' => $validType, 'subject' => $subject,
+                    'description' => $description, 'is_done' => 0,
                     'activity_date' => $activityDate,
                 ]);
 
-                return "فعالیت '{$subject}' ایجاد شد";
+                return "فعالیت '{$subject}' ({$validType}) ایجاد شد";
 
-            // ─── تخصیص معامله به کاربر ─────────────────
+            // ─── تخصیص معامله به کاربر ──────────────────
             case 'assign_user':
                 $assignTo = !empty($config['assign_to']) ? (int)$config['assign_to'] : 0;
                 if ($assignTo <= 0) return "کاربر مسئول مشخص نشده";
 
                 $user = $db->fetch("SELECT id, full_name FROM users WHERE id = :id AND is_active = 1", [':id' => $assignTo]);
-                if (!$user) return "کاربر {$assignTo} یافت نشد یا غیرفعال است";
+                if (!$user) return "کاربر {$assignTo} یافت نشد";
 
                 $db->update('deals', [
-                    'assigned_to' => $assignTo,
-                    'updated_at' => date('Y-m-d H:i:s'),
+                    'assigned_to' => $assignTo, 'updated_at' => date('Y-m-d H:i:s'),
                 ], 'id = :id', [':id' => $entityId]);
 
                 return "معامله به {$user->full_name} اختصاص یافت";
+
+            // ─── بروزرسانی فیلد معامله ───────────────────
+            case 'update_deal_field':
+                $field = $config['field'] ?? '';
+                $value = $config['value'] ?? '';
+                if (empty($field)) return "فیلد مشخص نشده";
+
+                $allowedFields = ['source', 'priority', 'description', 'tags'];
+                if (!in_array($field, $allowedFields)) return "فیلد '{$field}' مجاز نیست";
+
+                $db->update('deals', [
+                    $field => $value, 'updated_at' => date('Y-m-d H:i:s'),
+                ], 'id = :id', [':id' => $entityId]);
+
+                return "فیلد {$field} بروزرسانی شد";
 
             default:
                 return "نوع اقدام نامعتبر: {$actionType}";
