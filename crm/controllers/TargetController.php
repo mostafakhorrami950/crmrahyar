@@ -17,16 +17,34 @@ class TargetController
         // Update achieved amounts from actual data
         $this->syncAchievements($db, $year, $month);
         
-        $targets = $db->fetchAll(
-            "SELECT st.*, 
-                    CASE WHEN st.target_type = 'user' THEN u.full_name ELSE t.name END as target_name
-             FROM sales_targets st
-             LEFT JOIN users u ON st.target_type = 'user' AND st.target_id = u.id
-             LEFT JOIN teams t ON st.target_type = 'team' AND st.target_id = t.id
-             WHERE st.year = :year AND st.month = :month
-             ORDER BY st.target_type, target_name",
-            [':year' => $year, ':month' => $month]
-        );
+        // Non-admin users can only see their own targets
+        $isAdmin = Auth::hasPermission('settings.manage');
+        if ($isAdmin) {
+            $targets = $db->fetchAll(
+                "SELECT st.*, 
+                        CASE WHEN st.target_type = 'user' THEN u.full_name ELSE t.name END as target_name
+                 FROM sales_targets st
+                 LEFT JOIN users u ON st.target_type = 'user' AND st.target_id = u.id
+                 LEFT JOIN teams t ON st.target_type = 'team' AND st.target_id = t.id
+                 WHERE st.year = :year AND st.month = :month
+                 ORDER BY st.target_type, target_name",
+                [':year' => $year, ':month' => $month]
+            );
+        } else {
+            $userId = Auth::id();
+            $targets = $db->fetchAll(
+                "SELECT st.*, 
+                        CASE WHEN st.target_type = 'user' THEN u.full_name ELSE t.name END as target_name
+                 FROM sales_targets st
+                 LEFT JOIN users u ON st.target_type = 'user' AND st.target_id = u.id
+                 LEFT JOIN teams t ON st.target_type = 'team' AND st.target_id = t.id
+                 WHERE st.year = :year AND st.month = :month
+                   AND ((st.target_type = 'user' AND st.target_id = :user_id)
+                     OR (st.target_type = 'team' AND st.target_id IN (SELECT team_id FROM team_members WHERE user_id = :user_id2)))
+                 ORDER BY st.target_type, target_name",
+                [':year' => $year, ':month' => $month, ':user_id' => $userId, ':user_id2' => $userId]
+            );
+        }
         
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1 ORDER BY full_name");
         $teams = $db->fetchAll("SELECT id, name FROM teams WHERE is_active = 1 ORDER BY name");

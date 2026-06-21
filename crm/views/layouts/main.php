@@ -59,13 +59,17 @@
                 </a>
                 <?php endif; ?>
                 
-                <?php if (\Core\Auth::hasPermission('reports.view')): ?>
+                <?php if (\Core\Auth::hasPermission('activities.view')): ?>
                 <a href="<?php echo $config['url']; ?>/activities" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/activities') !== false ? 'active' : ''; ?>">
                     <span class="icon">📅</span> فعالیت‌ها
                 </a>
+                <?php endif; ?>
+                <?php if (\Core\Auth::hasPermission('calendar.view')): ?>
                 <a href="<?php echo $config['url']; ?>/calendar" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/calendar') !== false ? 'active' : ''; ?>">
                     <span class="icon">🗓️</span> تقویم
                 </a>
+                <?php endif; ?>
+                <?php if (\Core\Auth::hasPermission('reports.view')): ?>
                 <a href="<?php echo $config['url']; ?>/targets" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/targets') !== false ? 'active' : ''; ?>">
                     <span class="icon">🎯</span> هدف‌گذاری
                 </a>

@@ -138,8 +138,8 @@ Router::group('/sms', function() {
 
 // Activities
 Router::group('/activities', function() {
-    Router::get('', [ReportController::class, 'activities'], 'reports.view');
-    Router::post('/toggle-done/{id}', [ReportController::class, 'toggleActivity'], 'reports.view');
+    Router::get('', [ReportController::class, 'activities'], 'activities.view');
+    Router::post('/toggle-done/{id}', [ReportController::class, 'toggleActivity'], 'activities.view');
 });
 
 // Reports
@@ -213,8 +213,8 @@ Router::get('/search/api', [SearchController::class, 'api']);
 
 // Calendar
 Router::group('/calendar', function() {
-    Router::get('', [CalendarController::class, 'index'], 'reports.view');
-    Router::get('/events', [CalendarController::class, 'events'], 'reports.view');
+    Router::get('', [CalendarController::class, 'index'], 'calendar.view');
+    Router::get('/events', [CalendarController::class, 'events'], 'calendar.view');
 });
 
 // Teams management (admin only)
@@ -227,11 +227,11 @@ Router::group('/teams', function() {
     Router::post('/delete/{id}', [TeamController::class, 'delete'], 'users.manage');
 });
 
-// Sales Targets
+// Sales Targets - view for all, create/delete only for admins
 Router::group('/targets', function() {
     Router::get('', [TargetController::class, 'index'], 'reports.view');
-    Router::post('/store', [TargetController::class, 'store'], 'settings.manage');
-    Router::post('/delete/{id}', [TargetController::class, 'delete'], 'settings.manage');
+    Router::post('/store', [TargetController::class, 'store'], 'reports.view');
+    Router::post('/delete/{id}', [TargetController::class, 'delete'], 'reports.view');
 });
 
 // Automation
