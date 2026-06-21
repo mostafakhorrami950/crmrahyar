@@ -124,7 +124,10 @@ class ImportController
     public function preview(): void
     {
         Auth::requirePermission('contacts.create');
-        header('Content-Type: application/json');
+        // Clear any previous output and suppress warnings
+        if (ob_get_level()) ob_end_clean();
+        ob_start();
+        header('Content-Type: application/json; charset=utf-8');
         
         $savedPath = Session::get('import_file');
         if (!$savedPath || !file_exists($savedPath)) {
@@ -148,6 +151,11 @@ class ImportController
             }
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
+            exit;
+        }
+
+        if (empty($data) || count($data) < 2) {
+            echo json_encode(['success' => false, 'message' => 'فایل خالی است یا فقط هدر دارد.']);
             exit;
         }
 
@@ -176,7 +184,9 @@ class ImportController
     public function execute(): void
     {
         Auth::requirePermission('contacts.create');
-        header('Content-Type: application/json');
+        if (ob_get_level()) ob_end_clean();
+        ob_start();
+        header('Content-Type: application/json; charset=utf-8');
 
         $savedPath = Session::get('import_file');
         if (!$savedPath || !file_exists($savedPath)) {
@@ -298,18 +308,36 @@ class ImportController
     private static function parseCSV(string $filePath): array
     {
         $rows = [];
-        $encoding = 'UTF-8';
         
-        // Detect BOM
-        $bom = file_get_contents($filePath, false, null, 0, 3);
-        if ($bom === "\xEF\xBB\xBF") {
-            $encoding = 'UTF-8';
+        // Read entire file to detect encoding
+        $raw = file_get_contents($filePath);
+        if ($raw === false) throw new \Exception('خطا در خواندن فایل CSV');
+        
+        // Detect and convert encoding to UTF-8
+        if (substr($raw, 0, 3) === "\xEF\xBB\xBF") {
+            $raw = substr($raw, 3); // Remove BOM
         }
+        
+        // Check if already valid UTF-8
+        if (!mb_check_encoding($raw, 'UTF-8')) {
+            // Try common encodings for Persian/Arabic files
+            $detected = mb_detect_encoding($raw, ['Windows-1256', 'UTF-8', 'ISO-8859-1', 'Windows-1251', 'Windows-1252'], true);
+            if ($detected && $detected !== 'UTF-8') {
+                $raw = mb_convert_encoding($raw, 'UTF-8', $detected);
+            } else {
+                // Last resort
+                $raw = mb_convert_encoding($raw, 'UTF-8', 'Windows-1256');
+            }
+        }
+        
+        // Write converted content to temp file
+        $tmpFile = tempnam(sys_get_temp_dir(), 'csv_import_');
+        file_put_contents($tmpFile, $raw);
 
-        $handle = fopen($filePath, 'r');
-        if (!$handle) throw new \Exception('خطا در باز کردن فایل CSV');
+        $handle = fopen($tmpFile, 'r');
+        if (!$handle) { unlink($tmpFile); throw new \Exception('خطا در باز کردن فایل CSV'); }
 
-        // Try to detect delimiter
+        // Try to detect delimiter from first line
         $firstLine = fgets($handle);
         rewind($handle);
         $delimiter = ',';
@@ -320,16 +348,15 @@ class ImportController
         }
 
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-            // Convert encoding if needed
-            $row = array_map(function($cell) use ($encoding) {
-                $cell = mb_convert_encoding($cell, 'UTF-8', $encoding);
+            $row = array_map(function($cell) {
                 return trim($cell);
             }, $row);
-            if (empty(array_filter($row))) continue; // Skip empty rows
+            if (empty(array_filter($row))) continue;
             $rows[] = $row;
         }
 
         fclose($handle);
+        unlink($tmpFile);
         return $rows;
     }
 
