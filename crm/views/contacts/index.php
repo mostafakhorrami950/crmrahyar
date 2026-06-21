@@ -2,9 +2,15 @@
 <div class="page-header">
     <h5>👥 مدیریت مخاطبان</h5>
     <div style="display:flex;gap:8px;">
+        <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
         <a href="<?php echo $config['url']; ?>/contacts/import" class="btn btn-secondary">📥 ایمپورت</a>
+        <?php endif; ?>
+        <?php if (\Core\Auth::hasPermission('contacts.view')): ?>
         <a href="<?php echo $config['url']; ?>/export/contacts" class="btn btn-secondary">📤 اکسپورت</a>
+        <?php endif; ?>
+        <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
         <a href="<?php echo $config['url']; ?>/contacts/create" class="btn btn-primary">➕ مخاطب جدید</a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -178,10 +184,14 @@
                     <td data-label="عملیات">
                         <div style="display:flex;gap:4px;">
                             <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $c->id; ?>" class="btn btn-sm btn-primary" title="مشاهده">👁️</a>
+                            <?php if (\Core\Auth::hasPermission('contacts.edit')): ?>
                             <a href="<?php echo $config['url']; ?>/contacts/edit/<?php echo $c->id; ?>" class="btn btn-sm btn-secondary" title="ویرایش">✏️</a>
+                            <?php endif; ?>
+                            <?php if (\Core\Auth::hasPermission('contacts.delete')): ?>
                             <form method="POST" action="<?php echo $config['url']; ?>/contacts/delete/<?php echo $c->id; ?>" style="display:inline;" onsubmit="return confirm('آیا از حذف «<?php echo htmlspecialchars($c->full_name, ENT_QUOTES); ?>» اطمینان دارید؟')">
                                 <button type="submit" class="btn btn-sm btn-danger" title="حذف">🗑️</button>
                             </form>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>

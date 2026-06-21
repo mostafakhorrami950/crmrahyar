@@ -70,7 +70,7 @@ Router::group('/pipelines', function() {
     Router::post('/update/{id}', [PipelineController::class, 'update'], 'pipelines.edit');
     Router::post('/delete/{id}', [PipelineController::class, 'delete'], 'pipelines.delete');
     Router::get('/kanban/{id}', [PipelineController::class, 'kanban'], 'pipelines.view');
-    Router::get('/api/all', [PipelineController::class, 'apiAll']);
+    Router::get('/api/all', [PipelineController::class, 'apiAll'], 'pipelines.view');
     Router::post('/update-stage', [PipelineController::class, 'updateStage'], 'pipelines.edit');
     // Stage management (AJAX)
     Router::get('/{id}/stages', [PipelineController::class, 'stages'], 'pipelines.view');
@@ -178,7 +178,7 @@ Router::group('/settings/categories', function() {
     Router::post('/store', [CategoryController::class, 'store'], 'settings.manage');
     Router::post('/update/{id}', [CategoryController::class, 'update'], 'settings.manage');
     Router::post('/delete/{id}', [CategoryController::class, 'delete'], 'settings.manage');
-    Router::get('/api', [CategoryController::class, 'getCategories']);
+    Router::get('/api', [CategoryController::class, 'getCategories'], 'settings.manage');
 });
 
 // Deal Sources Management
@@ -187,7 +187,7 @@ Router::group('/settings/sources', function() {
     Router::post('/store', [SourceController::class, 'store'], 'settings.manage');
     Router::post('/update', [SourceController::class, 'update'], 'settings.manage');
     Router::post('/delete', [SourceController::class, 'delete'], 'settings.manage');
-    Router::get('/active', [SourceController::class, 'getActive']);
+    Router::get('/active', [SourceController::class, 'getActive'], 'settings.manage');
 });
 
 // Deal Loss Reasons Management
@@ -196,15 +196,15 @@ Router::group('/settings/loss-reasons', function() {
     Router::post('/store', [LossReasonController::class, 'store'], 'settings.manage');
     Router::post('/update', [LossReasonController::class, 'update'], 'settings.manage');
     Router::post('/delete', [LossReasonController::class, 'delete'], 'settings.manage');
-    Router::get('/active', [LossReasonController::class, 'getActive']);
+    Router::get('/active', [LossReasonController::class, 'getActive'], 'settings.manage');
 });
 
 // Notifications
 Router::group('/notifications', function() {
-    Router::get('', [NotificationController::class, 'index']);
-    Router::get('/unread', [NotificationController::class, 'unread']);
-    Router::post('/mark-read/{id}', [NotificationController::class, 'markRead']);
-    Router::post('/mark-all-read', [NotificationController::class, 'markAllRead']);
+    Router::get('', [NotificationController::class, 'index'], 'deals.view');
+    Router::get('/unread', [NotificationController::class, 'unread'], 'deals.view');
+    Router::post('/mark-read/{id}', [NotificationController::class, 'markRead'], 'deals.view');
+    Router::post('/mark-all-read', [NotificationController::class, 'markAllRead'], 'deals.view');
 });
 
 // Global Search
@@ -213,8 +213,8 @@ Router::get('/search/api', [SearchController::class, 'api']);
 
 // Calendar
 Router::group('/calendar', function() {
-    Router::get('', [CalendarController::class, 'index']);
-    Router::get('/events', [CalendarController::class, 'events']);
+    Router::get('', [CalendarController::class, 'index'], 'reports.view');
+    Router::get('/events', [CalendarController::class, 'events'], 'reports.view');
 });
 
 // Teams management (admin only)
@@ -262,8 +262,8 @@ Router::group('/backup', function() {
     Router::post('/delete/{file}', [BackupController::class, 'delete'], 'settings.manage');
 });
 
-// Bulk Delete
-Router::post('/bulk/delete', [BulkController::class, 'delete']);
+// Bulk Delete (permission checked internally per entity type)
+Router::post('/bulk/delete', [BulkController::class, 'delete'], 'deals.view');
 
 // Logger viewer (admin)
 Router::get('/system/logs', function() {
