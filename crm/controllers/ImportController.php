@@ -314,9 +314,9 @@ class ImportController
 
         // Clean up
         if (file_exists($savedPath)) unlink($savedPath);
-        Session::clear('import_file');
-        Session::clear('import_file_name');
-        Session::clear('import_ext');
+        Session::remove('import_file');
+        Session::remove('import_file_name');
+        Session::remove('import_ext');
 
         ActivityLog::log('contacts.import', 'contact', 0, "{$imported} مخاطب ایمپورت شد");
 
