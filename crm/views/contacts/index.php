@@ -1,7 +1,11 @@
 <?php $config = $GLOBALS['app_config']; ?>
 <div class="page-header">
     <h5>👥 مدیریت مخاطبان</h5>
-    <a href="<?php echo $config['url']; ?>/contacts/create" class="btn btn-primary">➕ مخاطب جدید</a>
+    <div style="display:flex;gap:8px;">
+        <a href="<?php echo $config['url']; ?>/contacts/import" class="btn btn-secondary">📥 ایمپورت</a>
+        <a href="<?php echo $config['url']; ?>/export/contacts" class="btn btn-secondary">📤 اکسپورت</a>
+        <a href="<?php echo $config['url']; ?>/contacts/create" class="btn btn-primary">➕ مخاطب جدید</a>
+    </div>
 </div>
 
 <!-- Stats -->

@@ -166,11 +166,15 @@
                             <select name="loss_reason_id" class="deal-input">
                                 <option value="">— انتخاب کنید —</option>
                                 <?php
-                                $lossReasons = \Core\Database::getInstance()->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
-                                foreach ($lossReasons as $lr):
+                                try {
+                                    $lossReasons = \Core\Database::getInstance()->fetchAll("SELECT id, name, icon FROM deal_loss_reasons WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                                    foreach ($lossReasons as $lr):
                                 ?>
                                 <option value="<?php echo $lr->id; ?>" <?php echo ($deal->loss_reason_id ?? '') == $lr->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($lr->icon . ' ' . $lr->name); ?></option>
-                                <?php endforeach; ?>
+                                <?php
+                                    endforeach;
+                                } catch (\Exception $e) { /* table may not exist yet */ }
+                                ?>
                             </select>
                         </div>
                         <div class="deal-form-field full">

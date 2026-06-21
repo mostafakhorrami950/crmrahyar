@@ -27,6 +27,7 @@ use Controllers\TeamController;
 use Controllers\TargetController;
 use Controllers\AutomationController;
 use Controllers\ExportController;
+use Controllers\ImportController;
 use Controllers\BackupController;
 
 // Auth routes
@@ -103,6 +104,11 @@ Router::group('/contacts', function() {
     Router::get('/edit/{id}', [ContactController::class, 'edit'], 'contacts.edit');
     Router::post('/update/{id}', [ContactController::class, 'update'], 'contacts.edit');
     Router::post('/delete/{id}', [ContactController::class, 'delete'], 'contacts.delete');
+    // Contact Import
+    Router::get('/import', [ImportController::class, 'showForm'], 'contacts.create');
+    Router::post('/import/upload', [ImportController::class, 'upload'], 'contacts.create');
+    Router::post('/import/preview', [ImportController::class, 'preview'], 'contacts.create');
+    Router::post('/import/execute', [ImportController::class, 'execute'], 'contacts.create');
 });
 
 // Payment routes
