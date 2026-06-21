@@ -32,7 +32,9 @@
                     <td>
                         <button type="button" class="btn btn-sm btn-secondary" onclick="editCategory(<?php echo $cat->id; ?>, '<?php echo htmlspecialchars($cat->name, ENT_QUOTES); ?>', '<?php echo htmlspecialchars($cat->description ?? '', ENT_QUOTES); ?>', '<?php echo htmlspecialchars($cat->color ?? '#6B7280'); ?>')">✏️</button>
                         <?php if (!$cat->is_default): ?>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteCategory(<?php echo $cat->id; ?>, '<?php echo htmlspecialchars($cat->name, ENT_QUOTES); ?>')">🗑️</button>
+                        <form method="POST" action="<?php echo $config['url']; ?>/settings/categories/delete/<?php echo $cat->id; ?>" style="display:inline;" onsubmit="return confirm('آیا از حذف دسته‌بندی «<?php echo htmlspecialchars($cat->name, ENT_QUOTES); ?>» اطمینان دارید؟ مخاطبین این دسته به دسته پیش‌فرض منتقل می‌شوند.')">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                        </form>
                         <?php endif; ?>
                     </td>
                 </tr>

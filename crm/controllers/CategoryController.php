@@ -95,20 +95,32 @@ class CategoryController
         $db = Database::getInstance();
         $category = $db->fetch("SELECT name FROM contact_categories WHERE id = :id", [':id' => $params['id']]);
         if (!$category) {
-            echo json_encode(['success' => false, 'message' => 'دسته‌بندی یافت نشد.']);
-            exit;
+            Session::setFlash('danger', 'دسته‌بندی یافت نشد.');
+            View::redirect('/settings/categories');
+            return;
+        }
+
+        // Check if this is a default category
+        $catInfo = $db->fetch("SELECT is_default FROM contact_categories WHERE id = :id", [':id' => $params['id']]);
+        if ($catInfo && $catInfo->is_default) {
+            Session::setFlash('danger', 'دسته‌بندی پیش‌فرض قابل حذف نیست.');
+            View::redirect('/settings/categories');
+            return;
         }
 
         // Reset contacts in this category to default
         $default = $db->fetch("SELECT id FROM contact_categories WHERE is_default = 1");
         if ($default) {
             $db->update('contacts', ['category_id' => $default->id], 'category_id = :cat_id', [':cat_id' => $params['id']]);
+        } else {
+            // If no default, set to NULL
+            $db->update('contacts', ['category_id' => null], 'category_id = :cat_id', [':cat_id' => $params['id']]);
         }
 
         $db->delete('contact_categories', 'id = :id', [':id' => $params['id']]);
         ActivityLog::log('delete_category', 'setting', 0, "دسته‌بندی {$category->name} حذف شد");
-        echo json_encode(['success' => true, 'message' => 'دسته‌بندی با موفقیت حذف شد.']);
-        exit;
+        Session::setFlash('success', 'دسته‌بندی «' . $category->name . '» با موفقیت حذف شد.');
+        View::redirect('/settings/categories');
     }
 
     public function getCategories(): void

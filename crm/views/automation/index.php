@@ -22,7 +22,6 @@
         <?php
             $triggerTypes = \Controllers\AutomationController::getTriggerTypes();
             $actionTypes = \Controllers\AutomationController::getActionTypes();
-            $conditions = json_decode($r->trigger_conditions, true) ?: [];
         ?>
         <?php foreach ($rules as $r): ?>
         <tr>
