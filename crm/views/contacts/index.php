@@ -26,15 +26,62 @@
     </div>
 </div>
 
-<!-- Search -->
-<div class="card" style="padding:12px;margin-bottom:16px;">
-    <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
-        <input type="text" name="search" class="form-input" style="flex:1;min-width:200px;" placeholder="🔍 جستجو با نام، شماره یا ایمیل..." value="<?php echo htmlspecialchars($search); ?>">
-        <button type="submit" class="btn btn-primary">🔍</button>
-        <?php if ($search): ?>
-        <a href="<?php echo $config['url']; ?>/contacts" class="btn btn-secondary">✖ حذف فیلتر</a>
-        <?php endif; ?>
+<!-- Advanced Search -->
+<div class="card" style="padding:16px;margin-bottom:16px;">
+    <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:2;min-width:200px;">
+            <label style="font-size:12px;color:var(--gray-500);display:block;margin-bottom:4px;">🔍 جستجو</label>
+            <input type="text" name="search" class="form-input" style="width:100%;" placeholder="نام، شماره، ایمیل، شرکت، کد ملی..." value="<?php echo htmlspecialchars($search); ?>">
+        </div>
+        <div style="flex:1;min-width:140px;">
+            <label style="font-size:12px;color:var(--gray-500);display:block;margin-bottom:4px;">📁 دسته‌بندی</label>
+            <select name="category_id" class="form-input" style="width:100%;">
+                <option value="">همه</option>
+                <option value="0" <?php echo $selectedCategory === '0' ? 'selected' : ''; ?>>بدون دسته‌بندی</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?php echo $cat->id; ?>" <?php echo $selectedCategory == $cat->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat->name); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div style="flex:1;min-width:120px;">
+            <label style="font-size:12px;color:var(--gray-500);display:block;margin-bottom:4px;">📞 وضعیت تلفن</label>
+            <select name="has_phone" class="form-input" style="width:100%;">
+                <option value="">همه</option>
+                <option value="1" <?php echo $selectedHasPhone === '1' ? 'selected' : ''; ?>>دارای تلفن</option>
+                <option value="0" <?php echo $selectedHasPhone === '0' ? 'selected' : ''; ?>>بدون تلفن</option>
+            </select>
+        </div>
+        <div style="flex:1;min-width:100px;">
+            <label style="font-size:12px;color:var(--gray-500);display:block;margin-bottom:4px;">📅 از تاریخ</label>
+            <input type="date" name="date_from" class="form-input" style="width:100%;" value="<?php echo $dateFrom; ?>">
+        </div>
+        <div style="flex:1;min-width:100px;">
+            <label style="font-size:12px;color:var(--gray-500);display:block;margin-bottom:4px;">📅 تا تاریخ</label>
+            <input type="date" name="date_to" class="form-input" style="width:100%;" value="<?php echo $dateTo; ?>">
+        </div>
+        <div style="display:flex;gap:6px;">
+            <button type="submit" class="btn btn-primary">🔍 فیلتر</button>
+            <a href="<?php echo $config['url']; ?>/contacts" class="btn btn-secondary">✖ حذف فیلتر</a>
+        </div>
     </form>
+</div>
+
+<!-- Results Info & Sort -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+    <span style="font-size:13px;color:var(--gray-600);">📊 نمایش <?php echo number_format(($page-1)*$perPage+1); ?>-<?php echo number_format(min($page*$perPage, $total)); ?> از <?php echo number_format($total); ?> مخاطب</span>
+    <div style="display:flex;gap:6px;font-size:12px;">
+        <span style="color:var(--gray-500);">مرتب‌سازی:</span>
+        <?php 
+        $sorts = ['created_at'=>'تاریخ', 'full_name'=>'نام', 'company'=>'شرکت'];
+        foreach ($sorts as $skey => $slabel): 
+            $newDir = ($sortBy === $skey && $sortDir === 'DESC') ? 'ASC' : 'DESC';
+        ?>
+        <a href="?<?php echo $baseQs ? $baseQs.'&' : ''; ?>sort=<?php echo $skey; ?>&dir=<?php echo $newDir; ?>" 
+           style="padding:4px 10px;border-radius:8px;<?php echo $sortBy === $skey ? 'background:var(--primary);color:#fff;' : 'background:var(--gray-100);color:var(--gray-600);'; ?>text-decoration:none;font-weight:600;">
+            <?php echo $slabel; ?> <?php echo $sortBy === $skey ? ($sortDir === 'ASC' ? '↑' : '↓') : ''; ?>
+        </a>
+        <?php endforeach; ?>
+    </div>
 </div>
 
 <!-- Contacts Grid -->
@@ -142,6 +189,40 @@
             </tbody>
         </table>
     </div>
+</div>
+<?php endif; ?>
+
+<?php if ($totalPages > 1): ?>
+<!-- Pagination -->
+<div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap;">
+    <?php $qsPrefix = $baseQs ? $baseQs.'&' : ''; ?>
+    
+    <?php if ($page > 1): ?>
+    <a href="?<?php echo $qsPrefix; ?>page=1" class="btn btn-sm btn-secondary" title="اول">⏮</a>
+    <a href="?<?php echo $qsPrefix; ?>page=<?php echo $page-1; ?>" class="btn btn-sm btn-secondary" title="قبلی">◀</a>
+    <?php endif; ?>
+    
+    <?php 
+    $start = max(1, $page - 3);
+    $end = min($totalPages, $page + 3);
+    if ($start > 1) echo '<span style="color:var(--gray-400);">...</span>';
+    for ($i = $start; $i <= $end; $i++): 
+    ?>
+    <a href="?<?php echo $qsPrefix; ?>page=<?php echo $i; ?>" 
+       class="btn btn-sm <?php echo $i === $page ? 'btn-primary' : 'btn-secondary'; ?>"
+       style="<?php echo $i === $page ? 'font-weight:800;min-width:36px;' : ''; ?>">
+        <?php echo $i; ?>
+    </a>
+    <?php endfor; 
+    if ($end < $totalPages) echo '<span style="color:var(--gray-400);">...</span>';
+    ?>
+    
+    <?php if ($page < $totalPages): ?>
+    <a href="?<?php echo $qsPrefix; ?>page=<?php echo $page+1; ?>" class="btn btn-sm btn-secondary" title="بعدی">▶</a>
+    <a href="?<?php echo $qsPrefix; ?>page=<?php echo $totalPages; ?>" class="btn btn-sm btn-secondary" title="آخر">⏭</a>
+    <?php endif; ?>
+    
+    <span style="font-size:12px;color:var(--gray-500);margin-right:12px;">صفحه <?php echo $page; ?> از <?php echo $totalPages; ?></span>
 </div>
 <?php endif; ?>
 

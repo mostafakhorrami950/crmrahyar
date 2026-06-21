@@ -13,11 +13,21 @@ class ContactController
     {
         $db = Database::getInstance();
         $search = $_GET['search'] ?? '';
+        $categoryId = $_GET['category_id'] ?? '';
+        $source = $_GET['source'] ?? '';
+        $hasPhone = $_GET['has_phone'] ?? '';
+        $dateFrom = $_GET['date_from'] ?? '';
+        $dateTo = $_GET['date_to'] ?? '';
+        $sortBy = $_GET['sort'] ?? 'created_at';
+        $sortDir = $_GET['dir'] ?? 'DESC';
+        $perPage = 50;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
         
         $where = "WHERE 1=1";
         $params = [];
         
-        // Scope-based filtering using permission system
+        // Scope-based filtering
         $scope = Auth::scopeFilter('contacts.view', ['c.created_by']);
         if ($scope['where'] !== '1=1') {
             $where .= " AND " . $scope['where'];
@@ -25,11 +35,55 @@ class ContactController
         }
         
         if ($search) {
-            $where .= " AND (c.full_name LIKE :search OR c.phone LIKE :search2 OR c.email LIKE :search3)";
+            $where .= " AND (c.full_name LIKE :search OR c.phone LIKE :search2 OR c.email LIKE :search3 OR c.company LIKE :search4 OR c.national_code LIKE :search5 OR c.company_phone LIKE :search6)";
             $params[':search'] = "%{$search}%";
             $params[':search2'] = "%{$search}%";
             $params[':search3'] = "%{$search}%";
+            $params[':search4'] = "%{$search}%";
+            $params[':search5'] = "%{$search}%";
+            $params[':search6'] = "%{$search}%";
         }
+        
+        if ($categoryId !== '') {
+            if ($categoryId === '0') {
+                $where .= " AND c.category_id IS NULL";
+            } else {
+                $where .= " AND c.category_id = :category_id";
+                $params[':category_id'] = (int)$categoryId;
+            }
+        }
+        
+        if ($source) {
+            $where .= " AND c.source LIKE :source";
+            $params[':source'] = "%{$source}%";
+        }
+        
+        if ($hasPhone === '1') {
+            $where .= " AND c.phone IS NOT NULL AND c.phone != ''";
+        } elseif ($hasPhone === '0') {
+            $where .= " AND (c.phone IS NULL OR c.phone = '')";
+        }
+        
+        if ($dateFrom) {
+            $where .= " AND DATE(c.created_at) >= :date_from";
+            $params[':date_from'] = $dateFrom;
+        }
+        if ($dateTo) {
+            $where .= " AND DATE(c.created_at) <= :date_to";
+            $params[':date_to'] = $dateTo;
+        }
+        
+        // Count total for pagination
+        $totalResult = $db->fetch("SELECT COUNT(*) as total FROM contacts c {$where}", $params);
+        $total = $totalResult ? $totalResult->total : 0;
+        $totalPages = max(1, ceil($total / $perPage));
+        if ($page > $totalPages) $page = $totalPages;
+        $offset = ($page - 1) * $perPage;
+
+        // Allowed sort columns
+        $allowedSorts = ['created_at', 'full_name', 'phone', 'company'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'created_at';
+        $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
 
         $contacts = $db->fetchAll(
             "SELECT c.*, u.full_name as created_by_name,
@@ -41,11 +95,37 @@ class ContactController
              LEFT JOIN users u ON c.created_by = u.id 
              LEFT JOIN contact_categories cc ON c.category_id = cc.id
              {$where}
-             ORDER BY c.created_at DESC",
+             ORDER BY c.{$sortBy} {$sortDir}
+             LIMIT {$perPage} OFFSET {$offset}",
             $params
         );
 
-        View::render('contacts/index', ['title' => 'مدیریت مخاطبان', 'contacts' => $contacts, 'search' => $search]);
+        // Load categories for filter dropdown
+        $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY name") ?: [];
+
+        // Build query string for pagination links
+        $queryString = $_GET;
+        unset($queryString['page']);
+        $baseQs = http_build_query($queryString);
+
+        View::render('contacts/index', [
+            'title' => 'مدیریت مخاطبان',
+            'contacts' => $contacts,
+            'search' => $search,
+            'categories' => $categories,
+            'selectedCategory' => $categoryId,
+            'selectedSource' => $source,
+            'selectedHasPhone' => $hasPhone,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
+            'perPage' => $perPage,
+            'baseQs' => $baseQs,
+        ]);
     }
 
     public function view(array $params): void
