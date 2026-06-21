@@ -122,8 +122,8 @@ class AutomationController
         ];
 
         $payment = [
-            '{payment_link}' => 'لینک پرداخت (کامل)',
-            '{payment_short_link}' => 'لینک کوتاه پرداخت',
+            '{payment_link}' => 'لینک کوتاه پرداخت',
+            '{payment_short_link}' => 'لینک کوتاه پرداخت (همان لینک بالا)',
             '{payment_amount}' => 'مبلغ پرداخت (تومان)',
         ];
 
@@ -377,27 +377,35 @@ class AutomationController
     }
 
     // ═══════════════════════════════════════════════════
-    // ساخت لینک‌های پرداخت برای یک معامله
+    // ساخت لینک کوتاه پرداخت برای یک معامله
     // ═══════════════════════════════════════════════════
-    private static function buildPaymentLinks(int $dealId): string
+    private static function getLatestPaymentShortLink(int $dealId): string
     {
         $db = Database::getInstance();
-        $payments = $db->fetchAll(
-            "SELECT p.public_token FROM payments p WHERE p.deal_id = :did AND p.public_token IS NOT NULL AND p.public_token != ''",
+        $payment = $db->fetch(
+            "SELECT short_code FROM payments WHERE deal_id = :did AND short_code IS NOT NULL AND short_code != '' ORDER BY id DESC LIMIT 1",
             [':did' => $dealId]
         );
-        $links = [];
-        foreach ($payments as $pay) {
-            $links[] = ($GLOBALS['app_config']['url'] ?? '') . '/pay/' . $pay->public_token;
+        if ($payment) {
+            return ($GLOBALS['app_config']['url'] ?? '') . '/p/' . $payment->short_code;
         }
-        return !empty($links) ? implode("\n", $links) : 'ندارد';
+        return '';
     }
 
     // ═══════════════════════════════════════════════════
-    // جایگزینی متغیرها در متن
+    // جایگزینی متغیرها در متن - فقط از لینک کوتاه استفاده می‌شود
     // ═══════════════════════════════════════════════════
-    private static function replacePlaceholders(string $template, array $extra, string $paymentLinks = ''): string
+    private static function replacePlaceholders(string $template, array $extra): string
     {
+        // Resolve payment short link: extra -> db lookup
+        $paymentLink = $extra['payment_short_link'] ?? '';
+        if (empty($paymentLink)) {
+            $paymentLink = $extra['payment_link'] ?? '';
+        }
+        if (empty($paymentLink) && !empty($extra['deal_id'])) {
+            $paymentLink = self::getLatestPaymentShortLink((int)$extra['deal_id']);
+        }
+
         $search = [
             '{contact_name}', '{contact_phone}', '{contact_email}',
             '{deal_title}', '{amount}',
@@ -410,8 +418,8 @@ class AutomationController
             $extra['contact_email'] ?? '',
             $extra['title'] ?? '',
             !empty($extra['amount']) ? number_format((float)$extra['amount']) . ' تومان' : '',
-            $paymentLinks ?: ($extra['payment_link'] ?? ''),
-            $extra['payment_short_link'] ?? '',
+            $paymentLink,  // Both {payment_link} and {payment_short_link} use same short link
+            $paymentLink,
             !empty($extra['payment_amount']) ? number_format((float)$extra['payment_amount']) . ' تومان' : '',
             $extra['stage_name'] ?? '',
             $extra['pipeline_name'] ?? '',
@@ -449,9 +457,7 @@ class AutomationController
                 $msgTemplate = trim($config['message_template'] ?? '');
                 if (empty($msgTemplate)) return "متن پیامک تعریف نشده";
 
-                $paymentLinks = !empty($extra['deal_id'])
-                    ? self::buildPaymentLinks((int)$extra['deal_id']) : '';
-                $finalMessage = self::replacePlaceholders($msgTemplate, $extra, $paymentLinks);
+                $finalMessage = self::replacePlaceholders($msgTemplate, $extra);
 
                 $result = \Controllers\SmsController::sendWebservice($phone, $finalMessage);
 
@@ -498,14 +504,14 @@ class AutomationController
                     $msgTemplate = "{$contactName} عزیز" . ($dealTitle ? "، {$dealTitle}" : "") . ";\n";
                     $msgTemplate .= "مبلغ قابل پرداخت: {$formattedAmount}\n";
                     $msgTemplate .= "لینک پرداخت: {$shortLink}";
-                } else {
-                    // اگر متن سفارشی بود، لینک کوتاه را در extra اضافه کن
-                    $extra['payment_short_link'] = $shortLink;
-                    $extra['payment_link'] = $shortLink;
-                    $extra['payment_amount'] = $paymentAmount;
                 }
 
-                $finalMessage = self::replacePlaceholders($msgTemplate, $extra, $shortLink);
+                // Set short link in extra so replacePlaceholders uses it
+                $extra['payment_short_link'] = $shortLink;
+                $extra['payment_link'] = $shortLink;
+                $extra['payment_amount'] = $paymentAmount;
+
+                $finalMessage = self::replacePlaceholders($msgTemplate, $extra);
 
                 $result = \Controllers\SmsController::sendWebservice($phone, $finalMessage);
 
