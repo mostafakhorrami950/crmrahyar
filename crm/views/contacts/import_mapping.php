@@ -176,7 +176,11 @@ function doPreview() {
     var formData = new FormData();
     for (var k in mapping) formData.append('mapping[' + k + ']', mapping[k]);
 
-    fetch(baseUrl + '/contacts/import/preview', { method: 'POST', body: formData })
+    fetch(baseUrl + '/contacts/import/preview', { 
+        method: 'POST', 
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+    })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (!data.success) { alert(data.message); return; }
@@ -238,7 +242,11 @@ function doImport() {
     var formData = new FormData();
     for (var k in mapping) formData.append('mapping[' + k + ']', mapping[k]);
 
-    fetch(baseUrl + '/contacts/import/execute', { method: 'POST', body: formData })
+    fetch(baseUrl + '/contacts/import/execute', { 
+        method: 'POST', 
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+    })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) {

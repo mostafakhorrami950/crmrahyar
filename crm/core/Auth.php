@@ -154,6 +154,14 @@ class Auth
     public static function requireAuth(): void
     {
         if (!self::check()) {
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest')
+                      || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'لطفا ابتدا وارد سیستم شوید.']);
+                exit;
+            }
             Session::setFlash('danger', 'لطفا ابتدا وارد سیستم شوید.');
             header('Location: ' . $GLOBALS['app_config']['url'] . '/login');
             exit;
@@ -196,7 +204,8 @@ class Auth
     {
         self::requireAuth();
         if (!self::hasPermission($permission)) {
-            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest')
+                      || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
                 header('Content-Type: application/json; charset=utf-8');
                 http_response_code(403);

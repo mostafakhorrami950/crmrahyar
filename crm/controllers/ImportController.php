@@ -123,11 +123,19 @@ class ImportController
     // ─── Step 3: Preview and confirm import ────────
     public function preview(): void
     {
-        Auth::requirePermission('contacts.create');
-        // Clear any previous output and suppress warnings
-        if (ob_get_level()) ob_end_clean();
+        // Suppress ALL PHP warnings/notices for this AJAX endpoint
+        $oldLevel = error_reporting(0);
+        set_error_handler(function() { return true; });
+        set_exception_handler(function($e) {
+            echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()]);
+            exit;
+        });
+        while (ob_get_level()) ob_end_clean();
         ob_start();
         header('Content-Type: application/json; charset=utf-8');
+
+        try {
+        Auth::requirePermission('contacts.create');
         
         $savedPath = Session::get('import_file');
         if (!$savedPath || !file_exists($savedPath)) {
@@ -177,16 +185,27 @@ class ImportController
             'preview' => $preview,
             'total' => count($rows),
         ]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
+        }
         exit;
     }
 
     // ─── Step 4: Execute import ────────────────────
     public function execute(): void
     {
-        Auth::requirePermission('contacts.create');
-        if (ob_get_level()) ob_end_clean();
+        $oldLevel = error_reporting(0);
+        set_error_handler(function() { return true; });
+        set_exception_handler(function($e) {
+            echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()]);
+            exit;
+        });
+        while (ob_get_level()) ob_end_clean();
         ob_start();
         header('Content-Type: application/json; charset=utf-8');
+
+        try {
+        Auth::requirePermission('contacts.create');
 
         $savedPath = Session::get('import_file');
         if (!$savedPath || !file_exists($savedPath)) {
@@ -244,17 +263,20 @@ class ImportController
                     $fullName = trim($firstName . ' ' . $lastName);
                 }
 
-                // Skip empty rows (no name and no phone)
-                $phone = $mapped['phone'] ?? '';
-                if (empty($fullName) && empty($phone)) {
+                // Parse multiple phones from cell
+                $phoneRaw = $mapped['phone'] ?? '';
+                $phones = self::splitMultiValues($phoneRaw, 'phone');
+                if (empty($phones)) $phones = [''];
+
+                // Skip rows with no name AND no phones
+                if (empty($fullName) && empty($phones[0])) {
                     $skipped++;
                     continue;
                 }
 
-                // Build insert data
-                $insertData = [
+                // Common data shared across all contacts from this row
+                $commonData = [
                     'full_name' => $fullName ?: 'بدون نام',
-                    'phone' => $phone,
                     'email' => $mapped['email'] ?? '',
                     'company' => $mapped['company'] ?? '',
                     'company_phone' => $mapped['company_phone'] ?? '',
@@ -268,17 +290,23 @@ class ImportController
                     'created_by' => Auth::id(),
                 ];
 
-                // Check for duplicate phone
-                if (!empty($phone)) {
-                    $existing = $db->fetch("SELECT id FROM contacts WHERE phone = :phone LIMIT 1", [':phone' => $phone]);
-                    if ($existing) {
-                        $skipped++;
-                        continue;
-                    }
-                }
+                // Create one contact per phone number
+                foreach ($phones as $phone) {
+                    $insertData = $commonData;
+                    $insertData['phone'] = $phone;
 
-                $db->insert('contacts', $insertData);
-                $imported++;
+                    // Check for duplicate phone (only if phone is not empty)
+                    if (!empty($phone)) {
+                        $existing = $db->fetch("SELECT id FROM contacts WHERE phone = :phone LIMIT 1", [':phone' => $phone]);
+                        if ($existing) {
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    $db->insert('contacts', $insertData);
+                    $imported++;
+                }
             } catch (\Exception $e) {
                 $errors[] = "ردیف " . ($rowIndex + 2) . ": " . $e->getMessage();
             }
@@ -299,7 +327,37 @@ class ImportController
             'errors' => array_slice($errors, 0, 10),
             'message' => "{$imported} مخاطب با موفقیت ایمپورت شد" . ($skipped > 0 ? " ({$skipped} ردیف نادیده گرفته شد)" : ''),
         ]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
+        }
         exit;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // Split multi-value cells (e.g. "0912xxx,0913xxx" or "0912xxx\n0913xxx")
+    // ═══════════════════════════════════════════════════
+    private static function splitMultiValues(string $value, string $type = 'phone'): array
+    {
+        $value = trim($value);
+        if (empty($value)) return [];
+        
+        // Split by common delimiters: comma, semicolon, newline, pipe, slash
+        $parts = preg_split('/[,;|\n\r\/]+/u', $value);
+        $parts = array_map('trim', $parts);
+        $parts = array_filter($parts, function($v) { return $v !== ''; });
+        
+        if ($type === 'phone') {
+            // Clean phone numbers: remove spaces, dashes, etc.
+            $parts = array_map(function($p) {
+                $p = preg_replace('/[\s\-\(\)]+/', '', $p);
+                // Normalize Persian/Arabic digits
+                $p = strtr($p, ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9']);
+                $p = strtr($p, ['٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);
+                return $p;
+            }, $parts);
+        }
+        
+        return array_values($parts);
     }
 
     // ═══════════════════════════════════════════════════

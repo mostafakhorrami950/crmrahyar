@@ -3,6 +3,9 @@
  * CRM Travel Agency - Main Entry Point
  */
 
+// Always buffer output to prevent warnings from corrupting JSON responses
+ob_start();
+
 // Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
