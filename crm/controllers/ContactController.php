@@ -187,6 +187,16 @@ class ContactController
 
         ActivityLog::log('create_contact', 'contact', $contactId, "مخاطب {$fullName} ایجاد شد");
 
+        // Fire automation trigger: new_contact
+        ob_start();
+        \Controllers\AutomationController::execute('new_contact', 'contact', $contactId, [
+            'contact_id' => $contactId,
+            'contact_name' => $fullName,
+            'contact_phone' => $phone,
+            'contact_email' => $email ?? '',
+        ]);
+        ob_end_clean();
+
         if ($isAjax) {
             $newContact = $db->fetch("SELECT id, full_name, phone FROM contacts WHERE id = :id", [':id' => $contactId]);
             echo json_encode([

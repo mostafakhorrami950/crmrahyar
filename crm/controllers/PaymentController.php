@@ -209,28 +209,62 @@ class PaymentController
 
         if ($result && $result->result == 100) {
             // Payment successful
-            if ($payment) {
-                $db->update('payments', [
-                    'status' => 'success',
-                    'ref_number' => $result->refNumber ?? '',
-                    'card_number' => $result->cardNumber ?? '',
-                    'paid_at' => date('Y-m-d H:i:s'),
-                ], 'id = :id', [':id' => $payment->id]);
+                if ($payment) {
+                    $db->update('payments', [
+                        'status' => 'success',
+                        'ref_number' => $result->refNumber ?? '',
+                        'card_number' => $result->cardNumber ?? '',
+                        'paid_at' => date('Y-m-d H:i:s'),
+                    ], 'id = :id', [':id' => $payment->id]);
 
-                // Update deal if exists
-                if ($payment->deal_id) {
-                    $db->update('deals', [
-                        'is_won' => 1,
-                        'closed_at' => date('Y-m-d H:i:s'),
-                    ], 'id = :id', [':id' => $payment->deal_id]);
+                    // Update deal if exists
+                    if ($payment->deal_id) {
+                        $db->update('deals', [
+                            'is_won' => 1,
+                            'closed_at' => date('Y-m-d H:i:s'),
+                        ], 'id = :id', [':id' => $payment->deal_id]);
 
-                    ActivityLog::log('payment_success', 'payment', $payment->id, "پرداخت معامله با موفقیت انجام شد. کد پیگیری: {$trackId}");
-                }
+                        ActivityLog::log('payment_success', 'payment', $payment->id, "پرداخت معامله با موفقیت انجام شد. کد پیگیری: {$trackId}");
 
-                Session::setFlash('success', 'پرداخت با موفقیت انجام شد. کد پیگیری: ' . $trackId);
-                if ($payment->deal_id) {
-                    View::redirect('/deals/view/' . $payment->deal_id);
-                }
+                        // Fire automation trigger: payment_verified
+                        $dealInfo = $db->fetch(
+                            "SELECT d.title, d.amount, d.assigned_to, d.pipeline_id, d.source,
+                                    c.full_name as contact_name, c.phone as contact_phone, c.email as contact_email,
+                                    s.name as stage_name, p.name as pipeline_name
+                             FROM deals d 
+                             LEFT JOIN contacts c ON d.contact_id = c.id
+                             LEFT JOIN stages s ON d.stage_id = s.id
+                             LEFT JOIN pipelines p ON d.pipeline_id = p.id
+                             WHERE d.id = :id", [':id' => $payment->deal_id]);
+                        
+                        $shortLink = !empty($payment->short_code) ? ($config['url'] ?? '') . '/p/' . $payment->short_code : '';
+                        
+                        ob_start();
+                        \Controllers\AutomationController::execute('payment_verified', 'deal', (int)$payment->deal_id, [
+                            'deal_id' => (int)$payment->deal_id,
+                            'contact_id' => 0,
+                            'contact_name' => $dealInfo->contact_name ?? '',
+                            'contact_phone' => $dealInfo->contact_phone ?? '',
+                            'contact_email' => $dealInfo->contact_email ?? '',
+                            'title' => $dealInfo->title ?? '',
+                            'amount' => $payment->amount,
+                            'assigned_to' => $dealInfo->assigned_to ?? 0,
+                            'pipeline_id' => $dealInfo->pipeline_id ?? 0,
+                            'stage_name' => $dealInfo->stage_name ?? '',
+                            'pipeline_name' => $dealInfo->pipeline_name ?? '',
+                            'source' => $dealInfo->source ?? '',
+                            'payment_id' => (int)$payment->id,
+                            'payment_link' => $shortLink,
+                            'payment_short_link' => $shortLink,
+                            'payment_amount' => $payment->amount,
+                        ]);
+                        ob_end_clean();
+                    }
+
+                    Session::setFlash('success', 'پرداخت با موفقیت انجام شد. کد پیگیری: ' . $trackId);
+                    if ($payment->deal_id) {
+                        View::redirect('/deals/view/' . $payment->deal_id);
+                    }
             }
         } else {
             // Payment failed

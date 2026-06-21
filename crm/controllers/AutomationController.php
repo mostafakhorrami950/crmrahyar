@@ -341,25 +341,35 @@ class AutomationController
         if (empty($conditions)) return true;
 
         foreach ($conditions as $key => $val) {
+            // Skip empty/null conditions - they mean "no filter"
             if ($val === '' || $val === null) continue;
             if (is_string($val) && trim($val) === '') continue;
+            if (is_numeric($val) && (int)$val === 0) continue;
 
             switch ($key) {
                 case 'stage_id':
+                    // If extra doesn't have stage_id, we can't filter - skip
                     if (!isset($extra['stage_id'])) break;
+                    // If stage_id is 0 in extra, it means not set
+                    if ((int)$extra['stage_id'] === 0) break;
                     if ((int)$extra['stage_id'] !== (int)$val) return false;
                     break;
                 case 'pipeline_id':
                     if (!isset($extra['pipeline_id'])) break;
+                    if ((int)$extra['pipeline_id'] === 0) break;
                     if ((int)$extra['pipeline_id'] !== (int)$val) return false;
                     break;
                 case 'source':
                     if (!isset($extra['source'])) break;
+                    if (empty(trim($extra['source']))) break;
                     if ($extra['source'] !== $val) return false;
                     break;
                 case 'min_amount':
                     if (!isset($extra['amount'])) break;
-                    if ((int)$extra['amount'] < (int)$val) return false;
+                    $amount = (int)$extra['amount'];
+                    $minAmount = (int)$val;
+                    if ($minAmount <= 0) break; // No limit
+                    if ($amount < $minAmount) return false;
                     break;
             }
         }

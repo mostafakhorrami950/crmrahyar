@@ -205,6 +205,34 @@ class DealController
             $db->commit();
             ActivityLog::log('create_deal', 'deal', $dealId, "معامله {$title} ایجاد شد");
 
+            // Fire automation trigger: deal_created
+            $contact = $contactId ? $db->fetch(
+                "SELECT full_name as contact_name, phone as contact_phone, email as contact_email FROM contacts WHERE id = :id",
+                [':id' => $contactId]
+            ) : null;
+            
+            $stageInfo = $db->fetch("SELECT name as stage_name, pipeline_id FROM stages WHERE id = :id", [':id' => $stageId]);
+            $pipelineInfo = $stageInfo ? $db->fetch("SELECT name as pipeline_name FROM pipelines WHERE id = :id", [':id' => $stageInfo->pipeline_id]) : null;
+            
+            $automationExtra = [
+                'deal_id' => $dealId,
+                'contact_id' => $contactId ?: 0,
+                'contact_name' => $contact->contact_name ?? '',
+                'contact_phone' => $contact->contact_phone ?? '',
+                'contact_email' => $contact->contact_email ?? '',
+                'title' => $title,
+                'amount' => $amount ?? 0,
+                'assigned_to' => $assignedTo ?: 0,
+                'pipeline_id' => $pipelineId,
+                'stage_id' => $stageId,
+                'stage_name' => $stageInfo->stage_name ?? '',
+                'pipeline_name' => $pipelineInfo->pipeline_name ?? '',
+                'source' => $source,
+            ];
+            ob_start();
+            \Controllers\AutomationController::execute('deal_created', 'deal', $dealId, $automationExtra);
+            ob_end_clean();
+
             if ($isAjax) {
                 echo json_encode([
                     'success' => true,
