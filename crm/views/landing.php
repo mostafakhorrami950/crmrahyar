@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رهیار 724</title>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;500;700;900&display=swap');
@@ -356,69 +359,6 @@
         }
 
         /* ─── Enter Button ─── */
-        .btn-group {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 50px;
-            animation: fadeInUp 1.8s ease-out 0.5s both;
-        }
-
-        .enter-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px 42px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
-            border: 1px solid rgba(99, 102, 241, 0.25);
-            border-radius: 60px;
-            color: rgba(255, 255, 255, 0.75);
-            font-family: 'Vazirmatn', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(12px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .enter-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            border-radius: inherit;
-        }
-
-        .enter-btn:hover {
-            border-color: rgba(99, 102, 241, 0.6);
-            color: #fff;
-            transform: translateY(-3px);
-            box-shadow: 0 15px 45px rgba(99, 102, 241, 0.25);
-        }
-
-        .enter-btn:hover::before {
-            opacity: 1;
-        }
-
-        .enter-btn span, .enter-btn svg {
-            position: relative;
-            z-index: 1;
-        }
-
-        .enter-btn svg {
-            width: 18px; height: 18px;
-            transition: transform 0.3s ease;
-        }
-
-        .enter-btn:hover svg {
-            transform: translateX(-4px);
-        }
 
         /* ─── Corner Accents ─── */
         .corner {
@@ -555,14 +495,6 @@
             <div class="divider-line"></div>
         </div>
 
-        <div class="btn-group">
-            <a href="<?php echo ($config['url'] ?? '') . '/login'; ?>" class="enter-btn">
-                <span>ورود به سامانه</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-            </a>
-        </div>
     </div>
 </body>
 </html>

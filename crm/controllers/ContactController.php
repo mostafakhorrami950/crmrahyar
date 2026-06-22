@@ -340,6 +340,7 @@ class ContactController
             'source' => $source,
             'tags' => $tags,
             'category_id' => $categoryId,
+            'updated_by' => Auth::id(),
         ], 'id = :id', [':id' => $params['id']]);
 
         ActivityLog::log('update_contact', 'contact', $params['id'], "مخاطب {$fullName} ویرایش شد");

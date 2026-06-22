@@ -7,6 +7,7 @@ RewriteEngine On
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header set X-Robots-Tag "noindex, nofollow"
 </IfModule>
 
 # ========== BLOCK DANGEROUS FILES ==========
@@ -48,8 +49,12 @@ RewriteRule ^views/ - [F,L]
 # Serve assets from public/assets/ directory
 RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
-# Serve existing files/directories directly
+# Route root directory to public/index.php (fix 403 on /crm/)
+RewriteRule ^$ public/index.php?url=$1 [QSA,L]
+
+# Serve existing files directly
 RewriteCond %{REQUEST_FILENAME} !-f
+# Skip directories (but not the root)
 RewriteCond %{REQUEST_FILENAME} !-d
 
 # Route everything else to public/index.php

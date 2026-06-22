@@ -85,6 +85,7 @@ class BackupController
 
     public function download(array $params): void
     {
+        Auth::requireAdmin();
         $filename = basename($params['file']);
         $filepath = __DIR__ . '/../storage/backups/' . $filename;
         

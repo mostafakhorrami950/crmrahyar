@@ -466,6 +466,7 @@ class DealController
             }
         }
 
+        $updateData['updated_by'] = Auth::id();
         $db->update('deals', $updateData, 'id = :id', [':id' => $params['id']]);
 
         ActivityLog::log('update_deal', 'deal', $params['id'], "معامله {$title} ویرایش شد");
