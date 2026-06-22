@@ -53,6 +53,7 @@ return [
         'api_token' => getenv('SMS_API_TOKEN') ?: '',
         'from_number' => getenv('SMS_FROM_NUMBER') ?: '+983000505',
         'api_url' => 'https://edge.ippanel.com/v1/api/send',
+        'sender_numbers' => ['+985000125475', '+983000505'],
     ],
     
     // Pagination

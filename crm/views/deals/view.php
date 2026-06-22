@@ -280,11 +280,23 @@
             <input type="hidden" name="contact_id" value="<?php echo $deal->contact_id; ?>">
             <?php endif; ?>
             <div class="modal-body">
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">شماره گیرنده *</label>
-                    <input type="text" name="phone" class="form-input" required 
-                           value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" 
-                           placeholder="0912xxxxxxx" style="direction:ltr;text-align:left;">
+                <div class="form-row" style="margin-bottom:12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">شماره گیرنده *</label>
+                        <input type="text" name="phone" class="form-input" required 
+                               value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" 
+                               placeholder="0912xxxxxxx" style="direction:ltr;text-align:left;">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">📱 شماره ارسال</label>
+                        <select name="from_number" class="form-input">
+                            <?php 
+                            $senderNums = $config['sms']['sender_numbers'] ?? ['+983000505'];
+                            foreach ($senderNums as $num): ?>
+                            <option value="<?php echo htmlspecialchars($num); ?>"><?php echo htmlspecialchars($num); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group" style="margin-bottom:12px;">
                     <label class="form-label">متن پیامک *</label>

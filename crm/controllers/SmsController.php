@@ -14,9 +14,18 @@ class SmsController
         $db = Database::getInstance();
         $search = $_GET['search'] ?? '';
         $status = $_GET['status'] ?? '';
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
 
         $where = "WHERE 1=1";
         $params = [];
+
+        // Scope filter: non-admin users see only their own SMS
+        if (!Auth::hasPermission('settings.manage')) {
+            $where .= " AND sh.sent_by = :current_user_id";
+            $params[':current_user_id'] = Auth::id();
+        }
 
         if ($search) {
             $where .= " AND (sh.recipient LIKE :search OR sh.message LIKE :search2 OR c.full_name LIKE :search3 OR d.title LIKE :search4)";
@@ -30,6 +39,18 @@ class SmsController
             $params[':status'] = $status;
         }
 
+        // Get total count for pagination
+        $countResult = $db->fetch(
+            "SELECT COUNT(*) as total
+             FROM sms_history sh
+             LEFT JOIN contacts c ON sh.contact_id = c.id
+             LEFT JOIN deals d ON sh.deal_id = d.id
+             {$where}",
+            $params
+        );
+        $totalRecords = (int)($countResult->total ?? 0);
+        $totalPages = max(1, ceil($totalRecords / $perPage));
+
         $messages = $db->fetchAll(
             "SELECT sh.*, 
                     d.title as deal_title, d.id as deal_id,
@@ -41,7 +62,7 @@ class SmsController
              LEFT JOIN users u ON sh.sent_by = u.id
              {$where}
              ORDER BY sh.created_at DESC
-             LIMIT 200",
+             LIMIT {$perPage} OFFSET {$offset}",
             $params
         );
 
@@ -63,6 +84,9 @@ class SmsController
             'search' => $search,
             'selectedStatus' => $status,
             'stats' => $stats,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalRecords' => $totalRecords,
         ]);
     }
 
@@ -72,10 +96,15 @@ class SmsController
         $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
         $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
 
+        // Get available sender numbers
+        $config = $GLOBALS['app_config'];
+        $senderNumbers = $config['sms']['sender_numbers'] ?? ['+983000505'];
+
         View::render('sms/send', [
             'title' => 'ارسال پیامک',
             'pipelines' => $pipelines,
             'categories' => $categories,
+            'senderNumbers' => $senderNumbers,
         ]);
     }
 
@@ -101,7 +130,7 @@ class SmsController
 
         $config = $GLOBALS['app_config'];
         $apiToken = $config['sms']['api_token'] ?? '';
-        $fromNumber = $config['sms']['from_number'] ?? '+983000505';
+        $fromNumber = trim($_POST['from_number'] ?? '') ?: ($config['sms']['from_number'] ?? '+983000505');
         $panelUrl = $config['sms']['api_url'] ?? 'https://edge.ippanel.com/v1/api/send';
 
         $db = Database::getInstance();
@@ -137,19 +166,27 @@ class SmsController
                 'Authorization: ' . $apiToken,
             ]);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
             $response = curl_exec($ch);
+            $curlError = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            $result = json_decode($response);
-            if ($result && isset($result->meta->status) && $result->meta->status === true) {
-                $sentStatus = 'sent';
-                $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
-                $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
+            if ($response === false || !empty($curlError)) {
+                $sentStatus = 'failed';
+                $errorMsg = 'خطای ارتباط: ' . ($curlError ?: 'عدم پاسخ سرور');
             } else {
-                $errorMsg = 'خطا در ارسال پیامک';
+                $result = json_decode($response);
+                if ($result && isset($result->meta->status) && $result->meta->status === true) {
+                    $sentStatus = 'sent';
+                    $ids = $result->data->message_outbox_ids ?? $result->data->message_ids ?? [];
+                    $outboxId = is_array($ids) ? implode(',', $ids) : (string)$ids;
+                } else {
+                    $apiMsg = $result->meta->message ?? 'خطای نامشخص';
+                    $errorMsg = "خطای API ({$httpCode}): {$apiMsg}";
+                }
             }
         } else {
             $sentStatus = 'failed';

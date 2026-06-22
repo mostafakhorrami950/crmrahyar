@@ -20,6 +20,14 @@
                 <label class="form-label">📞 شماره موبایل *</label>
                 <input type="text" name="phone" class="form-input" placeholder="0912xxxxxxx" dir="ltr" style="text-align:left;" required>
             </div>
+            <div class="form-group">
+                <label class="form-label">📱 شماره ارسال‌کننده</label>
+                <select name="from_number" class="form-input">
+                    <?php foreach ($senderNumbers ?? ['+983000505'] as $num): ?>
+                    <option value="<?php echo htmlspecialchars($num); ?>"><?php echo htmlspecialchars($num); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label class="form-label">📝 متن پیامک *</label>

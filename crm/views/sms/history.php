@@ -103,6 +103,38 @@
     </div>
 </div>
 
+<!-- Pagination -->
+<?php if (($totalPages ?? 1) > 1): ?>
+<div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap;">
+    <?php if ($page > 1): ?>
+    <a href="?page=<?php echo $page-1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">◀ قبلی</a>
+    <?php endif; ?>
+    
+    <?php 
+    $startPage = max(1, $page - 3);
+    $endPage = min($totalPages, $page + 3);
+    if ($startPage > 1): ?>
+        <a href="?page=1&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">1</a>
+        <?php if ($startPage > 2): ?><span style="color:var(--gray-400);">...</span><?php endif; ?>
+    <?php endif; ?>
+    
+    <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+    <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm <?php echo $i == $page ? 'btn-primary' : 'btn-secondary'; ?>"><?php echo $i; ?></a>
+    <?php endfor; ?>
+    
+    <?php if ($endPage < $totalPages): ?>
+        <?php if ($endPage < $totalPages - 1): ?><span style="color:var(--gray-400);">...</span><?php endif; ?>
+        <a href="?page=<?php echo $totalPages; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary"><?php echo $totalPages; ?></a>
+    <?php endif; ?>
+    
+    <?php if ($page < $totalPages): ?>
+    <a href="?page=<?php echo $page+1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">بعدی ▶</a>
+    <?php endif; ?>
+    
+    <span style="color:var(--gray-500);font-size:12px;margin-right:12px;">صفحه <?php echo $page; ?> از <?php echo $totalPages; ?> (<?php echo number_format($totalRecords ?? 0); ?> رکورد)</span>
+</div>
+<?php endif; ?>
+
 <style>
 .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
 .stat-box { color:white; padding:16px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
