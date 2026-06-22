@@ -118,7 +118,10 @@ class DealController
     {
         $db = Database::getInstance();
         $pipelines = $db->fetchAll("SELECT * FROM pipelines WHERE is_active = 1");
-        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
+        // Non-admin users see only their own contacts
+        $cScope = Auth::scopeFilter('contacts.view', ['created_by']);
+        $cScopeWhere = $cScope['where'] === '1=1' ? '' : "WHERE {$cScope['where']}";
+        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts {$cScopeWhere} ORDER BY full_name", $cScope['params']);
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
         $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
         
@@ -358,7 +361,10 @@ class DealController
 
         $pipelines = $db->fetchAll("SELECT * FROM pipelines WHERE is_active = 1");
         $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :id AND is_active = 1 ORDER BY order_index", [':id' => $deal->pipeline_id]);
-        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
+        // Non-admin users see only their own contacts
+        $cScope = Auth::scopeFilter('contacts.view', ['created_by']);
+        $cScopeWhere = $cScope['where'] === '1=1' ? '' : "WHERE {$cScope['where']}";
+        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts {$cScopeWhere} ORDER BY full_name", $cScope['params']);
         $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1");
         $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
 

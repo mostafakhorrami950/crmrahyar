@@ -166,7 +166,9 @@
                         <select name="contact_id" class="form-input" id="qe_contact">
                             <option value="">بدون مخاطب</option>
                             <?php 
-                            $allContacts = \Core\Database::getInstance()->fetchAll("SELECT id, full_name, phone FROM contacts ORDER BY full_name");
+                            $cScope = \Core\Auth::scopeFilter('contacts.view', ['created_by']);
+                            $cWhere = $cScope['where'] === '1=1' ? '' : "WHERE {$cScope['where']}";
+                            $allContacts = \Core\Database::getInstance()->fetchAll("SELECT id, full_name, phone FROM contacts {$cWhere} ORDER BY full_name", $cScope['params']);
                             foreach ($allContacts as $c): 
                             ?>
                             <option value="<?php echo $c->id; ?>"><?php echo htmlspecialchars($c->full_name . ' - ' . $c->phone); ?></option>
