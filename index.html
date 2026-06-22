@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رهیار 724</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;500;700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --glow: rgba(99, 102, 241, 0.3);
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            background: #0a0a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* ─── Animated Gradient Background ─── */
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0a1a 0%, #0f0f2e 50%, #0a0a1a 100%);
+            animation: bgShift 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(30deg); }
+        }
+
+        /* ─── Grid Lines ─── */
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* ─── Floating Orbs ─── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px; height: 300px;
+            background: var(--primary);
+            top: -100px; right: -50px;
+            animation-delay: 0s;
+            animation-duration: 10s;
+        }
+
+        .orb-2 {
+            width: 250px; height: 250px;
+            background: var(--accent);
+            bottom: -80px; left: -50px;
+            animation-delay: -3s;
+            animation-duration: 12s;
+        }
+
+        .orb-3 {
+            width: 200px; height: 200px;
+            background: var(--secondary);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -5s;
+            animation-duration: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(15px, 15px) scale(1.05); }
+        }
+
+        /* ─── Floating Particles ─── */
+        .particles {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: rgba(99, 102, 241, 0.6);
+            border-radius: 50%;
+            animation: rise linear infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-duration: 8s; animation-delay: 0s; width: 3px; height: 3px; }
+        .particle:nth-child(2) { left: 25%; animation-duration: 12s; animation-delay: -2s; width: 5px; height: 5px; background: rgba(6, 182, 212, 0.5); }
+        .particle:nth-child(3) { left: 40%; animation-duration: 10s; animation-delay: -4s; width: 2px; height: 2px; }
+        .particle:nth-child(4) { left: 55%; animation-duration: 14s; animation-delay: -1s; width: 4px; height: 4px; background: rgba(139, 92, 246, 0.5); }
+        .particle:nth-child(5) { left: 70%; animation-duration: 9s; animation-delay: -3s; width: 3px; height: 3px; }
+        .particle:nth-child(6) { left: 85%; animation-duration: 11s; animation-delay: -5s; width: 6px; height: 6px; background: rgba(6, 182, 212, 0.4); }
+        .particle:nth-child(7) { left: 15%; animation-duration: 13s; animation-delay: -6s; width: 2px; height: 2px; background: rgba(139, 92, 246, 0.6); }
+        .particle:nth-child(8) { left: 60%; animation-duration: 7s; animation-delay: -2.5s; width: 4px; height: 4px; }
+        .particle:nth-child(9) { left: 35%; animation-duration: 15s; animation-delay: -7s; width: 3px; height: 3px; background: rgba(6, 182, 212, 0.6); }
+        .particle:nth-child(10) { left: 90%; animation-duration: 10s; animation-delay: -4.5s; width: 5px; height: 5px; }
+
+        @keyframes rise {
+            0% { bottom: -10%; opacity: 0; transform: translateX(0) scale(0); }
+            10% { opacity: 1; transform: scale(1); }
+            90% { opacity: 0.5; }
+            100% { bottom: 110%; opacity: 0; transform: translateX(40px) scale(0.5); }
+        }
+
+        /* ─── Geometric Shapes ─── */
+        .shapes {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            animation: rotate linear infinite;
+        }
+
+        .shape-1 {
+            width: 120px; height: 120px;
+            top: 10%; left: 8%;
+            border-radius: 20%;
+            animation-duration: 25s;
+        }
+
+        .shape-2 {
+            width: 80px; height: 80px;
+            top: 70%; right: 12%;
+            border-radius: 50%;
+            border-color: rgba(6, 182, 212, 0.15);
+            animation-duration: 20s;
+            animation-direction: reverse;
+        }
+
+        .shape-3 {
+            width: 60px; height: 60px;
+            bottom: 15%; left: 20%;
+            border-radius: 10%;
+            border-color: rgba(139, 92, 246, 0.15);
+            animation-duration: 30s;
+        }
+
+        .shape-4 {
+            width: 100px; height: 100px;
+            top: 20%; right: 25%;
+            border-radius: 30%;
+            border-color: rgba(6, 182, 212, 0.1);
+            animation-duration: 35s;
+            animation-direction: reverse;
+        }
+
+        .shape-5 {
+            width: 40px; height: 40px;
+            top: 50%; left: 5%;
+            border-radius: 50%;
+            border-color: rgba(99, 102, 241, 0.12);
+            animation-duration: 18s;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ─── Main Content ─── */
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Logo Icon ─── */
+        .logo-icon {
+            width: 80px; height: 80px;
+            margin: 0 auto 30px;
+            position: relative;
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .logo-icon svg {
+            width: 100%; height: 100%;
+            filter: drop-shadow(0 0 20px var(--glow));
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 15px var(--glow)); }
+            50% { filter: drop-shadow(0 0 35px var(--glow)) drop-shadow(0 0 60px rgba(99, 102, 241, 0.15)); }
+        }
+
+        /* ─── Brand Name ─── */
+        .brand-name {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, #c7d2fe 40%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            position: relative;
+            animation: textShimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes textShimmer {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        /* ─── Subtle Underline ─── */
+        .brand-line {
+            width: 60px;
+            height: 3px;
+            margin: 20px auto 0;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+            border-radius: 2px;
+            animation: lineExpand 3s ease-in-out infinite;
+        }
+
+        @keyframes lineExpand {
+            0%, 100% { width: 60px; opacity: 0.6; }
+            50% { width: 120px; opacity: 1; }
+        }
+
+        /* ─── Enter Button ─── */
+        .enter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 50px;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 2s ease-out 0.5s both;
+        }
+
+        .enter-btn:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            border-color: rgba(99, 102, 241, 0.6);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .enter-btn svg {
+            width: 18px; height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .enter-btn:hover svg {
+            transform: translateX(-4px);
+        }
+
+        /* ─── Scan Line Effect ─── */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+            animation: scan 6s linear infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        @keyframes scan {
+            0% { top: -2px; }
+            100% { top: 100%; }
+        }
+
+        /* ─── Corner Decorations ─── */
+        .corner {
+            position: fixed;
+            width: 40px; height: 40px;
+            border-color: rgba(99, 102, 241, 0.2);
+            border-style: solid;
+            border-width: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .corner-tl { top: 20px; left: 20px; border-top-width: 2px; border-left-width: 2px; }
+        .corner-tr { top: 20px; right: 20px; border-top-width: 2px; border-right-width: 2px; }
+        .corner-bl { bottom: 20px; left: 20px; border-bottom-width: 2px; border-left-width: 2px; }
+        .corner-br { bottom: 20px; right: 20px; border-bottom-width: 2px; border-right-width: 2px; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .orb { filter: blur(60px); }
+            .orb-1 { width: 200px; height: 200px; }
+            .orb-2 { width: 150px; height: 150px; }
+            .orb-3 { width: 120px; height: 120px; }
+            .logo-icon { width: 60px; height: 60px; margin-bottom: 20px; }
+            .shape { display: none; }
+            .corner { width: 25px; height: 25px; }
+            .enter-btn { margin-top: 35px; padding: 12px 32px; font-size: 0.85rem; }
+        }
+
+        @media (max-width: 380px) {
+            .brand-name { font-size: 2.2rem; }
+            .enter-btn { margin-top: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="grid-overlay"></div>
+    <div class="scanline"></div>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="particles">
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="shapes">
+        <div class="shape shape-1"></div><div class="shape shape-2"></div>
+        <div class="shape shape-3"></div><div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+    </div>
+
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="content">
+        <div class="logo-icon">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#6366f1"/>
+                        <stop offset="100%" stop-color="#06b6d4"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" stroke="url(#logoGrad)" stroke-width="1.5" opacity="0.3"/>
+                <circle cx="50" cy="50" r="30" stroke="url(#logoGrad)" stroke-width="1" opacity="0.2"/>
+                <path d="M35 55 L50 30 L65 55 L55 50 L50 38 L45 50 Z" fill="url(#logoGrad)" opacity="0.9"/>
+                <path d="M30 58 L50 25 L70 58 L58 52 L50 34 L42 52 Z" stroke="url(#logoGrad)" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <path d="M40 60 Q50 70 60 60" stroke="url(#logoGrad)" stroke-width="1.5" fill="none" opacity="0.5"/>
+            </svg>
+        </div>
+
+        <h1 class="brand-name">رهیار 724</h1>
+        <div class="brand-line"></div>
+
+        <a href="crm/" class="enter-btn">
+            <span>ورود به سامانه</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+    </div>
+</body>
+</html>

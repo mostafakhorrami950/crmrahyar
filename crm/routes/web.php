@@ -31,6 +31,13 @@ use Controllers\ImportController;
 use Controllers\BulkController;
 use Controllers\BackupController;
 
+// Landing page (public - no auth required)
+Router::get('/', function() {
+    $config = $GLOBALS['app_config'];
+    require __DIR__ . '/../views/landing.php';
+    exit;
+});
+
 // Auth routes
 Router::get('/login', [AuthController::class, 'loginForm']);
 Router::post('/login', [AuthController::class, 'login']);

@@ -46,9 +46,9 @@ class Router
         $url = $_GET['url'] ?? '';
         $url = '/' . trim($url, '/');
         
-        // If URL is empty or just slash, redirect to dashboard
-        if ($url === '/' || $url === '') {
-            $url = '/dashboard';
+        // If URL is empty or just slash, keep as / (landing page handles it)
+        if ($url === '') {
+            $url = '/';
         }
 
         foreach (self::$routes as $route) {
@@ -57,6 +57,8 @@ class Router
             if (preg_match($route['pattern'], $url, $matches)) {
                 // Check authentication - skip for public routes
                 $publicPrefixes = ['/login', '/install', '/setup', '/payment/result', '/payment/verify', '/payment/callback', '/pay/', '/p/'];
+                // Exact public routes (not prefixes)
+                $publicExact = ['/'];
                 $isPublic = false;
                 foreach ($publicPrefixes as $prefix) {
                     if (strpos($url, $prefix) === 0) {
@@ -65,7 +67,7 @@ class Router
                     }
                 }
                 
-                if (!$isPublic) {
+                if (!$isPublic && !in_array($url, $publicExact)) {
                     Auth::requireAuth();
                 }
 
