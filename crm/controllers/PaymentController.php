@@ -383,7 +383,7 @@ class PaymentController
         }
 
         $payments = $db->fetchAll(
-            "SELECT p.*, d.title as deal_title, c.full_name as contact_name
+            "SELECT p.*, d.title as deal_title, c.full_name as contact_name, c.phone as contact_phone, d.contact_id
              FROM payments p 
              LEFT JOIN deals d ON p.deal_id = d.id 
              LEFT JOIN contacts c ON d.contact_id = c.id 

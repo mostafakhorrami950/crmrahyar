@@ -99,11 +99,14 @@
                         <?php endif; ?>
                     </td>
                     <td data-label="لینک">
-                        <?php if (!empty($p->public_token) && $p->status == 'pending'): ?>
-                        <div class="d-flex gap-4" style="align-items:center;">
-                            <div class="input-group" style="width:140px;">
-                                <input type="text" class="pay-link-input" value="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" readonly onclick="this.select();" style="width:100%;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;direction:ltr;text-align:left;background:#f9fafb;">
-                            </div>
+                        <?php if (!empty($p->short_code) && $p->status == 'pending'): ?>
+                        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                            <input type="text" class="pay-link-input" value="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" readonly onclick="this.select();" style="width:160px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;font-family:monospace;direction:ltr;text-align:left;background:#f9fafb;">
+                            <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت">📋 کپی</button>
+                        </div>
+                        <?php elseif (!empty($p->public_token) && $p->status == 'pending'): ?>
+                        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                            <input type="text" class="pay-link-input" value="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" readonly onclick="this.select();" style="width:160px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;font-family:monospace;direction:ltr;text-align:left;background:#f9fafb;">
                             <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت">📋 کپی</button>
                         </div>
                         <?php elseif ($p->status == 'success'): ?>
@@ -185,7 +188,7 @@ function filterPayments(query) {
 }
 
 function copyPayLink(btn) {
-    var container = btn.closest('.d-flex');
+    var container = btn.parentElement;
     if (!container) return;
     var input = container.querySelector('.pay-link-input');
     if (!input) return;

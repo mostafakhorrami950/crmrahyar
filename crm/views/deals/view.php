@@ -85,8 +85,17 @@
                 <?php if ($deal->passport_number): ?><div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🛂 پاسپورت</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->passport_number); ?></strong></div></div><?php endif; ?>
                 <?php if ($deal->company): ?><div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🏢 شرکت</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->company); ?></strong></div></div><?php endif; ?>
             </div>
-            <div style="margin-top:14px;display:flex;gap:8px;">
-                <button class="btn btn-sm btn-success" onclick="openModal('smsModal')">✉️ ارسال پیامک به مخاطب</button>
+            <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-success" onclick="openModal('smsModal')">✉️ پیامک</button>
+                <?php if (!empty($deal->contact_phone)):
+                    $phoneIntl = preg_replace('/^0/', '98', preg_replace('/[\s\-\(\)]+/', '', $deal->contact_phone));
+                    if (strpos($phoneIntl, '+') === 0) $phoneIntl = substr($phoneIntl, 1);
+                ?>
+                <a href="https://wa.me/<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#25D366;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="واتساپ">💬 واتساپ</a>
+                <a href="https://t.me/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#0088cc;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="تلگرام">✈️ تلگرام</a>
+                <a href="https://ble.ir/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#1e88e5;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="بله">🔵 بله</a>
+                <a href="https://eitaa.com/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#6d4c41;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="ایتا">🟤 ایتا</a>
+                <?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
@@ -227,10 +236,16 @@
             <div style="display:flex;flex-direction:column;gap:6px;">
                 <?php foreach ($payments as $p): ?>
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--gray-50);border-radius:10px;flex-wrap:wrap;gap:4px;">
-                    <div>
+                    <div style="flex:1;min-width:0;">
                         <strong style="font-size:13px;"><?php echo number_format($p->amount); ?> تومان</strong>
                         <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDate($p->created_at); ?></small>
-                        <?php if (!empty($p->public_token) && $p->status == 'pending'): ?>
+                        <?php if (!empty($p->short_code) && $p->status == 'pending'): ?>
+                        <div style="margin-top:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                            <input type="text" value="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" readonly onclick="this.select()" style="width:180px;padding:3px 6px;border:1px solid #e0e0e0;border-radius:6px;font-size:10px;font-family:monospace;direction:ltr;text-align:left;background:#fff;">
+                            <button onclick="copyLink(this)" style="padding:3px 8px;border:1px solid #10B981;background:#d1fae5;color:#065f46;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;">📋 کپی</button>
+                            <a href="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" target="_blank" style="font-size:10px;color:var(--primary);font-weight:600;">🔗</a>
+                        </div>
+                        <?php elseif (!empty($p->public_token) && $p->status == 'pending'): ?>
                         <br><a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" target="_blank" style="font-size:11px;color:var(--primary);font-weight:600;">🔗 لینک پرداخت</a>
                         <?php endif; ?>
                     </div>
@@ -372,6 +387,20 @@ document.getElementById('smsModal')?.addEventListener('input', function(e) {
         document.getElementById('smsCharCount').textContent = e.target.value.length;
     }
 });
+
+// Copy payment short link
+function copyLink(btn) {
+    var input = btn.parentElement.querySelector('input');
+    if (!input) return;
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).then(function() {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '✅';
+        btn.style.background = '#d1fae5';
+        setTimeout(function() { btn.innerHTML = orig; }, 1500);
+    }).catch(function() { document.execCommand('copy'); });
+}
 
 // Quick edit form: on AJAX success, reload page to show updated data
 document.addEventListener('DOMContentLoaded', function() {
