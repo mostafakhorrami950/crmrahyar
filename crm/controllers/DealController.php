@@ -530,7 +530,9 @@ class DealController
     public function allTags(): void
     {
         $db = Database::getInstance();
-        $deals = $db->fetchAll("SELECT id, description FROM deals WHERE description IS NOT NULL AND description != ''");
+        $scope = Auth::scopeFilter('deals.view', ['assigned_to', 'created_by']);
+        $scopeWhere = $scope['where'] === '1=1' ? '' : "AND {$scope['where']}";
+        $deals = $db->fetchAll("SELECT id, description FROM deals WHERE description IS NOT NULL AND description != '' {$scopeWhere}", $scope['params']);
         
         $tags = [];
         foreach ($deals as $deal) {
@@ -564,8 +566,10 @@ class DealController
         $assignedTo = $_GET['assigned_to'] ?? '';
         $status = $_GET['status'] ?? '';
         
-        $where = "WHERE d.description LIKE :tag1";
-        $queryParams = [':tag1' => "%#{$tag}%"];
+        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
+        $scopeWhere = $scope['where'] === '1=1' ? '' : "AND {$scope['where']}";
+        $where = "WHERE d.description LIKE :tag1 {$scopeWhere}";
+        $queryParams = array_merge([':tag1' => "%#{$tag}%"], $scope['params']);
         
         if ($searchQuery) {
             $where .= " AND (d.title LIKE :search OR c.full_name LIKE :search2)";

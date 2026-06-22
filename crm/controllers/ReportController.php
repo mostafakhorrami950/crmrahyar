@@ -253,11 +253,13 @@ class ReportController
             $params
         );
 
-        // Stats
-        $overdueCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date < NOW()");
-        $todayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE DATE(activity_date) = CURDATE()");
-        $doneTodayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 1 AND DATE(activity_date) = CURDATE()");
-        $upcomingCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date > NOW() AND activity_date <= DATE_ADD(NOW(), INTERVAL 7 DAY)");
+        // Stats (filtered by user for non-admin)
+        $statsUserFilter = !$isAdmin ? " AND user_id = :stats_uid" : "";
+        $statsParams = !$isAdmin ? [':stats_uid' => Auth::id()] : [];
+        $overdueCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date < NOW() {$statsUserFilter}", $statsParams);
+        $todayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE DATE(activity_date) = CURDATE() {$statsUserFilter}", $statsParams);
+        $doneTodayCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 1 AND DATE(activity_date) = CURDATE() {$statsUserFilter}", $statsParams);
+        $upcomingCount = $db->fetch("SELECT COUNT(*) as cnt FROM deal_activities WHERE is_done = 0 AND activity_date > NOW() AND activity_date <= DATE_ADD(NOW(), INTERVAL 7 DAY) {$statsUserFilter}", $statsParams);
 
         // Pipelines for filter
         $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");

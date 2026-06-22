@@ -27,24 +27,37 @@ class SearchController
                 array_merge([':q'=>$like,':q2'=>$like,':q3'=>$like], $scope['params'])
             );
             
+            // Contacts: scope filter
+            $cScope = Auth::scopeFilter('contacts.view', ['created_by']);
+            $cScopeWhere = $cScope['where'] === '1=1' ? '' : " AND {$cScope['where']}";
             $results['contacts'] = $db->fetchAll(
                 "SELECT id, full_name, phone, email, company FROM contacts 
-                 WHERE full_name LIKE :q OR phone LIKE :q2 OR email LIKE :q3 OR national_code LIKE :q4 OR company LIKE :q5 LIMIT 20",
-                [':q'=>$like,':q2'=>$like,':q3'=>$like,':q4'=>$like,':q5'=>$like]
+                 WHERE (full_name LIKE :q OR phone LIKE :q2 OR email LIKE :q3 OR national_code LIKE :q4 OR company LIKE :q5) {$cScopeWhere} LIMIT 20",
+                array_merge([':q'=>$like,':q2'=>$like,':q3'=>$like,':q4'=>$like,':q5'=>$like], $cScope['params'])
             );
             
+            // Activities: filter by current user for non-admin
+            $actUserFilter = '';
+            $actParams = [':q'=>$like,':q2'=>$like];
+            if (!Auth::hasPermission('settings.manage')) {
+                $actUserFilter = " AND da.user_id = :act_uid";
+                $actParams[':act_uid'] = Auth::id();
+            }
             $results['activities'] = $db->fetchAll(
                 "SELECT da.id, da.type, da.subject, da.activity_date, d.title as deal_title, d.id as deal_id
                  FROM deal_activities da LEFT JOIN deals d ON da.deal_id=d.id
-                 WHERE da.subject LIKE :q OR da.description LIKE :q2 LIMIT 15",
-                [':q'=>$like,':q2'=>$like]
+                 WHERE (da.subject LIKE :q OR da.description LIKE :q2) {$actUserFilter} LIMIT 15",
+                $actParams
             );
             
+            // Payments: scope filter via deal
+            $pScope = Auth::scopeFilter('payments.view', ['d.assigned_to', 'd.created_by']);
+            $pScopeWhere = $pScope['where'] === '1=1' ? '' : " AND {$pScope['where']}";
             $results['payments'] = $db->fetchAll(
                 "SELECT p.id, p.amount, p.status, p.created_at, d.title as deal_title, d.id as deal_id
                  FROM payments p LEFT JOIN deals d ON p.deal_id=d.id
-                 WHERE d.title LIKE :q OR p.description LIKE :q2 LIMIT 15",
-                [':q'=>$like,':q2'=>$like]
+                 WHERE (d.title LIKE :q OR p.description LIKE :q2) {$pScopeWhere} LIMIT 15",
+                array_merge([':q'=>$like,':q2'=>$like], $pScope['params'])
             );
         }
         
@@ -67,8 +80,13 @@ class SearchController
         $db = Database::getInstance();
         $like = "%{$q}%";
         
-        $deals = $db->fetchAll("SELECT id, title FROM deals WHERE title LIKE :q LIMIT 5", [':q'=>$like]);
-        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts WHERE full_name LIKE :q OR phone LIKE :q2 LIMIT 5", [':q'=>$like,':q2'=>$like]);
+        $scope = Auth::scopeFilter('deals.view', ['assigned_to', 'created_by']);
+        $scopeWhere = $scope['where'] === '1=1' ? '' : " AND {$scope['where']}";
+        $deals = $db->fetchAll("SELECT id, title FROM deals WHERE title LIKE :q {$scopeWhere} LIMIT 5", array_merge([':q'=>$like], $scope['params']));
+        
+        $cScope = Auth::scopeFilter('contacts.view', ['created_by']);
+        $cScopeWhere = $cScope['where'] === '1=1' ? '' : " AND {$cScope['where']}";
+        $contacts = $db->fetchAll("SELECT id, full_name, phone FROM contacts WHERE (full_name LIKE :q OR phone LIKE :q2) {$cScopeWhere} LIMIT 5", array_merge([':q'=>$like,':q2'=>$like], $cScope['params']));
         
         echo json_encode(['deals'=>$deals, 'contacts'=>$contacts]);
         exit;
