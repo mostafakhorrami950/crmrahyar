@@ -195,11 +195,23 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(d) {
                 if (d.success && d.deal) {
                     var dl = d.deal;
+                    var statusHtml = dl.is_won ? '<span class="badge bg-success">✅ موفق</span>' : (dl.is_lost ? '<span class="badge bg-danger">❌ ناموفق</span>' : '<span class="badge bg-warning text-dark">⏳ در جریان</span>');
+                    var contactHtml = dl.contact_name ? 
+                        '<div class="col-12 mt-3"><div class="bg-info bg-opacity-10 rounded-3 p-3 border-end border-3 border-info">' +
+                        '<h6 class="fw-bold mb-2"><i class="bi bi-person me-2 text-info"></i>اطلاعات مخاطب</h6>' +
+                        '<div class="row g-2">' +
+                        '<div class="col-6"><small class="text-muted d-block">نام</small><strong class="small">' + (dl.contact_name||'-') + '</strong></div>' +
+                        '<div class="col-6"><small class="text-muted d-block">تلفن</small><strong class="small" dir="ltr">' + (dl.contact_phone||'-') + '</strong></div>' +
+                        (dl.contact_email ? '<div class="col-12"><small class="text-muted d-block">ایمیل</small><strong class="small">' + dl.contact_email + '</strong></div>' : '') +
+                        '</div></div></div>' : '';
                     document.getElementById('qvBody').innerHTML = 
                         '<div class="row g-3">' +
-                        '<div class="col-12"><div class="d-flex gap-3 p-3 bg-light rounded-3"><div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;"><i class="bi bi-briefcase fs-4"></i></div><div><strong class="d-block fs-6">' + (dl.title||'-') + '</strong><small class="text-muted">' + (dl.contact_name||'') + '</small></div></div></div>' +
+                        '<div class="col-12"><div class="d-flex gap-3 p-3 bg-light rounded-3"><div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;"><i class="bi bi-briefcase fs-4"></i></div><div><strong class="d-block fs-6">' + (dl.title||'-') + '</strong>' + statusHtml + '</div></div></div>' +
                         '<div class="col-6"><small class="text-muted d-block">مبلغ</small><strong class="text-primary">' + (dl.amount ? parseInt(dl.amount).toLocaleString('en-US') + ' تومان' : '-') + '</strong></div>' +
-                        '<div class="col-6"><small class="text-muted d-block">وضعیت</small>' + (dl.is_won ? '<span class="badge bg-success">موفق</span>' : (dl.is_lost ? '<span class="badge bg-danger">ناموفق</span>' : '<span class="badge bg-warning text-dark">در جریان</span>')) + '</div>' +
+                        '<div class="col-6"><small class="text-muted d-block">مسئول</small><strong class="small">' + (dl.assigned_name||'-') + '</strong></div>' +
+                        (dl.source ? '<div class="col-6"><small class="text-muted d-block">منبع</small><strong class="small">' + dl.source + '</strong></div>' : '') +
+                        (dl.description ? '<div class="col-12"><small class="text-muted d-block">توضیحات</small><small>' + dl.description.substring(0,200) + '</small></div>' : '') +
+                        contactHtml +
                         '</div>';
                 }
             })

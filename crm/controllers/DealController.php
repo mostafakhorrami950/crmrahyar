@@ -13,7 +13,15 @@ class DealController
     {
         Auth::requireAuth();
         $db = Database::getInstance();
-        $deal = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $params['id']]);
+        $deal = $db->fetch(
+            "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone, c.email as contact_email,
+                    u.full_name as assigned_name
+             FROM deals d 
+             LEFT JOIN contacts c ON d.contact_id = c.id 
+             LEFT JOIN users u ON d.assigned_to = u.id 
+             WHERE d.id = :id",
+            [':id' => $params['id']]
+        );
         if (!$deal) {
             echo json_encode(['success' => false]);
             exit;
