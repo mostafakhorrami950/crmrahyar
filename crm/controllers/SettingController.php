@@ -12,6 +12,14 @@ class SettingController
     public function index(): void
     {
         $db = Database::getInstance();
+        
+        // Auto-create AI settings if they don't exist
+        $aiKey = $db->fetch("SELECT 1 FROM settings WHERE setting_key='openrouter_api_key' AND setting_group='ai'");
+        if (!$aiKey) {
+            $db->execute("INSERT IGNORE INTO settings (setting_key, setting_value, setting_group, description) VALUES ('openrouter_api_key', '', 'ai', 'کلید API اوپن‌روتر (OpenRouter)')");
+            $db->execute("INSERT IGNORE INTO settings (setting_key, setting_value, setting_group, description) VALUES ('openrouter_model', '~openai/gpt-latest', 'ai', 'مدل هوش مصنوعی (مثال: ~openai/gpt-latest, ~anthropic/claude-sonnet-latest)')");
+        }
+        
         $settings = $db->fetchAll("SELECT * FROM settings ORDER BY setting_group, setting_key");
         
         $groupedSettings = [];

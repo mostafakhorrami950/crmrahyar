@@ -30,6 +30,7 @@ use Controllers\ExportController;
 use Controllers\ImportController;
 use Controllers\BulkController;
 use Controllers\BackupController;
+use Controllers\AIController;
 
 // Landing page - redirect to main site URL
 Router::get('/', function() {
@@ -287,6 +288,9 @@ Router::group('/backup', function() {
 
 // Bulk Delete (permission checked internally per entity type)
 Router::post('/bulk/delete', [BulkController::class, 'delete'], 'deals.view');
+
+// AI Analysis
+Router::post('/ai/analyze', [AIController::class, 'analyze']);
 
 // Logger viewer (admin)
 Router::get('/system/logs', function() {

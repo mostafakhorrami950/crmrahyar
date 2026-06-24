@@ -1,0 +1,5 @@
+.env
+.env.*
+crm/.env
+/vendor/
+node_modules/

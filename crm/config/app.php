@@ -60,4 +60,11 @@ return [
     'pagination' => [
         'per_page' => 20,
     ],
+
+    // OpenRouter AI
+    'openrouter' => [
+        'api_key' => getenv('OPENROUTER_API_KEY') ?: '',
+        'model' => getenv('OPENROUTER_MODEL') ?: '~openai/gpt-latest',
+        'api_url' => 'https://openrouter.ai/api/v1/chat/completions',
+    ],
 ];

@@ -7,10 +7,32 @@
 <!-- Page Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <h5 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>گزارشات و تحلیل‌ها</h5>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="<?php echo $config['url']; ?>/reports/sales" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash me-1"></i>فروش</a>
         <a href="<?php echo $config['url']; ?>/reports/pipeline" class="btn btn-outline-primary btn-sm"><i class="bi bi-kanban me-1"></i>پایپ لاین</a>
         <a href="<?php echo $config['url']; ?>/reports/contacts" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>مخاطبان</a>
+        <button type="button" class="btn btn-warning btn-sm fw-bold" id="aiAnalyzeBtn" onclick="runAIAnalysis()">
+            <i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی
+        </button>
+    </div>
+</div>
+
+<!-- AI Analysis Result Card -->
+<div class="card border-0 shadow mb-4" id="aiResultCard" style="display:none;">
+    <div class="card-header bg-gradient d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; border-radius: var(--radius) var(--radius) 0 0;">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-robot me-2"></i>تحلیل هوش مصنوعی</h6>
+        <div>
+            <span class="badge bg-white bg-opacity-25 me-2" id="aiModelBadge"></span>
+            <span class="badge bg-white bg-opacity-25" id="aiTimeBadge"></span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div id="aiLoading" style="display:none;" class="text-center py-5">
+            <div class="spinner-border text-primary mb-3" style="width:3rem;height:3rem;"></div>
+            <p class="text-muted fw-medium">در حال تحلیل اطلاعات با هوش مصنوعی...<br><small>این فرآیند ممکن است ۳۰ تا ۶۰ ثانیه طول بکشد</small></p>
+        </div>
+        <div id="aiError" class="alert alert-danger" style="display:none;"></div>
+        <div id="aiContent" style="display:none;direction:rtl;white-space:pre-wrap;line-height:2;font-size:14px;"></div>
     </div>
 </div>
 
@@ -388,4 +410,49 @@ new Chart(document.getElementById('activityChart'), {
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
 });
+
+// ===== AI ANALYSIS =====
+function runAIAnalysis() {
+    var card = document.getElementById('aiResultCard');
+    var loading = document.getElementById('aiLoading');
+    var error = document.getElementById('aiError');
+    var content = document.getElementById('aiContent');
+    var btn = document.getElementById('aiAnalyzeBtn');
+
+    card.style.display = 'block';
+    loading.style.display = 'block';
+    error.style.display = 'none';
+    content.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>در حال تحلیل...';
+
+    fetch('<?php echo $config['url']; ?>/ai/analyze', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی';
+        if (data.success) {
+            content.textContent = data.analysis;
+            content.style.display = 'block';
+            document.getElementById('aiModelBadge').textContent = 'مدل: ' + (data.model || '');
+            document.getElementById('aiTimeBadge').textContent = data.timestamp || '';
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            error.textContent = data.message || 'خطا در تحلیل';
+            error.style.display = 'block';
+        }
+    })
+    .catch(function(err) {
+        loading.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی';
+        error.textContent = 'خطا در ارتباط با سرور';
+        error.style.display = 'block';
+    });
+}
+</script>
 </script>
