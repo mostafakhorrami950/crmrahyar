@@ -88,6 +88,71 @@ class ReportController
         $todayDeals = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE DATE(created_at) = CURDATE()");
         $todayWon = $db->fetch("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM deals WHERE is_won = 1 AND DATE(closed_at) = CURDATE()");
 
+        // Stage distribution (all deals)
+        $stageDistribution = $db->fetchAll(
+            "SELECT s.name, s.color, COUNT(d.id) as count, COALESCE(SUM(d.amount), 0) as total
+             FROM stages s
+             LEFT JOIN deals d ON d.stage_id = s.id
+             WHERE s.is_active = 1
+             GROUP BY s.id, s.name, s.color
+             ORDER BY s.order_index"
+        );
+
+        // Weekly deals trend (last 12 weeks)
+        $weeklyTrend = $db->fetchAll(
+            "SELECT YEARWEEK(created_at, 1) as week, 
+                    MIN(DATE(created_at)) as week_start,
+                    COUNT(*) as total_deals,
+                    SUM(CASE WHEN is_won = 1 THEN 1 ELSE 0 END) as won,
+                    SUM(CASE WHEN is_lost = 1 THEN 1 ELSE 0 END) as lost,
+                    COALESCE(SUM(amount), 0) as total_amount
+             FROM deals
+             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)
+             GROUP BY YEARWEEK(created_at, 1)
+             ORDER BY week"
+        );
+
+        // Travel stats
+        $travelStats = $db->fetch(
+            "SELECT COUNT(*) as total, 
+                    COALESCE(SUM(passengers_count), 0) as total_passengers,
+                    COALESCE(AVG(passengers_count), 0) as avg_passengers
+             FROM deals WHERE travel_date_from IS NOT NULL"
+        );
+
+        // Activity stats (last 30 days)
+        $activityStats = $db->fetchAll(
+            "SELECT type, COUNT(*) as count
+             FROM deal_activities
+             WHERE activity_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+             GROUP BY type ORDER BY count DESC"
+        );
+
+        // Average deal amount
+        $avgDealAmount = $db->fetch("SELECT COALESCE(AVG(amount), 0) as avg_amount FROM deals WHERE amount > 0");
+
+        // Deals by month (last 6 months - created)
+        $dealsByMonth = $db->fetchAll(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
+                    COUNT(*) as created,
+                    SUM(CASE WHEN is_won = 1 THEN 1 ELSE 0 END) as won,
+                    SUM(CASE WHEN is_lost = 1 THEN 1 ELSE 0 END) as lost,
+                    SUM(CASE WHEN is_won = 0 AND is_lost = 0 THEN 1 ELSE 0 END) as open_deals
+             FROM deals
+             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+             GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+             ORDER BY month"
+        );
+
+        // Top contacts by deal count
+        $topContacts = $db->fetchAll(
+            "SELECT c.full_name, c.phone, COUNT(d.id) as deals_count, COALESCE(SUM(d.amount), 0) as total_amount
+             FROM contacts c
+             JOIN deals d ON d.contact_id = c.id
+             GROUP BY c.id, c.full_name, c.phone
+             ORDER BY deals_count DESC LIMIT 10"
+        );
+
         View::render('reports/index', [
             'title' => 'گزارشات و تحلیل‌ها',
             'totalDeals' => $totalDeals,
@@ -106,6 +171,13 @@ class ReportController
             'contactCategories' => $contactCategories,
             'todayDeals' => $todayDeals,
             'todayWon' => $todayWon,
+            'stageDistribution' => $stageDistribution,
+            'weeklyTrend' => $weeklyTrend,
+            'travelStats' => $travelStats,
+            'activityStats' => $activityStats,
+            'avgDealAmount' => $avgDealAmount,
+            'dealsByMonth' => $dealsByMonth,
+            'topContacts' => $topContacts,
         ]);
     }
 
