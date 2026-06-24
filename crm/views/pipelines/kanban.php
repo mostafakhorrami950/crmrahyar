@@ -1,42 +1,53 @@
 <?php $config = $GLOBALS['app_config']; $db = \Core\Database::getInstance(); ?>
+
+<!-- Page Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <div style="display:flex;align-items:center;gap:12px;">
-        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-sm btn-outline-secondary">← پایپ لاین‌ها</a>
-        <h5 class="fw-bold mb-0"><i class="bi bi-list-task me-1"></i> <?php echo htmlspecialchars($pipeline->name); ?></h5>
+    <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap">
+        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i>پایپ لاین‌ها
+        </a>
+        <div>
+            <h5 class="fw-bold mb-0"><i class="bi bi-kanban me-2 text-primary"></i><?php echo htmlspecialchars($pipeline->name); ?></h5>
+        </div>
         <!-- Pipeline Switcher -->
         <?php if (count($pipelines) > 1): ?>
-        <select onchange="if(this.value)window.location='<?php echo $config['url']; ?>/pipelines/kanban/'+this.value" class="form-input" style="width:auto;font-size:13px;padding:4px 8px;">
+        <select onchange="if(this.value)window.location='<?php echo $config['url']; ?>/pipelines/kanban/'+this.value" class="form-select form-select-sm" style="width:auto;font-size:13px;">
             <?php foreach ($pipelines as $p): ?>
             <option value="<?php echo $p->id; ?>" <?php echo $p->id == $pipeline->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($p->name); ?></option>
             <?php endforeach; ?>
         </select>
         <?php endif; ?>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="kanbanSearch" class="form-input" placeholder="<i class="bi bi-search me-1"></i>جستجوی معامله..." style="width:200px;font-size:13px;padding:6px 10px;" oninput="filterKanbanCards(this.value)">
-        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle me-1"></i> معامله جدید</a>
+    <div class="d-flex gap-2 align-items-center">
+        <div class="input-group input-group-sm" style="width:200px;">
+            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+            <input type="text" id="kanbanSearch" class="form-control" placeholder="جستجوی معامله..." oninput="filterKanbanCards(this.value)">
+        </div>
+        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>معامله جدید
+        </a>
     </div>
 </div>
 
 <!-- Kanban Summary -->
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-    <?php 
-    $totalDeals = 0; $totalAmount = 0;
-    foreach ($stages as $s): 
-        $stageDeals = $deals[$s->id] ?? [];
-        $stageTotal = array_sum(array_map(function($d){ return $d->amount ?? 0; }, $stageDeals));
-        $totalDeals += count($stageDeals);
-        $totalAmount += $stageTotal;
-    endforeach;
-    ?>
-    <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        💼 <strong><?php echo $totalDeals; ?></strong> معامله
+<?php 
+$totalDeals = 0; $totalAmount = 0;
+foreach ($stages as $s): 
+    $stageDeals = $deals[$s->id] ?? [];
+    $stageTotal = array_sum(array_map(function($d){ return $d->amount ?? 0; }, $stageDeals));
+    $totalDeals += count($stageDeals);
+    $totalAmount += $stageTotal;
+endforeach;
+?>
+<div class="d-flex gap-2 flex-wrap mb-3">
+    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-7">
+        <i class="bi bi-briefcase me-1"></i><strong><?php echo $totalDeals; ?></strong> معامله
     </span>
-    <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        <i class="bi bi-cash me-1"></i> <strong><?php echo number_format($totalAmount); ?></strong> تومان
+    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 fs-7">
+        <i class="bi bi-cash me-1"></i><strong><?php echo number_format($totalAmount); ?></strong> ریال
     </span>
-    <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        <i class="bi bi-bar-chart me-1"></i> <strong><?php echo count($stages); ?></strong> مرحله
+    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 fs-7">
+        <i class="bi bi-layers me-1"></i><strong><?php echo count($stages); ?></strong> مرحله
     </span>
 </div>
 
@@ -45,18 +56,27 @@
     <?php foreach ($stages as $stage): 
         $stageDeals = $deals[$stage->id] ?? [];
         $stageTotal = array_sum(array_map(function($d){ return $d->amount ?? 0; }, $stageDeals));
+        $stageColor = htmlspecialchars($stage->color ?? '#6B7280');
     ?>
     <div class="kanban-column" data-stage-id="<?php echo $stage->id; ?>">
         <!-- Column Header -->
-        <div class="kanban-column-header" style="border-top:4px solid <?php echo htmlspecialchars($stage->color ?? '#6B7280'); ?>;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="kanban-col-header" style="border-bottom:3px solid <?php echo $stageColor; ?>;">
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <strong style="font-size:14px;"><?php echo htmlspecialchars($stage->name); ?></strong>
-                    <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">
-                        <?php echo count($stageDeals); ?> معامله • <?php echo number_format($stageTotal); ?> ت
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="color-dot" style="background:<?php echo $stageColor; ?>;"></span>
+                        <strong style="font-size:14px;"><?php echo htmlspecialchars($stage->name); ?></strong>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:11px;">
+                        <span class="fw-semibold text-dark"><?php echo count($stageDeals); ?></span> معامله
+                        <?php if ($stageTotal > 0): ?>
+                        · <span class="text-success fw-semibold"><?php echo number_format($stageTotal); ?></span> ریال
+                        <?php endif; ?>
                     </div>
                 </div>
-                <a href="<?php echo $config['url']; ?>/deals/create" style="font-size:18px;color:var(--gray-400);text-decoration:none;" title="افزودن معامله"><i class="bi bi-plus-circle me-1"></i></a>
+                <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-link text-muted p-0" title="افزودن معامله">
+                    <i class="bi bi-plus-circle fs-5"></i>
+                </a>
             </div>
         </div>
         
@@ -65,7 +85,10 @@
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, <?php echo $stage->id; ?>)">
             
             <?php if (empty($stageDeals)): ?>
-            <div class="kanban-empty">معامله‌ای نیست</div>
+            <div class="kanban-empty">
+                <i class="bi bi-inbox text-muted" style="font-size:24px;opacity:0.3;"></i>
+                <div class="mt-1">معامله‌ای نیست</div>
+            </div>
             <?php endif; ?>
             
             <?php foreach ($stageDeals as $deal): ?>
@@ -78,53 +101,58 @@
                  data-deal-phone="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>"
                  data-deal-assigned="<?php echo htmlspecialchars($deal->assigned_name ?? ''); ?>"
                  data-deal-created="<?php echo \Core\JDate::displayDate($deal->created_at); ?>"
-                 ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
+                 ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"
+                 ondblclick="openQuickView(<?php echo $deal->id; ?>)">
                 
                 <!-- Card Header -->
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-                    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" style="font-weight:700;font-size:13px;color:var(--gray-900);text-decoration:none;line-height:1.5;">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="fw-bold text-dark text-decoration-none" style="font-size:13px;line-height:1.6;">
                         <?php echo htmlspecialchars(mb_substr($deal->title, 0, 40)); ?>
                     </a>
-                    <span style="font-size:11px;color:var(--gray-300);flex-shrink:0;">☰</span>
+                    <i class="bi bi-grip-vertical text-muted" style="font-size:12px;opacity:0.3;"></i>
                 </div>
                 
                 <!-- Amount -->
                 <?php if ($deal->amount): ?>
-                <div style="font-weight:800;font-size:15px;color:#059669;margin-bottom:6px;">
-                    <?php echo number_format($deal->amount); ?> <small style="font-size:10px;font-weight:400;color:var(--gray-400);">تومان</small>
+                <div class="fw-bold mb-1" style="font-size:15px;color:#059669;">
+                    <?php echo number_format($deal->amount); ?>
+                    <small class="text-muted fw-normal" style="font-size:10px;">ریال</small>
                 </div>
                 <?php endif; ?>
                 
                 <!-- Contact -->
                 <?php if (!empty($deal->contact_name)): ?>
-                <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--gray-600);margin-bottom:4px;">
-                    <i class="bi bi-person me-1"></i> <?php echo htmlspecialchars(mb_substr($deal->contact_name, 0, 20)); ?>
+                <div class="d-flex align-items-center gap-1 text-muted mb-1" style="font-size:12px;">
+                    <i class="bi bi-person"></i>
+                    <?php echo htmlspecialchars(mb_substr($deal->contact_name, 0, 20)); ?>
                     <?php if (!empty($deal->contact_phone)): ?>
-                    <span dir="ltr" style="color:var(--gray-400);font-size:11px;">(<?php echo htmlspecialchars($deal->contact_phone); ?>)</span>
+                    <span dir="ltr" style="font-size:11px;opacity:0.6;"><?php echo htmlspecialchars($deal->contact_phone); ?></span>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
                 
                 <!-- Tags -->
                 <?php if (!empty($deal->tags)): ?>
-                <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;">
+                <div class="d-flex gap-1 flex-wrap mb-1">
                     <?php 
                     $tagsArr = array_filter(explode(',', $deal->tags));
                     foreach (array_slice($tagsArr, 0, 3) as $tag): 
                     ?>
-                    <span style="background:#eef2ff;color:#4f46e5;padding:1px 6px;border-radius:6px;font-size:10px;">#<?php echo htmlspecialchars(trim($tag)); ?></span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:10px;padding:1px 6px;">#<?php echo htmlspecialchars(trim($tag)); ?></span>
                     <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
                 
                 <!-- Footer -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-100);">
+                <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top">
                     <?php if (!empty($deal->assigned_name)): ?>
-                    <span style="font-size:11px;color:var(--gray-400);">👨‍💼 <?php echo htmlspecialchars($deal->assigned_name); ?></span>
+                    <span class="text-muted" style="font-size:11px;">
+                        <i class="bi bi-person-check me-1"></i><?php echo htmlspecialchars($deal->assigned_name); ?>
+                    </span>
                     <?php else: ?>
                     <span></span>
                     <?php endif; ?>
-                    <span style="font-size:10px;color:var(--gray-300);"><?php echo \Core\JDate::displayDate($deal->created_at); ?></span>
+                    <span class="text-muted" style="font-size:10px;"><?php echo \Core\JDate::displayDate($deal->created_at); ?></span>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -133,15 +161,20 @@
     <?php endforeach; ?>
 </div>
 
-<!-- Quick View Modal -->
-<div class="modal-overlay" id="dealQuickView" style="display:none;">
-    <div class="modal-box" style="max-width:450px;">
-        <div class="modal-header">
-            <h5 class="fw-bold mb-0">-</h5>
-            <button type="button" class="modal-close" onclick="closeQuickView()">&times;</button>
-        </div>
-        <div class="modal-body" id="qvBody">
-            <div style="text-align:center;padding:20px;"><i class="bi bi-clock text-warning me-1"></i> در حال بارگذاری...</div>
+<!-- Quick View Modal (Bootstrap) -->
+<div class="modal fade" id="dealQuickView" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold" id="qvTitle">-</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="qvBody">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted small mt-2 mb-0">در حال بارگذاری...</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -149,27 +182,27 @@
 <style>
 .kanban-board {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     overflow-x: auto;
     padding-bottom: 20px;
     min-height: 70vh;
     align-items: flex-start;
+    -webkit-overflow-scrolling: touch;
 }
 .kanban-column {
-    min-width: 280px;
+    min-width: 290px;
     max-width: 320px;
     flex: 1;
-    background: var(--gray-50);
-    border-radius: 12px;
+    background: #f8f9fa;
+    border-radius: var(--radius);
     display: flex;
     flex-direction: column;
     max-height: 80vh;
 }
-.kanban-column-header {
+.kanban-col-header {
     padding: 14px 16px;
-    background: white;
-    border-radius: 12px 12px 0 0;
-    border-bottom: 1px solid var(--gray-200);
+    background: #fff;
+    border-radius: var(--radius) var(--radius) 0 0;
 }
 .kanban-dropzone {
     padding: 8px;
@@ -177,35 +210,48 @@
     overflow-y: auto;
     min-height: 100px;
     transition: background 0.2s;
+    border-radius: 0 0 var(--radius) var(--radius);
 }
 .kanban-dropzone.drag-over {
-    background: #dbeafe;
-    border-radius: 0 0 12px 12px;
+    background: rgba(67, 97, 238, 0.08);
+    outline: 2px dashed var(--primary);
+    outline-offset: -4px;
 }
 .kanban-empty {
     text-align: center;
     padding: 30px 10px;
-    color: var(--gray-300);
+    color: #adb5bd;
     font-size: 13px;
 }
 .kanban-card {
-    background: white;
-    border-radius: 10px;
-    padding: 12px;
+    background: #fff;
+    border-radius: var(--radius-sm);
+    padding: 14px;
     margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     cursor: grab;
     transition: transform 0.15s, box-shadow 0.15s;
     border: 2px solid transparent;
+    border-right: 4px solid var(--primary);
 }
 .kanban-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    transform: translateY(-1px);
-    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: rgba(67, 97, 238, 0.2);
 }
 .kanban-card.dragging {
     opacity: 0.4;
     transform: rotate(2deg);
+}
+
+@media (max-width: 767.98px) {
+    .kanban-column {
+        min-width: 260px;
+        max-width: 280px;
+    }
+    .kanban-card {
+        padding: 10px;
+    }
 }
 </style>
 
@@ -251,7 +297,6 @@ function handleDrop(e, stageId) {
     var dealId = e.dataTransfer.getData('text/plain');
     if (!dealId) return;
     
-    // Send AJAX update
     var fd = new FormData();
     fd.append('deal_id', dealId);
     fd.append('stage_id', stageId);
@@ -263,23 +308,33 @@ function handleDrop(e, stageId) {
     .then(function(r) { return r.json(); })
     .then(function(d) {
         if (d.success) {
-            // Move card DOM
             var card = document.querySelector('.kanban-card[data-deal-id="' + dealId + '"]');
             if (card && zone) {
-                // Remove empty message if exists
                 var emptyMsg = zone.querySelector('.kanban-empty');
                 if (emptyMsg) emptyMsg.remove();
-                
                 zone.appendChild(card);
                 updateColumnStats();
+                
+                // Show success toast
+                showToast('معامله با موفقیت منتقل شد', 'success');
             }
         } else {
-            alert(d.message || 'خطا در انتقال');
+            showToast(d.message || 'خطا در انتقال', 'danger');
         }
     })
     .catch(function() {
-        alert('خطای شبکه');
+        showToast('خطای شبکه', 'danger');
     });
+}
+
+// ============ TOAST NOTIFICATION ============
+function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + (type || 'info') + ' position-fixed shadow-sm';
+    toast.style.cssText = 'bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:250px;text-align:center;font-size:13px;border-radius:12px;';
+    toast.innerHTML = '<i class="bi bi-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + ' me-1"></i>' + message;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3000);
 }
 
 // ============ UPDATE COLUMN STATS ============
@@ -291,20 +346,21 @@ function updateColumnStats() {
             totalAmount += parseInt(c.dataset.dealAmount || 0);
         });
         
-        var header = col.querySelector('.kanban-column-header div div');
-        if (header) {
-            var countText = cards.length + ' معامله • ' + totalAmount.toLocaleString('en-US') + ' ت';
-            var subDiv = header.querySelector('div');
-            if (subDiv) subDiv.textContent = countText;
+        var statsDiv = col.querySelector('.kanban-col-header .text-muted');
+        if (statsDiv) {
+            var html = '<span class="fw-semibold text-dark">' + cards.length + '</span> معامله';
+            if (totalAmount > 0) {
+                html += ' · <span class="text-success fw-semibold">' + totalAmount.toLocaleString('en-US') + '</span> ریال';
+            }
+            statsDiv.innerHTML = html;
         }
         
-        // Show/hide empty message
         var zone = col.querySelector('.kanban-dropzone');
         var emptyMsg = zone.querySelector('.kanban-empty');
         if (cards.length === 0 && !emptyMsg) {
             var div = document.createElement('div');
             div.className = 'kanban-empty';
-            div.textContent = 'معامله‌ای نیست';
+            div.innerHTML = '<i class="bi bi-inbox text-muted" style="font-size:24px;opacity:0.3;"></i><div class="mt-1">معامله‌ای نیست</div>';
             zone.appendChild(div);
         } else if (cards.length > 0 && emptyMsg) {
             emptyMsg.remove();
@@ -328,17 +384,11 @@ function filterKanbanCards(query) {
     });
 }
 
-// ============ QUICK VIEW (double-click) ============
-document.querySelectorAll('.kanban-card').forEach(function(card) {
-    card.addEventListener('dblclick', function() {
-        var dealId = this.dataset.dealId;
-        openQuickView(dealId);
-    });
-});
-
+// ============ QUICK VIEW ============
 function openQuickView(dealId) {
-    document.getElementById('dealQuickView').style.display = 'flex';
-    document.getElementById('qvBody').innerHTML = '<div style="text-align:center;padding:20px;"><i class="bi bi-clock text-warning me-1"></i> در حال بارگذاری...</div>';
+    var modal = new bootstrap.Modal(document.getElementById('dealQuickView'));
+    document.getElementById('qvBody').innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div><p class="text-muted small mt-2 mb-0">در حال بارگذاری...</p></div>';
+    modal.show();
     
     fetch('<?php echo $config['url']; ?>/deals/get-data/' + dealId)
     .then(function(r) { return r.json(); })
@@ -346,22 +396,20 @@ function openQuickView(dealId) {
         if (d.success) {
             var deal = d.deal;
             document.getElementById('qvTitle').textContent = deal.title || '-';
-            var amount = deal.amount ? (parseInt(deal.amount).toLocaleString('en-US') + ' تومان') : '-';
-            var status = deal.is_won ? '<i class="bi bi-check-circle text-success me-1"></i> موفق' : (deal.is_lost ? '<i class="bi bi-x-circle text-danger me-1"></i> ناموفق' : '<i class="bi bi-clock text-warning me-1"></i> در حال بررسی');
+            var amount = deal.amount ? (parseInt(deal.amount).toLocaleString('en-US') + ' ریال') : '-';
+            var status = deal.is_won ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>موفق</span>' : 
+                        (deal.is_lost ? '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>ناموفق</span>' : 
+                        '<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>در حال بررسی</span>');
             
             document.getElementById('qvBody').innerHTML = 
-                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);"><i class="bi bi-cash me-1"></i> مبلغ</div><strong>' + amount + '</strong></div>' +
-                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);"><i class="bi bi-bar-chart me-1"></i> وضعیت</div><strong>' + status + '</strong></div>' +
+                '<div class="row g-2">' +
+                    '<div class="col-6"><div class="bg-light rounded-3 p-3"><div class="text-muted small mb-1"><i class="bi bi-cash me-1"></i>مبلغ</div><strong>' + amount + '</strong></div></div>' +
+                    '<div class="col-6"><div class="bg-light rounded-3 p-3"><div class="text-muted small mb-1"><i class="bi bi-bar-chart me-1"></i>وضعیت</div>' + status + '</div></div>' +
                 '</div>' +
-                '<div style="margin-top:12px;"><a href="<?php echo $config['url']; ?>/deals/view/' + dealId + '" class="btn btn-primary" style="width:100%;text-align:center;">مشاهده جزئیات کامل</a></div>';
+                '<div class="mt-3"><a href="<?php echo $config['url']; ?>/deals/view/' + dealId + '" class="btn btn-primary w-100"><i class="bi bi-eye me-1"></i>مشاهده جزئیات کامل</a></div>';
         } else {
-            document.getElementById('qvBody').innerHTML = '<div style="text-align:center;padding:20px;color:#EF4444;">خطا در بارگذاری</div>';
+            document.getElementById('qvBody').innerHTML = '<div class="text-center py-3 text-danger"><i class="bi bi-exclamation-circle fs-3"></i><p class="mt-2">خطا در بارگذاری</p></div>';
         }
     });
-}
-
-function closeQuickView() {
-    document.getElementById('dealQuickView').style.display = 'none';
 }
 </script>
