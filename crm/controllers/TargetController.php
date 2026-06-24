@@ -101,10 +101,10 @@ class TargetController
         $endDatetime = $endDate . ' 23:59:59';
         
         // First, fix any won deals that have NULL closed_at
-        $db->execute(
+        $db->query(
             "UPDATE deals SET closed_at = updated_at WHERE is_won = 1 AND closed_at IS NULL"
         );
-        $db->execute(
+        $db->query(
             "UPDATE deals SET closed_at = updated_at WHERE is_lost = 1 AND closed_at IS NULL"
         );
         
