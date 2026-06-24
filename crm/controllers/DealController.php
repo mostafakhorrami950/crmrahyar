@@ -528,7 +528,7 @@ class DealController
         $db = Database::getInstance();
         $db->insert('deal_activities', [
             'deal_id' => $params['id'],
-            'user_id' => Auth::id(),
+            'user_id' => !empty($_POST['activity_user_id']) ? (int)$_POST['activity_user_id'] : Auth::id(),
             'type' => $type,
             'subject' => $subject,
             'description' => $description,

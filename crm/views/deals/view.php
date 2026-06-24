@@ -203,6 +203,9 @@
                 <div class="col-12"><label class="form-label text-muted small">توضیحات</label><textarea name="description" class="form-control" rows="2"></textarea></div>
                 <div class="col-6"><label class="form-label text-muted small">تاریخ</label><input type="datetime-local" name="activity_date" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>"></div>
                 <div class="col-6"><label class="form-label text-muted small">یادآوری</label><input type="datetime-local" name="reminder_at" class="form-control"></div>
+                <?php if (\Core\Auth::hasPermission('settings.manage') || \Core\Auth::hasPermission('users.manage')): ?>
+                <div class="col-6"><label class="form-label text-muted small"><i class="bi bi-person me-1"></i>تخصیص به کاربر</label><select name="activity_user_id" class="form-select"><option value="">خودم</option><?php foreach($users??[] as $u): ?><option value="<?php echo $u->id; ?>"><?php echo htmlspecialchars($u->full_name); ?></option><?php endforeach; ?></select></div>
+                <?php endif; ?>
             </div>
         </div>
         <div class="modal-footer"><button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>ثبت</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">لغو</button></div>
