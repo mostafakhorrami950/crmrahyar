@@ -159,6 +159,12 @@
                     </form>
                 </div>
                 <div class="d-flex align-items-center gap-2 gap-md-3">
+                    <!-- Quick Create Contact -->
+                    <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
+                    <button type="button" class="btn btn-link text-decoration-none p-1" data-bs-toggle="modal" data-bs-target="#quickContactModal" title="افزودن سریع مخاطب">
+                        <i class="bi bi-person-plus text-primary fs-5"></i>
+                    </button>
+                    <?php endif; ?>
                     <!-- Export Links -->
                     <a href="<?php echo $config['url']; ?>/export/deals" title="خروجی اکسل معاملات" class="btn btn-link text-decoration-none d-none d-lg-inline-block p-1">
                         <i class="bi bi-file-earmark-excel text-success fs-5"></i>
@@ -207,6 +213,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Quick Create Contact Modal -->
+    <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
+    <?php include __DIR__ . '/../contacts/_quick_create_modal.php'; ?>
+    <?php endif; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

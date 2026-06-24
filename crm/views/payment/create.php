@@ -7,13 +7,11 @@
 
 <div class="row g-3">
     <div class="col-12 col-md-6">
-        <!-- Create Payment Form -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom">
                 <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg me-2 text-primary"></i>ایجاد لینک اختصاصی پرداخت</h6>
             </div>
             <div class="card-body">
-                <!-- Deal Info -->
                 <div class="d-flex gap-3 p-3 bg-light rounded-3 mb-3">
                     <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:48px;height:48px;">
                         <i class="bi bi-briefcase fs-4"></i>
@@ -25,25 +23,20 @@
                     </div>
                 </div>
 
-                <div class="ajax-error alert alert-danger d-none mb-3"></div>
-                <div class="ajax-success alert alert-success d-none mb-3"></div>
-                <form method="POST" action="<?php echo $config['url']; ?>/payment/request" data-ajax="true">
+                <form method="POST" action="<?php echo $config['url']; ?>/payment/request" id="payForm">
                     <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
                     
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-medium">مبلغ (تومان) <span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control form-control-lg" value="<?php echo $deal->amount ?: 0; ?>" required min="1000" step="1000" dir="ltr" style="text-align:left;font-weight:bold;">
-                        <small class="text-muted">مبلغ پیش‌فرض: <?php echo number_format($deal->amount); ?> تومان</small>
                     </div>
-
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>شماره موبایل پرداخت کننده</label>
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>شماره موبایل</label>
                         <input type="text" name="mobile" class="form-control" placeholder="09120000000" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;">
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>توضیحات</label>
-                        <textarea name="description" class="form-control" rows="2" placeholder="توضیحات این پرداخت..."><?php echo htmlspecialchars($deal->title); ?></textarea>
+                        <textarea name="description" class="form-control" rows="2"><?php echo htmlspecialchars($deal->title); ?></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold" id="submitPayBtn">
@@ -52,30 +45,26 @@
                     <p class="text-center text-muted small mt-2"><i class="bi bi-shield-lock me-1"></i>پرداخت امن توسط درگاه زیبال</p>
                 </form>
 
-                <!-- Public Payment Link Section -->
-                <div id="publicLinkSection" class="d-none mt-3 p-3 rounded-3 border border-success border-dashed" style="background:#d4edda;">
-                    <h6 class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i>لینک پرداخت اختصاصی مشتری</h6>
-                    <p class="small text-success mb-2">این لینک را برای مشتری ارسال کنید:</p>
+                <div id="payLinkSection" class="d-none mt-3 p-3 rounded-3" style="background:#d4edda;border:1px solid #c3e6cb;">
+                    <h6 class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i>لینک پرداخت اختصاصی</h6>
                     <div class="d-flex gap-2">
                         <input type="text" id="publicPayLink" class="form-control form-control-sm" dir="ltr" style="text-align:left;" readonly>
-                        <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="copyPublicLink()"><i class="bi bi-clipboard me-1"></i>کپی</button>
+                        <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="copyLink(this)"><i class="bi bi-clipboard me-1"></i>کپی</button>
                     </div>
+                    <small class="text-muted mt-1 d-block">در حال انتقال به درگاه پرداخت...</small>
                 </div>
+                <div id="payError" class="alert alert-danger d-none mt-3"></div>
             </div>
         </div>
     </div>
 
     <div class="col-12 col-md-6">
-        <!-- Previous Payments -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom">
                 <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>تاریخچه پرداخت‌ها</h6>
             </div>
             <div class="card-body">
-                <?php 
-                $db = \Core\Database::getInstance();
-                $payments = $db->fetchAll("SELECT * FROM payments WHERE deal_id = :id ORDER BY created_at DESC", [':id' => $deal->id]);
-                ?>
+                <?php $db = \Core\Database::getInstance(); $payments = $db->fetchAll("SELECT * FROM payments WHERE deal_id = :id ORDER BY created_at DESC", [':id' => $deal->id]); ?>
                 <?php if (empty($payments)): ?>
                 <div class="text-center text-muted py-4">
                     <i class="bi bi-credit-card fs-1 d-block mb-2 opacity-25"></i>
@@ -107,3 +96,63 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var payForm = document.getElementById('payForm');
+    if (!payForm) return;
+    
+    payForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('submitPayBtn');
+        var payError = document.getElementById('payError');
+        var payLinkSection = document.getElementById('payLinkSection');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>در حال اتصال...';
+        payError.classList.add('d-none');
+        payLinkSection.classList.add('d-none');
+        
+        fetch(payForm.action, {
+            method: 'POST',
+            body: new FormData(payForm),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                if (data.public_link) {
+                    document.getElementById('publicPayLink').value = data.public_link;
+                    payLinkSection.classList.remove('d-none');
+                }
+                if (data.redirect) {
+                    setTimeout(function() { window.location.href = data.redirect; }, 1500);
+                }
+            } else {
+                payError.classList.remove('d-none');
+                payError.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>' + (data.message || 'خطا در اتصال');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال';
+            }
+        })
+        .catch(function() {
+            payError.classList.remove('d-none');
+            payError.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>خطای شبکه';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال';
+        });
+    });
+});
+
+function copyLink(btn) {
+    var input = document.getElementById('publicPayLink');
+    if (input && input.value) {
+        navigator.clipboard.writeText(input.value);
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check me-1"></i>کپی شد!';
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-dark');
+        setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('btn-dark'); btn.classList.add('btn-success'); }, 2000);
+    }
+}
+</script>
