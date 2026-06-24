@@ -52,7 +52,11 @@ $defaultPipeline = $db->fetch("SELECT id FROM pipelines WHERE is_default = 1");
 
                         <!-- Contact + Assigned -->
                         <div class="col-12 col-md-6">
-                            <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>مخاطب</label>
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>مخاطب
+                                <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
+                                <button type="button" class="btn btn-link text-decoration-none p-0 ms-1" onclick="new bootstrap.Modal(document.getElementById('quickContactModal')).show()" title="افزودن مخاطب جدید"><i class="bi bi-plus-circle text-primary"></i></button>
+                                <?php endif; ?>
+                            </label>
                             <input type="text" class="form-control mb-1" id="qdcContactSearch" placeholder="🔍 جستجوی مخاطب..." autocomplete="off" oninput="qdcFilterContacts(this.value)">
                             <select name="contact_id" class="form-select" id="qdcContactSelect" size="3">
                                 <option value="">انتخاب مخاطب</option>

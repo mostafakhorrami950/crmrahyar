@@ -113,8 +113,8 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <?php if (empty($activities)): ?>
-        <div class="empty-state">
-            <div class="empty-icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-calendar-check fs-1 d-block mb-2 opacity-25"></i>
             <h5>هیچ فعالیتی یافت نشد</h5>
             <p>فیلترها را تغییر دهید یا فعالیت جدید ایجاد کنید</p>
         </div>
@@ -135,15 +135,12 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
             </div>
         <?php endif; ?>
         
-        <div class="d-flex align-items-start gap-3 px-3 py-3 border-bottom <?php echo $act->is_done ? 'opacity-50' : ''; ?> <?php echo $isOverdue ? 'bg-danger bg-opacity-5' : ''; ?>" data-id="<?php echo $act->id; ?>">
-            <!-- Checkbox + Toggle -->
-            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0">
-                <input type="checkbox" class="row-check form-check-input" value="<?php echo $act->id; ?>" onchange="updateBulkBar()">
-                <form method="POST" action="<?php echo $config['url']; ?>/activities/toggle-done/<?php echo $act->id; ?>" data-ajax="true">
-                    <button type="submit" class="btn btn-sm rounded-circle <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-outline-secondary'); ?>" style="width:32px;height:32px;padding:0;" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">
-                        <i class="bi <?php echo $act->is_done ? 'bi-check-lg' : ($isOverdue ? 'bi-exclamation' : 'bi-circle'); ?>"></i>
-                    </button>
-                </form>
+        <div class="d-flex align-items-start gap-3 px-3 py-3 border-bottom activity-row <?php echo $act->is_done ? 'opacity-50' : ''; ?> <?php echo $isOverdue ? 'bg-danger bg-opacity-5' : ''; ?>" data-id="<?php echo $act->id; ?>">
+            <!-- Toggle Done -->
+            <div class="flex-shrink-0">
+                <button type="button" class="btn btn-sm rounded-circle toggle-done-btn <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-outline-secondary'); ?>" style="width:36px;height:36px;padding:0;" data-id="<?php echo $act->id; ?>" title="<?php echo $act->is_done ? 'انجام شده - کلیک برای لغو' : 'کلیک برای انجام شده'; ?>">
+                    <i class="bi <?php echo $act->is_done ? 'bi-check-lg' : ($isOverdue ? 'bi-exclamation' : 'bi-circle'); ?>"></i>
+                </button>
             </div>
             
             <!-- Type Icon -->
@@ -170,9 +167,9 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
                     </div>
                 </div>
                 
-                <div class="d-flex gap-2 mt-2 flex-wrap">
+                <div class="d-flex gap-2 mt-2 flex-wrap align-items-center">
                     <?php if ($act->deal_id): ?>
-                    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" class="badge bg-primary bg-opacity-10 text-primary text-decoration-none px-2 py-1">
+                    <a href="javascript:void(0)" class="badge bg-primary bg-opacity-10 text-primary text-decoration-none px-2 py-1 quick-view-deal" data-id="<?php echo $act->deal_id; ?>" style="cursor:pointer;">
                         <i class="bi bi-briefcase me-1"></i><?php echo htmlspecialchars(mb_substr($act->deal_title ?? '-', 0, 30)); ?>
                     </a>
                     <?php endif; ?>
@@ -180,9 +177,11 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
                     <span class="badge px-2 py-1" style="background:<?php echo $act->stage_color; ?>20;color:<?php echo $act->stage_color; ?>;"><?php echo htmlspecialchars($act->stage_name); ?></span>
                     <?php endif; ?>
                     <?php if (!empty($act->contact_name)): ?>
-                    <small class="text-muted"><i class="bi bi-person me-1"></i><?php echo htmlspecialchars($act->contact_name); ?>
-                    <?php if (!empty($act->contact_phone)): ?><span dir="ltr">(<?php echo htmlspecialchars($act->contact_phone); ?>)</span><?php endif; ?>
-                    </small>
+                    <a href="javascript:void(0)" class="text-decoration-none quick-view-contact" data-phone="<?php echo htmlspecialchars($act->contact_phone ?? ''); ?>" style="cursor:pointer;">
+                        <small class="text-muted"><i class="bi bi-person me-1"></i><?php echo htmlspecialchars($act->contact_name); ?>
+                        <?php if (!empty($act->contact_phone)): ?><span dir="ltr">(<?php echo htmlspecialchars($act->contact_phone); ?>)</span><?php endif; ?>
+                        </small>
+                    </a>
                     <?php endif; ?>
                 </div>
                 
@@ -195,3 +194,114 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title fw-bold" id="qvTitle"><i class="bi bi-eye me-2"></i>مشاهده سریع</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="qvBody">
+                <div class="text-center py-4"><span class="spinner-border text-primary"></span></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="qvLink" class="btn btn-primary"><i class="bi bi-box-arrow-up-right me-1"></i>مشاهده کامل</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var baseUrl = '<?php echo $config['url']; ?>';
+    
+    // Toggle Done
+    document.querySelectorAll('.toggle-done-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var btnEl = this;
+            fetch(baseUrl + '/activities/toggle-done/' + id, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success !== false) {
+                    var row = btnEl.closest('.activity-row');
+                    if (data.is_done || btnEl.classList.contains('btn-outline-secondary') || btnEl.classList.contains('btn-danger')) {
+                        btnEl.className = 'btn btn-sm rounded-circle toggle-done-btn btn-success';
+                        btnEl.innerHTML = '<i class="bi bi-check-lg"></i>';
+                        btnEl.title = 'انجام شده - کلیک برای لغو';
+                        row.classList.add('opacity-50');
+                        row.classList.remove('bg-danger', 'bg-opacity-5');
+                    } else {
+                        btnEl.className = 'btn btn-sm rounded-circle toggle-done-btn btn-outline-secondary';
+                        btnEl.innerHTML = '<i class="bi bi-circle"></i>';
+                        btnEl.title = 'کلیک برای انجام شده';
+                        row.classList.remove('opacity-50');
+                    }
+                    btnEl.classList.add('btn-flash');
+                    setTimeout(function() { btnEl.classList.remove('btn-flash'); }, 500);
+                }
+            })
+            .catch(function() {});
+        });
+    });
+    
+    // Quick View Deal
+    document.querySelectorAll('.quick-view-deal').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+            document.getElementById('qvTitle').innerHTML = '<i class="bi bi-briefcase me-2"></i>اطلاعات معامله';
+            document.getElementById('qvBody').innerHTML = '<div class="text-center py-4"><span class="spinner-border text-primary"></span></div>';
+            document.getElementById('qvLink').href = baseUrl + '/deals/view/' + id;
+            modal.show();
+            fetch(baseUrl + '/deals/get-data/' + id)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success && d.deal) {
+                    var dl = d.deal;
+                    document.getElementById('qvBody').innerHTML = 
+                        '<div class="row g-3">' +
+                        '<div class="col-12"><div class="d-flex gap-3 p-3 bg-light rounded-3"><div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;"><i class="bi bi-briefcase fs-4"></i></div><div><strong class="d-block fs-6">' + (dl.title||'-') + '</strong><small class="text-muted">' + (dl.contact_name||'') + '</small></div></div></div>' +
+                        '<div class="col-6"><small class="text-muted d-block">مبلغ</small><strong class="text-primary">' + (dl.amount ? parseInt(dl.amount).toLocaleString('en-US') + ' تومان' : '-') + '</strong></div>' +
+                        '<div class="col-6"><small class="text-muted d-block">وضعیت</small>' + (dl.is_won ? '<span class="badge bg-success">موفق</span>' : (dl.is_lost ? '<span class="badge bg-danger">ناموفق</span>' : '<span class="badge bg-warning text-dark">در جریان</span>')) + '</div>' +
+                        '</div>';
+                }
+            })
+            .catch(function() { document.getElementById('qvBody').innerHTML = '<p class="text-danger">خطا در بارگذاری</p>'; });
+        });
+    });
+    
+    // Quick View Contact
+    document.querySelectorAll('.quick-view-contact').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var phone = this.dataset.phone;
+            var modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+            document.getElementById('qvTitle').innerHTML = '<i class="bi bi-person me-2"></i>اطلاعات مخاطب';
+            document.getElementById('qvBody').innerHTML = '<div class="text-center py-4"><span class="spinner-border text-primary"></span></div>';
+            document.getElementById('qvLink').href = baseUrl + '/contacts';
+            modal.show();
+            fetch(baseUrl + '/search/api?q=' + encodeURIComponent(phone))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.contacts && data.contacts.length > 0) {
+                    var c = data.contacts[0];
+                    document.getElementById('qvLink').href = baseUrl + '/contacts/view/' + c.id;
+                    document.getElementById('qvBody').innerHTML = 
+                        '<div class="row g-3">' +
+                        '<div class="col-12"><div class="d-flex gap-3 p-3 bg-light rounded-3"><div class="rounded-3 bg-info d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;"><i class="bi bi-person fs-4"></i></div><div><strong class="d-block fs-6">' + (c.full_name||'-') + '</strong><small class="text-muted">' + (c.phone||'') + '</small></div></div></div>' +
+                        '</div>';
+                } else {
+                    document.getElementById('qvBody').innerHTML = '<p class="text-muted text-center py-3">اطلاعاتی یافت نشد</p>';
+                }
+            })
+            .catch(function() { document.getElementById('qvBody').innerHTML = '<p class="text-danger">خطا</p>'; });
+        });
+    });
+});
+</script>

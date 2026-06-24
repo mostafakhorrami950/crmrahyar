@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS deal_win_reasons (
     icon VARCHAR(10) DEFAULT '✅',
     is_active TINYINT(1) DEFAULT 1,
     sort_order INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Add win_reason_id and win_reason_note columns to deals

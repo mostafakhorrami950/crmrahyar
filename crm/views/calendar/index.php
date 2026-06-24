@@ -4,12 +4,10 @@ $jMonth = $month;
 $monthName = $monthName ?? \Core\JDate::monthName($jMonth);
 $daysInMonth = $daysInMonth ?? \Core\JDate::daysInMonth($jYear, $jMonth);
 
-// Convert 1st day of Jalali month to Gregorian to find day of week
 list($gYear, $gMonth, $gDay) = \Core\JDate::toGregorian($jYear, $jMonth, 1);
 $gregorianDow = (int)date('w', mktime(0, 0, 0, $gMonth, $gDay, $gYear));
 $firstDayAdj = ($gregorianDow + 1) % 7;
 
-// Today
 list($todayJY, $todayJM, $todayJD) = \Core\JDate::now();
 
 $typeIcons = ['call'=>'bi-telephone','meeting'=>'bi-people','sms'=>'bi-envelope','email'=>'bi-envelope-at','follow_up'=>'bi-pin','note'=>'bi-journal-text'];
@@ -63,9 +61,14 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
                             <?php echo $d; ?>
                         </div>
                         <?php foreach (array_slice($dayActs, 0, 2) as $act): ?>
-                        <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" class="d-block text-decoration-none mb-1 px-1 py-0 rounded small" style="font-size:10px;background:var(--bs-primary);color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo htmlspecialchars($act->subject); ?>">
-                            <?php echo mb_substr($act->subject, 0, 12); ?>
-                        </a>
+                        <div class="mb-1 d-flex align-items-center gap-1" style="font-size:10px;">
+                            <button type="button" class="btn btn-sm rounded-circle cal-toggle-btn <?php echo $act->is_done ? 'btn-success' : 'btn-outline-secondary'; ?>" style="width:18px;height:18px;padding:0;font-size:8px;" data-id="<?php echo $act->id; ?>" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">
+                                <i class="bi <?php echo $act->is_done ? 'bi-check' : 'bi-circle'; ?>" style="font-size:8px;"></i>
+                            </button>
+                            <a href="javascript:void(0)" class="text-decoration-none flex-grow-1 quick-view-deal" data-id="<?php echo $act->deal_id; ?>" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:<?php echo $act->is_done ? '#9ca3af' : 'var(--bs-primary)'; ?>;text-decoration:<?php echo $act->is_done ? 'line-through' : 'none' ?>;" title="<?php echo htmlspecialchars($act->subject); ?>">
+                                <?php echo mb_substr($act->subject, 0, 10); ?>
+                            </a>
+                        </div>
                         <?php endforeach; ?>
                         <?php if (count($dayActs) > 2): ?>
                         <small class="text-muted" style="font-size:9px;">+<?php echo count($dayActs) - 2; ?></small>
@@ -101,42 +104,107 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
             <p>فعالیتی در این ماه ثبت نشده</p>
         </div>
         <?php else: ?>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="small fw-bold">تاریخ</th>
-                        <th class="small fw-bold">موضوع</th>
-                        <th class="small fw-bold d-none d-md-table-cell">نوع</th>
-                        <th class="small fw-bold d-none d-md-table-cell">معامله</th>
-                        <th class="small fw-bold">وضعیت</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($activities as $a): ?>
-                <tr>
-                    <td class="small"><?php echo \Core\JDate::displayDate($a->activity_date); ?></td>
-                    <td class="small fw-medium"><?php echo htmlspecialchars($a->subject); ?></td>
-                    <td class="d-none d-md-table-cell">
-                        <span class="badge bg-light text-dark small">
-                            <i class="bi <?php echo $typeIcons[$a->type] ?? 'bi-circle'; ?> me-1"></i><?php echo $typeNames[$a->type] ?? $a->type; ?>
-                        </span>
-                    </td>
-                    <td class="d-none d-md-table-cell">
-                        <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $a->deal_id; ?>" class="text-decoration-none small"><?php echo htmlspecialchars($a->deal_title); ?></a>
-                    </td>
-                    <td>
-                        <?php if ($a->is_done): ?>
-                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle me-1"></i>انجام شده</span>
-                        <?php else: ?>
-                        <span class="badge bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock me-1"></i>در انتظار</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
+        <?php foreach ($activities as $a): ?>
+        <?php $isOverdue = !$a->is_done && $a->activity_date && strtotime($a->activity_date) < time(); ?>
+        <div class="d-flex align-items-start gap-3 px-3 py-3 border-bottom activity-row <?php echo $a->is_done ? 'opacity-50' : ''; ?> <?php echo $isOverdue ? 'bg-danger bg-opacity-5' : ''; ?>">
+            <button type="button" class="btn btn-sm rounded-circle toggle-done-btn flex-shrink-0 <?php echo $a->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-outline-secondary'); ?>" style="width:36px;height:36px;padding:0;" data-id="<?php echo $a->id; ?>">
+                <i class="bi <?php echo $a->is_done ? 'bi-check-lg' : ($isOverdue ? 'bi-exclamation' : 'bi-circle'); ?>"></i>
+            </button>
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;background:<?php echo $a->type == 'call' ? '#e3f2fd' : '#f3e5f5'; ?>;">
+                <i class="bi <?php echo $typeIcons[$a->type] ?? 'bi-journal-text'; ?>"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong class="<?php echo $a->is_done ? 'text-decoration-line-through' : ''; ?>" style="font-size:14px;"><?php echo htmlspecialchars($a->subject); ?></strong>
+                <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
+                    <span class="badge bg-light text-dark small"><?php echo $typeNames[$a->type] ?? $a->type; ?></span>
+                    <small class="text-muted"><i class="bi bi-calendar me-1"></i><?php echo \Core\JDate::displayDate($a->activity_date); ?></small>
+                    <?php if ($a->deal_id): ?>
+                    <a href="javascript:void(0)" class="badge bg-primary bg-opacity-10 text-primary text-decoration-none quick-view-deal" data-id="<?php echo $a->deal_id; ?>"><i class="bi bi-briefcase me-1"></i><?php echo htmlspecialchars(mb_substr($a->deal_title ?? '-', 0, 25)); ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
+        <?php endforeach; ?>
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title fw-bold" id="qvTitle"><i class="bi bi-eye me-2"></i>مشاهده سریع</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="qvBody">
+                <div class="text-center py-4"><span class="spinner-border text-primary"></span></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="qvLink" class="btn btn-primary"><i class="bi bi-box-arrow-up-right me-1"></i>مشاهده کامل</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var baseUrl = '<?php echo $config['url']; ?>';
+    
+    // Toggle Done (both calendar grid and list)
+    document.querySelectorAll('.toggle-done-btn, .cal-toggle-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var btnEl = this;
+            fetch(baseUrl + '/activities/toggle-done/' + id, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                // Toggle visual state
+                var isNowDone = btnEl.classList.contains('btn-outline-secondary') || btnEl.classList.contains('btn-danger');
+                if (isNowDone) {
+                    btnEl.className = btnEl.classList.contains('cal-toggle-btn') ? 'btn btn-sm rounded-circle cal-toggle-btn btn-success' : 'btn btn-sm rounded-circle toggle-done-btn btn-success';
+                    btnEl.innerHTML = '<i class="bi ' + (btnEl.classList.contains('cal-toggle-btn') ? 'bi-check' : 'bi-check-lg') + '"></i>';
+                    var row = btnEl.closest('.activity-row');
+                    if (row) { row.classList.add('opacity-50'); row.classList.remove('bg-danger','bg-opacity-5'); }
+                } else {
+                    btnEl.className = btnEl.classList.contains('cal-toggle-btn') ? 'btn btn-sm rounded-circle cal-toggle-btn btn-outline-secondary' : 'btn btn-sm rounded-circle toggle-done-btn btn-outline-secondary';
+                    btnEl.innerHTML = '<i class="bi ' + (btnEl.classList.contains('cal-toggle-btn') ? 'bi-circle' : 'bi-circle') + '"></i>';
+                    var row = btnEl.closest('.activity-row');
+                    if (row) row.classList.remove('opacity-50');
+                }
+            })
+            .catch(function() {});
+        });
+    });
+    
+    // Quick View Deal
+    document.querySelectorAll('.quick-view-deal').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var id = this.dataset.id;
+            var modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+            document.getElementById('qvTitle').innerHTML = '<i class="bi bi-briefcase me-2"></i>اطلاعات معامله';
+            document.getElementById('qvBody').innerHTML = '<div class="text-center py-4"><span class="spinner-border text-primary"></span></div>';
+            document.getElementById('qvLink').href = baseUrl + '/deals/view/' + id;
+            modal.show();
+            fetch(baseUrl + '/deals/get-data/' + id)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success && d.deal) {
+                    var dl = d.deal;
+                    document.getElementById('qvBody').innerHTML = 
+                        '<div class="row g-3">' +
+                        '<div class="col-12"><div class="d-flex gap-3 p-3 bg-light rounded-3"><div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white" style="width:48px;height:48px;"><i class="bi bi-briefcase fs-4"></i></div><div><strong class="d-block fs-6">' + (dl.title||'-') + '</strong><small class="text-muted">' + (dl.contact_name||'') + '</small></div></div></div>' +
+                        '<div class="col-6"><small class="text-muted d-block">مبلغ</small><strong class="text-primary">' + (dl.amount ? parseInt(dl.amount).toLocaleString('en-US') + ' تومان' : '-') + '</strong></div>' +
+                        '<div class="col-6"><small class="text-muted d-block">وضعیت</small>' + (dl.is_won ? '<span class="badge bg-success">موفق</span>' : (dl.is_lost ? '<span class="badge bg-danger">ناموفق</span>' : '<span class="badge bg-warning text-dark">در جریان</span>')) + '</div>' +
+                        '</div>';
+                }
+            })
+            .catch(function() { document.getElementById('qvBody').innerHTML = '<p class="text-danger">خطا</p>'; });
+        });
+    });
+});
+</script>
