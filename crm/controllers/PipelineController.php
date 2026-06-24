@@ -242,7 +242,7 @@ class PipelineController
                      FROM deals d 
                      LEFT JOIN contacts c ON d.contact_id = c.id 
                      LEFT JOIN users u ON d.assigned_to = u.id 
-                     WHERE d.stage_id = :stage_id AND d.is_lost = 0
+                     WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
                      AND (d.assigned_to = :user_id OR d.created_by = :user_id2)
                      ORDER BY d.updated_at DESC",
                     [':stage_id' => $stage->id, ':user_id' => $user->id, ':user_id2' => $user->id]
@@ -254,7 +254,7 @@ class PipelineController
                      FROM deals d 
                      LEFT JOIN contacts c ON d.contact_id = c.id 
                      LEFT JOIN users u ON d.assigned_to = u.id 
-                     WHERE d.stage_id = :stage_id AND d.is_lost = 0
+                     WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
                      ORDER BY d.updated_at DESC",
                     [':stage_id' => $stage->id]
                 );
