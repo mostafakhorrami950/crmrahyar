@@ -46,6 +46,11 @@ Router::get('/logout', [AuthController::class, 'logout']);
 // Authenticated routes
 Router::group('/dashboard', function() {
     Router::get('', [DashboardController::class, 'index']);
+    Router::post('/add-note', [DashboardController::class, 'addNote']);
+    Router::post('/delete-note', [DashboardController::class, 'deleteNote']);
+    Router::get('/notifications', [DashboardController::class, 'notifications']);
+    Router::post('/notification/read', [DashboardController::class, 'markNotificationRead']);
+    Router::post('/notification/read-all', [DashboardController::class, 'markAllRead']);
 });
 
 // Users management (admin only)
