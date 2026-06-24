@@ -172,9 +172,16 @@ class PipelineController
 
     public function update(array $params): void
     {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         $name = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $stages = $_POST['stages'] ?? [];
+
+        if (empty($name)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'نام پایپ لاین الزامی است']); exit; }
+            Session::setFlash('danger', 'نام پایپ لاین الزامی است.');
+            View::redirect('/pipelines/edit/' . $params['id']);
+        }
 
         $db = Database::getInstance();
         $db->beginTransaction();
@@ -182,26 +189,44 @@ class PipelineController
         try {
             $db->update('pipelines', ['name' => $name, 'description' => $description], 'id = :id', [':id' => $params['id']]);
 
-            // Delete existing stages and re-insert
-            $db->delete('stages', 'pipeline_id = :id', [':id' => $params['id']]);
-            
+            // Get existing stage IDs
+            $existingStages = $db->fetchAll("SELECT id FROM stages WHERE pipeline_id = :id", [':id' => $params['id']]);
+            $existingIds = array_column($existingStages, 'id');
+            $usedIds = [];
+
             foreach ($stages as $index => $stage) {
-                if (!empty(trim($stage['name']))) {
-                    $db->insert('stages', [
-                        'pipeline_id' => $params['id'],
-                        'name' => trim($stage['name']),
-                        'description' => trim($stage['description'] ?? ''),
-                        'color' => $stage['color'] ?? '#6B7280',
-                        'order_index' => $index + 1,
-                    ]);
+                if (empty(trim($stage['name'] ?? ''))) continue;
+                
+                $stageData = [
+                    'pipeline_id' => $params['id'],
+                    'name' => trim($stage['name']),
+                    'description' => trim($stage['description'] ?? ''),
+                    'color' => $stage['color'] ?? '#6B7280',
+                    'order_index' => $index + 1,
+                ];
+
+                if (!empty($stage['id']) && in_array((int)$stage['id'], $existingIds)) {
+                    // Update existing stage
+                    $db->update('stages', $stageData, 'id = :id', [':id' => (int)$stage['id']]);
+                    $usedIds[] = (int)$stage['id'];
+                } else {
+                    // Insert new stage
+                    $newId = $db->insert('stages', $stageData);
+                    $usedIds[] = $newId;
                 }
             }
 
             $db->commit();
             ActivityLog::log('update_pipeline', 'pipeline', $params['id'], "پایپ لاین {$name} ویرایش شد");
+
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'message' => 'پایپ لاین با موفقیت ویرایش شد.', 'redirect' => '/pipelines']);
+                exit;
+            }
             Session::setFlash('success', 'پایپ لاین با موفقیت ویرایش شد.');
         } catch (\Exception $e) {
             $db->rollback();
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]); exit; }
             Session::setFlash('danger', 'خطا در ویرایش: ' . $e->getMessage());
         }
 

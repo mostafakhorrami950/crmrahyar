@@ -29,6 +29,7 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-7">
                             <label class="form-label text-muted small fw-medium">نام مرحله <span class="text-danger">*</span></label>
+                            <input type="hidden" name="stages[<?php echo $editIndex; ?>][id]" value="<?php echo $stage->id; ?>">
                             <input type="text" name="stages[<?php echo $editIndex; ?>][name]" class="form-control" required value="<?php echo htmlspecialchars($stage->name); ?>" placeholder="مثال: مذاکره اولیه">
                         </div>
                         <div class="col-6 col-md-2">
