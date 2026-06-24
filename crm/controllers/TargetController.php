@@ -100,29 +100,23 @@ class TargetController
         $startDatetime = $startDate . ' 00:00:00';
         $endDatetime = $endDate . ' 23:59:59';
         
-        // First, fix any won deals that have NULL closed_at
-        $db->query(
-            "UPDATE deals SET closed_at = updated_at WHERE is_won = 1 AND closed_at IS NULL"
-        );
-        $db->query(
-            "UPDATE deals SET closed_at = updated_at WHERE is_lost = 1 AND closed_at IS NULL"
-        );
-        
         $targets = $db->fetchAll("SELECT * FROM sales_targets WHERE year=:y AND month=:m", [':y'=>$year, ':m'=>$month]);
         foreach ($targets as $t) {
             if ($t->target_type === 'user') {
+                // Count won deals for this user in this month
+                // Use COALESCE on closed_at/updated_at to handle NULL closed_at
                 $result = $db->fetch(
                     "SELECT COALESCE(SUM(amount),0) as total, COUNT(*) as cnt FROM deals 
-                     WHERE assigned_to=:uid AND is_won=1 
-                     AND closed_at IS NOT NULL AND closed_at BETWEEN :s AND :e",
+                     WHERE assigned_to=:uid AND is_won=1
+                     AND COALESCE(closed_at, updated_at, created_at) BETWEEN :s AND :e",
                     [':uid'=>$t->target_id, ':s'=>$startDatetime, ':e'=>$endDatetime]
                 );
             } else {
                 $result = $db->fetch(
                     "SELECT COALESCE(SUM(d.amount),0) as total, COUNT(*) as cnt FROM deals d
                      JOIN team_members tm ON d.assigned_to = tm.user_id
-                     WHERE tm.team_id=:tid AND d.is_won=1 
-                     AND d.closed_at IS NOT NULL AND d.closed_at BETWEEN :s AND :e",
+                     WHERE tm.team_id=:tid AND d.is_won=1
+                     AND COALESCE(d.closed_at, d.updated_at, d.created_at) BETWEEN :s AND :e",
                     [':tid'=>$t->target_id, ':s'=>$startDatetime, ':e'=>$endDatetime]
                 );
             }
