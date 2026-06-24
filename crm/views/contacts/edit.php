@@ -1,94 +1,82 @@
 <?php
-        $db = \Core\Database::getInstance();
-        $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
-        $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
+    $db = \Core\Database::getInstance();
+    $sources = $db->fetchAll("SELECT id, name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+    $categories = $db->fetchAll("SELECT id, name, color FROM contact_categories ORDER BY sort_order ASC, name ASC");
 ?>
-<div class="page-header">
-    <h5>✏️ ویرایش مخاطب: <?php echo htmlspecialchars($contact->full_name); ?></h5>
-    <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $contact->id; ?>" class="btn btn-secondary">← بازگشت به مشخصات</a>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>ویرایش مخاطب: <?php echo htmlspecialchars($contact->full_name); ?></h5>
+    <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $contact->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
 </div>
 
-<div class="card" style="padding:24px;max-width:700px;margin:0 auto;">
-    <div class="ajax-error alert alert-danger" style="display:none;"></div>
-    <form method="POST" action="<?php echo $config['url']; ?>/contacts/update/<?php echo $contact->id; ?>" data-ajax="true">
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">نام کامل *</label>
-                <input type="text" name="full_name" class="form-input" required value="<?php echo htmlspecialchars($contact->full_name); ?>">
+<div class="card mx-auto" style="max-width:750px;">
+    <div class="card-body p-3 p-md-4">
+        <div class="ajax-error alert alert-danger d-none"></div>
+        <form method="POST" action="<?php echo $config['url']; ?>/contacts/update/<?php echo $contact->id; ?>" data-ajax="true">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium">نام کامل <span class="text-danger">*</span></label>
+                    <input type="text" name="full_name" class="form-control" required value="<?php echo htmlspecialchars($contact->full_name); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-telephone me-1"></i>شماره تماس</label>
+                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($contact->phone ?? ''); ?>" dir="ltr" style="text-align:left;">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-building me-1"></i>شماره تماس شرکت</label>
+                    <input type="text" name="company_phone" class="form-control" value="<?php echo htmlspecialchars($contact->company_phone ?? ''); ?>" dir="ltr" style="text-align:left;" placeholder="021xxxxxxxx">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-envelope me-1"></i>ایمیل</label>
+                    <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($contact->email ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-card-heading me-1"></i>کد ملی</label>
+                    <input type="text" name="national_code" class="form-control" value="<?php echo htmlspecialchars($contact->national_code ?? ''); ?>" maxlength="10">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-pass me-1"></i>شماره پاسپورت</label>
+                    <input type="text" name="passport_number" class="form-control" value="<?php echo htmlspecialchars($contact->passport_number ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-building me-1"></i>شرکت</label>
+                    <input type="text" name="company" class="form-control" value="<?php echo htmlspecialchars($contact->company ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-folder me-1"></i>دسته‌بندی</label>
+                    <select name="category_id" class="form-select">
+                        <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo $cat->id; ?>" <?php echo ($cat->id == ($contact->category_id ?? 0)) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-crosshair me-1"></i>نحوه آشنایی</label>
+                    <select name="source" class="form-select">
+                        <option value="">انتخاب کنید</option>
+                        <?php foreach ($sources as $s): ?>
+                        <option value="<?php echo htmlspecialchars($s->name); ?>" <?php echo $s->name == $contact->source ? 'selected' : ''; ?>><?php echo htmlspecialchars($s->icon . ' ' . $s->name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-geo-alt me-1"></i>آدرس</label>
+                    <textarea name="address" class="form-control" rows="2"><?php echo htmlspecialchars($contact->address ?? ''); ?></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-tags me-1"></i>برچسب‌ها</label>
+                    <input type="text" name="tags" class="form-control" value="<?php echo htmlspecialchars($contact->tags ?? ''); ?>" placeholder="مثلاً VIP, مسافرت, تور">
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>یادداشت</label>
+                    <textarea name="notes" class="form-control" rows="3"><?php echo htmlspecialchars($contact->notes ?? ''); ?></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">📞 شماره تماس</label>
-                <input type="text" name="phone" class="form-input" value="<?php echo htmlspecialchars($contact->phone ?? ''); ?>" dir="ltr" style="text-align:left;">
-            </div>
-        </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">🏢 شماره تماس شرکت (اختیاری)</label>
-                <input type="text" name="company_phone" class="form-input" value="<?php echo htmlspecialchars($contact->company_phone ?? ''); ?>" dir="ltr" style="text-align:left;" placeholder="021xxxxxxxx">
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>ذخیره تغییرات</button>
+                <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $contact->id; ?>" class="btn btn-outline-secondary">انصراف</a>
             </div>
-            <div class="form-group">
-                <label class="form-label">✉️ ایمیل</label>
-                <input type="email" name="email" class="form-input" value="<?php echo htmlspecialchars($contact->email ?? ''); ?>">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">🪪 کد ملی</label>
-                <input type="text" name="national_code" class="form-input" value="<?php echo htmlspecialchars($contact->national_code ?? ''); ?>" maxlength="10">
-            </div>
-            <div class="form-group">
-                <label class="form-label">🛂 شماره پاسپورت</label>
-                <input type="text" name="passport_number" class="form-input" value="<?php echo htmlspecialchars($contact->passport_number ?? ''); ?>">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">🏢 شرکت</label>
-                <input type="text" name="company" class="form-input" value="<?php echo htmlspecialchars($contact->company ?? ''); ?>">
-            </div>
-            <div class="form-group">
-                <label class="form-label">📂 دسته‌بندی</label>
-                <select name="category_id" class="form-input">
-                    <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo $cat->id; ?>" <?php echo ($cat->id == ($contact->category_id ?? 0)) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat->name); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">🎯 نحوه آشنایی</label>
-                <select name="source" class="form-input">
-                    <option value="">انتخاب کنید</option>
-                    <?php foreach ($sources as $s): ?>
-                    <option value="<?php echo htmlspecialchars($s->name); ?>" <?php echo $s->name == $contact->source ? 'selected' : ''; ?>><?php echo htmlspecialchars($s->icon . ' ' . $s->name); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">📍 آدرس</label>
-            <textarea name="address" class="form-textarea" rows="2"><?php echo htmlspecialchars($contact->address ?? ''); ?></textarea>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">🏷️ برچسب‌ها</label>
-            <input type="text" name="tags" class="form-input" value="<?php echo htmlspecialchars($contact->tags ?? ''); ?>" placeholder="مثلاً VIP, مسافرت, تور">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">📝 یادداشت</label>
-            <textarea name="notes" class="form-textarea" rows="3"><?php echo htmlspecialchars($contact->notes ?? ''); ?></textarea>
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:20px;">
-            <button type="submit" class="btn btn-primary">💾 ذخیره تغییرات</button>
-            <a href="<?php echo $config['url']; ?>/contacts/view/<?php echo $contact->id; ?>" class="btn btn-secondary">انصراف</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>

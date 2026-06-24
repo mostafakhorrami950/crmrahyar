@@ -1,414 +1,217 @@
-<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-    <div style="display:flex;align-items:center;gap:12px;">
-        <a href="<?php echo $config['url']; ?>/deals" class="btn btn-sm btn-secondary">← بازگشت به لیست</a>
-        <h5 style="margin:0;">🔍 جزییات معامله</h5>
+<!-- Page Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <a href="<?php echo $config['url']; ?>/deals" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right"></i></a>
+        <h5 class="fw-bold mb-0"><i class="bi bi-briefcase me-2"></i>جزییات معامله</h5>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-sm btn-success" onclick="openModal('smsModal')">✉️ پیامک</button>
-        <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-sm btn-primary">💳 لینک پرداخت</a>
-        <a href="<?php echo $config['url']; ?>/deals/edit/<?php echo $deal->id; ?>" class="btn btn-sm btn-secondary">✏️ ویرایش</a>
+    <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-success btn-sm" onclick="new bootstrap.Modal(document.getElementById('smsModal')).show()"><i class="bi bi-envelope me-1"></i>پیامک</button>
+        <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-outline-primary btn-sm"><i class="bi bi-credit-card me-1"></i>لینک پرداخت</a>
+        <a href="<?php echo $config['url']; ?>/deals/edit/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>ویرایش</a>
     </div>
 </div>
 
-<div class="row" style="margin-top:16px;">
-    <!-- === MAIN CONTENT (7 cols) === -->
-    <div class="col-md-7">
-        <!-- Deal Header Card -->
-        <div class="card" style="padding:24px;margin-bottom:16px;border-radius:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
-                <div style="flex:1;min-width:200px;">
-                    <h3 style="margin:0 0 10px 0;font-size:22px;font-weight:800;color:var(--gray-900);"><?php echo htmlspecialchars($deal->title); ?></h3>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <span class="badge-stage" style="background:<?php echo $deal->stage_color; ?>18;color:<?php echo $deal->stage_color; ?>;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;">
-                            ● <?php echo htmlspecialchars($deal->stage_name); ?>
-                        </span>
-                        <span style="background:var(--gray-100);padding:5px 14px;border-radius:20px;font-size:13px;color:var(--gray-600);font-weight:500;">
-                            📋 <?php echo htmlspecialchars($deal->pipeline_name); ?>
-                        </span>
-                        <?php if ($deal->is_won): ?>
-                        <span style="background:linear-gradient(135deg,#d4edda,#c3e6cb);padding:5px 14px;border-radius:20px;font-size:13px;color:#155724;font-weight:600;">✅ موفق</span>
-                        <?php elseif ($deal->is_lost): ?>
-                        <span style="background:linear-gradient(135deg,#f8d7da,#f5c6cb);padding:5px 14px;border-radius:20px;font-size:13px;color:#721c24;font-weight:600;">❌ ناموفق</span>
-                        <?php else: ?>
-                        <span style="background:linear-gradient(135deg,#fff3cd,#ffeaa7);padding:5px 14px;border-radius:20px;font-size:13px;color:#856404;font-weight:600;">⏳ در جریان</span>
-                        <?php endif; ?>
+<div class="row g-3">
+    <div class="col-12 col-lg-7">
+        <!-- Deal Header -->
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                <div class="flex-grow-1" style="min-width:200px;">
+                    <h5 class="fw-bold mb-2"><?php echo htmlspecialchars($deal->title); ?></h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge" style="background:<?php echo $deal->stage_color; ?>18;color:<?php echo $deal->stage_color; ?>;"><?php echo htmlspecialchars($deal->stage_name); ?></span>
+                        <span class="badge bg-light text-dark"><i class="bi bi-kanban me-1"></i><?php echo htmlspecialchars($deal->pipeline_name); ?></span>
+                        <?php if ($deal->is_won): ?><span class="badge bg-success">✅ موفق</span>
+                        <?php elseif ($deal->is_lost): ?><span class="badge bg-danger">❌ ناموفق</span>
+                        <?php else: ?><span class="badge bg-warning text-dark">⏳ در جریان</span><?php endif; ?>
                     </div>
                 </div>
-                <div style="text-align:left;direction:ltr;background:linear-gradient(135deg,#667eea08,#764ba208);padding:12px 20px;border-radius:14px;border:1px solid #667eea15;">
-                    <div style="font-size:30px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                        <?php echo number_format($deal->amount ?? 0); ?>
-                    </div>
-                    <div style="font-size:12px;color:var(--gray-500);font-weight:500;text-align:center;">تومان</div>
+                <div class="text-center p-3 rounded" style="background:linear-gradient(135deg,#667eea08,#764ba208);direction:ltr;">
+                    <div class="fw-bold" style="font-size:28px;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"><?php echo number_format($deal->amount ?? 0); ?></div>
+                    <small class="text-muted">تومان</small>
                 </div>
             </div>
-
-            <hr style="margin:20px 0;border:none;border-top:1px solid var(--gray-200);">
-
-            <div class="row g-3">
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">👤 مسئول</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->assigned_name ?? 'تعیین نشده'); ?></strong></div></div>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 ایجاد</small><strong style="font-size:13px;"><?php echo \Core\JDate::displayDate($deal->created_at); ?></strong></div></div>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🎯 منبع</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->source ?? '-'); ?></strong></div></div>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">👤 ایجادکننده</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->creator_name ?? '-'); ?></strong></div></div>
-                <?php if ($deal->expected_close_date): ?>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📅 پیش‌بینی</small><strong style="font-size:13px;"><?php echo \Core\JDate::displayDate($deal->expected_close_date); ?></strong></div></div>
-                <?php endif; ?>
-                <div class="col-6 col-md-3"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📊 احتمال</small><strong style="font-size:13px;"><?php echo $deal->probability; ?>%</strong></div></div>
-                <?php if ($deal->is_lost && $deal->lost_reason): ?>
-                <div class="col-12"><div style="background:#f8d7da;padding:10px 14px;border-radius:10px;border-right:3px solid #dc3545;"><small style="color:#721c24;display:block;font-size:11px;">❌ دلیل عدم موفقیت</small><strong style="font-size:13px;color:#721c24;"><?php echo htmlspecialchars($deal->lost_reason); ?></strong></div></div>
-                <?php endif; ?>
-            </div>
-
-            <?php if ($deal->description): ?>
-            <hr style="margin:20px 0;border:none;border-top:1px solid var(--gray-200);">
-            <div>
-                <small style="color:var(--gray-500);display:block;margin-bottom:8px;">📝 توضیحات</small>
-                <p style="margin:0;line-height:1.9;font-size:14px;color:var(--gray-700);">
-                <?php 
-                $desc = htmlspecialchars($deal->description);
-                $desc = preg_replace('/#([\x{600}-\x{6FF}\x{FB8A}\x{067E}\x{0686}\x{06AF}\x{0698}\w]+)/u', '<a href="' . $config['url'] . '/deals/tag/$1" style="color:var(--primary);font-weight:bold;text-decoration:none;">#$1</a>', $desc);
-                echo nl2br($desc); 
-                ?>
-                </p>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Contact Card -->
-        <?php if ($deal->contact_name): ?>
-        <div class="card" style="padding:24px;margin-bottom:16px;border-radius:16px;">
-            <h5 style="margin:0 0 16px 0;font-weight:bold;font-size:15px;">👤 اطلاعات مخاطب</h5>
+            <hr>
             <div class="row g-2">
-                <div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">نام</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->contact_name); ?></strong></div></div>
-                <div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📞 تلفن</small><strong style="font-size:13px;direction:ltr;display:inline-block;"><?php echo htmlspecialchars($deal->contact_phone ?? '-'); ?></strong></div></div>
-                <div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">📧 ایمیل</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->contact_email ?? '-'); ?></strong></div></div>
-                <?php if ($deal->national_code): ?><div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">کد ملی</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->national_code); ?></strong></div></div><?php endif; ?>
-                <?php if ($deal->passport_number): ?><div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🛂 پاسپورت</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->passport_number); ?></strong></div></div><?php endif; ?>
-                <?php if ($deal->company): ?><div class="col-md-4"><div style="background:var(--gray-50);padding:10px 14px;border-radius:10px;"><small style="color:var(--gray-500);display:block;font-size:11px;">🏢 شرکت</small><strong style="font-size:13px;"><?php echo htmlspecialchars($deal->company); ?></strong></div></div><?php endif; ?>
+                <div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-person me-1"></i>مسئول</small><strong class="small"><?php echo htmlspecialchars($deal->assigned_name ?? '-'); ?></strong></div></div>
+                <div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-calendar me-1"></i>ایجاد</small><strong class="small"><?php echo \Core\JDate::displayDate($deal->created_at); ?></strong></div></div>
+                <div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-crosshair me-1"></i>منبع</small><strong class="small"><?php echo htmlspecialchars($deal->source ?? '-'); ?></strong></div></div>
+                <div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-person me-1"></i>ایجادکننده</small><strong class="small"><?php echo htmlspecialchars($deal->creator_name ?? '-'); ?></strong></div></div>
+                <?php if ($deal->expected_close_date): ?><div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-calendar-event me-1"></i>پیش‌بینی</small><strong class="small"><?php echo \Core\JDate::displayDate($deal->expected_close_date); ?></strong></div></div><?php endif; ?>
+                <div class="col-6 col-md-3"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-percent me-1"></i>احتمال</small><strong class="small"><?php echo $deal->probability; ?>%</strong></div></div>
+                <?php if ($deal->is_lost && $deal->lost_reason): ?><div class="col-12"><div class="bg-danger bg-opacity-10 rounded p-2 border-end border-danger border-3"><small class="text-danger d-block" style="font-size:11px;"><i class="bi bi-x-circle me-1"></i>دلیل عدم موفقیت</small><strong class="small text-danger"><?php echo htmlspecialchars($deal->lost_reason); ?></strong></div></div><?php endif; ?>
             </div>
-            <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;">
-                <button class="btn btn-sm btn-success" onclick="openModal('smsModal')">✉️ پیامک</button>
+            <?php if ($deal->description): ?>
+            <hr><small class="text-muted d-block mb-2"><i class="bi bi-card-text me-1"></i>توضیحات</small>
+            <p class="small mb-0" style="line-height:1.9;color:#495057;"><?php echo nl2br(htmlspecialchars($deal->description)); ?></p>
+            <?php endif; ?>
+        </div></div>
+
+        <!-- Contact -->
+        <?php if ($deal->contact_name): ?>
+        <div class="card mb-3"><div class="card-body">
+            <h6 class="fw-bold mb-3"><i class="bi bi-person me-2"></i>اطلاعات مخاطب</h6>
+            <div class="row g-2">
+                <div class="col-6 col-md-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">نام</small><strong class="small"><?php echo htmlspecialchars($deal->contact_name); ?></strong></div></div>
+                <div class="col-6 col-md-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-phone me-1"></i>تلفن</small><strong class="small" dir="ltr"><?php echo htmlspecialchars($deal->contact_phone ?? '-'); ?></strong></div></div>
+                <div class="col-6 col-md-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;"><i class="bi bi-envelope me-1"></i>ایمیل</small><strong class="small"><?php echo htmlspecialchars($deal->contact_email ?? '-'); ?></strong></div></div>
+            </div>
+            <div class="mt-3 d-flex flex-wrap gap-1">
+                <button class="btn btn-sm btn-outline-success" onclick="new bootstrap.Modal(document.getElementById('smsModal')).show()"><i class="bi bi-envelope me-1"></i>پیامک</button>
                 <?php if (!empty($deal->contact_phone)):
-                    $phoneIntl = preg_replace('/^0/', '98', preg_replace('/[\s\-\(\)]+/', '', $deal->contact_phone));
-                    if (strpos($phoneIntl, '+') === 0) $phoneIntl = substr($phoneIntl, 1);
+                    $ph = preg_replace('/^0/','98',preg_replace('/[\s\-\(\)]+/','',$deal->contact_phone));
+                    if(strpos($ph,'+')===0) $ph=substr($ph,1);
                 ?>
-                <a href="https://wa.me/<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#25D366;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="واتساپ">💬 واتساپ</a>
-                <a href="https://t.me/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#0088cc;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="تلگرام">✈️ تلگرام</a>
-                <a href="https://ble.ir/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#1e88e5;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="بله">🔵 بله</a>
-                <a href="https://eitaa.com/+<?php echo $phoneIntl; ?>" target="_blank" class="btn btn-sm" style="background:#6d4c41;color:#fff;font-size:12px;gap:4px;display:inline-flex;align-items:center;" title="ایتا">🟤 ایتا</a>
+                <a href="https://wa.me/<?php echo $ph; ?>" target="_blank" class="btn btn-sm" style="background:#25D366;color:#fff;"><i class="bi bi-whatsapp me-1"></i>واتساپ</a>
+                <a href="https://t.me/+<?php echo $ph; ?>" target="_blank" class="btn btn-sm" style="background:#0088cc;color:#fff;"><i class="bi bi-telegram me-1"></i>تلگرام</a>
                 <?php endif; ?>
             </div>
-        </div>
+        </div></div>
         <?php endif; ?>
 
         <!-- Activities -->
-        <div class="card" style="padding:24px;margin-bottom:16px;border-radius:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <h5 style="margin:0;font-weight:bold;font-size:15px;">📅 فعالیت‌ها</h5>
-                <button class="btn btn-sm btn-primary" onclick="openModal('activityModal')">➕ ثبت فعالیت جدید</button>
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2"></i>فعالیت‌ها</h6>
+                <button class="btn btn-sm btn-primary" onclick="new bootstrap.Modal(document.getElementById('activityModal')).show()"><i class="bi bi-plus me-1"></i>ثبت فعالیت</button>
             </div>
             <?php if (empty($activities)): ?>
-            <div style="text-align:center;padding:40px 20px;color:var(--gray-400);">
-                <div style="font-size:40px;margin-bottom:12px;">📋</div>
-                <p>هیچ فعالیتی ثبت نشده است.</p>
-            </div>
+            <div class="text-center py-4 text-muted"><i class="bi bi-calendar-x" style="font-size:40px;opacity:0.3;"></i><p class="mt-2 small">هیچ فعالیتی ثبت نشده.</p></div>
             <?php else: ?>
-            <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="d-flex flex-column gap-2">
                 <?php foreach ($activities as $act): ?>
-                <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--gray-50);border-radius:12px;border-right:3px solid <?php echo $act->is_done ? '#28a745' : '#ffc107'; ?>;">
-                    <div style="width:38px;height:38px;background:<?php echo $act->type == 'call' ? '#e3f2fd' : ($act->type == 'meeting' ? '#fce4ec' : ($act->type == 'sms' ? '#e8f5e9' : '#fff3e0')); ?>;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
-                        <?php echo $act->type == 'call' ? '📞' : ($act->type == 'meeting' ? '🤝' : ($act->type == 'sms' ? '✉️' : ($act->type == 'email' ? '📧' : '📝'))); ?>
-                    </div>
-                    <div style="flex:1;min-width:0;">
-                        <strong style="font-size:14px;"><?php echo htmlspecialchars($act->subject ?? ($act->type == 'call' ? 'تماس تلفنی' : ($act->type == 'meeting' ? 'جلسه' : ($act->type == 'sms' ? 'پیامک' : ($act->type == 'email' ? 'ایمیل' : 'یادداشت'))))); ?></strong>
-                        <br><small style="color:var(--gray-400);font-size:12px;"><?php echo htmlspecialchars($act->user_name ?? ''); ?> | <?php echo \Core\JDate::displayDateTime($act->created_at); ?></small>
-                        <?php if ($act->description): ?><p style="margin:6px 0 0 0;font-size:13px;color:var(--gray-600);line-height:1.7;"><?php echo nl2br(htmlspecialchars($act->description)); ?></p><?php endif; ?>
+                <div class="bg-light rounded p-3 border-end border-3 <?php echo $act->is_done ? 'border-success' : 'border-warning'; ?>">
+                    <div class="d-flex align-items-start gap-2">
+                        <div class="rounded p-2" style="background:<?php echo $act->type=='call'?'#e3f2fd':($act->type=='meeting'?'#fce4ec':($act->type=='sms'?'#e8f5e9':'#fff3e0')); ?>;">
+                            <i class="bi bi-<?php echo $act->type=='call'?'telephone':($act->type=='meeting'?'people':($act->type=='sms'||$act->type=='email'?'envelope':'pencil')); ?>"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong class="small"><?php echo htmlspecialchars($act->subject ?? '-'); ?></strong>
+                            <br><small class="text-muted"><?php echo htmlspecialchars($act->user_name ?? ''); ?> | <?php echo \Core\JDate::displayDateTime($act->created_at); ?></small>
+                            <?php if ($act->description): ?><p class="small text-secondary mt-1 mb-0"><?php echo nl2br(htmlspecialchars($act->description)); ?></p><?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
-        </div>
+        </div></div>
     </div>
 
-    <!-- === SIDEBAR (5 cols) === -->
-    <div class="col-md-5">
-        <!-- Quick Stats Card -->
-        <div class="card" style="padding:20px;margin-bottom:16px;border-radius:16px;">
-            <h5 style="margin:0 0 14px 0;font-weight:bold;font-size:14px;">⚡ خلاصه معامله</h5>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
-                    <span style="font-size:11px;color:var(--gray-500);">مبلغ</span>
-                    <strong style="font-size:15px;color:var(--primary);"><?php echo number_format($deal->amount ?? 0); ?></strong>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
-                    <span style="font-size:11px;color:var(--gray-500);">مرحله</span>
-                    <span style="font-size:13px;font-weight:700;color:<?php echo $deal->stage_color; ?>;"><?php echo htmlspecialchars($deal->stage_name); ?></span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
-                    <span style="font-size:11px;color:var(--gray-500);">وضعیت</span>
-                    <?php if ($deal->is_won): ?><span style="font-size:13px;font-weight:700;color:#155724;">✅ موفق</span>
-                    <?php elseif ($deal->is_lost): ?><span style="font-size:13px;font-weight:700;color:#721c24;">❌ ناموفق</span>
-                    <?php else: ?><span style="font-size:13px;font-weight:700;color:#856404;">⏳ در جریان</span>
-                    <?php endif; ?>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--gray-50);border-radius:10px;">
-                    <span style="font-size:11px;color:var(--gray-500);">احتمال</span>
-                    <strong style="font-size:13px;"><?php echo $deal->probability; ?>%</strong>
-                </div>
+    <!-- Sidebar -->
+    <div class="col-12 col-lg-5">
+        <!-- Stats -->
+        <div class="card mb-3"><div class="card-body">
+            <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2"></i>خلاصه</h6>
+            <div class="row g-2">
+                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">مبلغ</small><strong class="text-primary"><?php echo number_format($deal->amount ?? 0); ?></strong></div></div>
+                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">مرحله</small><strong class="small" style="color:<?php echo $deal->stage_color; ?>;"><?php echo htmlspecialchars($deal->stage_name); ?></strong></div></div>
+                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">وضعیت</small>
+                    <?php if($deal->is_won): ?><strong class="small text-success">✅ موفق</strong><?php elseif($deal->is_lost): ?><strong class="small text-danger">❌ ناموفق</strong><?php else: ?><strong class="small text-warning">⏳ در جریان</strong><?php endif; ?>
+                </div></div>
+                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">احتمال</small><strong><?php echo $deal->probability; ?>%</strong></div></div>
             </div>
-        </div>
+        </div></div>
 
         <!-- Pipeline Progress -->
-        <div class="card" style="padding:20px;margin-bottom:16px;border-radius:16px;">
-            <h5 style="margin:0 0 14px 0;font-weight:bold;font-size:14px;">📊 پیشرفت در پایپ‌لاین</h5>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);">
-                    <span>مرحله <?php echo $currentOrder; ?> از <?php echo $totalStages; ?></span>
-                    <span style="font-weight:700;color:var(--primary);">%<?php echo $progressPct; ?></span>
-                </div>
-                <div style="height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;">
-                    <div style="height:100%;width:<?php echo $progressPct; ?>%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:4px;transition:width 0.5s;"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;margin-top:8px;">
-                    <?php foreach ($allStages as $idx => $s): ?>
-                    <div style="text-align:center;flex:1;">
-                        <div style="width:10px;height:10px;border-radius:50%;margin:0 auto 4px;background:<?php echo ($idx + 1) <= $currentOrder ? $s->color : '#e0e0e0'; ?>;"></div>
-                        <small style="font-size:9px;color:var(--gray-500);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($s->name); ?></small>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+        <div class="card mb-3"><div class="card-body">
+            <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2"></i>پیشرفت</h6>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>مرحله <?php echo $currentOrder; ?> از <?php echo $totalStages; ?></span>
+                <span class="fw-bold text-primary">%<?php echo $progressPct; ?></span>
             </div>
-        </div>
-
-        <!-- Edit Deal Inline Card -->
-        <div class="card" style="padding:20px;margin-bottom:16px;border-radius:16px;border:2px dashed var(--primary);">
-            <h5 style="margin:0 0 12px 0;font-weight:bold;font-size:14px;color:var(--primary);">✏️ ویرایش سریع</h5>
-            <form method="POST" action="<?php echo $config['url']; ?>/deals/update/<?php echo $deal->id; ?>" data-ajax="true" id="quickEditForm">
-                <div class="row g-2">
-                    <div class="col-12" style="margin-bottom:8px;">
-                        <label class="form-label" style="font-size:12px;">عنوان</label>
-                        <input type="text" name="title" class="form-control" value="<?php echo htmlspecialchars($deal->title); ?>" style="font-size:13px;padding:8px 10px;">
-                    </div>
-                    <div class="col-6" style="margin-bottom:8px;">
-                        <label class="form-label" style="font-size:12px;">مرحله</label>
-                        <select name="stage_id" class="form-select" style="font-size:13px;padding:8px 10px;">
-                            <?php foreach ($stages as $s): ?>
-                            <option value="<?php echo $s->id; ?>" <?php echo $s->id == $deal->stage_id ? 'selected' : ''; ?>><?php echo htmlspecialchars($s->name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-6" style="margin-bottom:8px;">
-                        <label class="form-label" style="font-size:12px;">مبلغ (تومان)</label>
-                        <input type="text" name="amount" class="form-control" value="<?php echo number_format($deal->amount); ?>" style="font-size:13px;padding:8px 10px;direction:ltr;text-align:left;">
-                    </div>
-                    <div class="col-6" style="margin-bottom:8px;">
-                        <label class="form-label" style="font-size:12px;">👤 مسئول</label>
-                        <select name="assigned_to" class="form-select" style="font-size:13px;padding:8px 10px;">
-                            <option value="">انتخاب</option>
-                            <?php foreach ($users ?? [] as $u): ?>
-                            <option value="<?php echo $u->id; ?>" <?php echo $u->id == $deal->assigned_to ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-6" style="margin-bottom:8px;">
-                        <label class="form-label" style="font-size:12px;">وضعیت</label>
-                        <select name="deal_status" class="form-select" style="font-size:13px;padding:8px 10px;">
-                            <option value="open" <?php echo (!$deal->is_won && !$deal->is_lost) ? 'selected' : ''; ?>>⏳ در جریان</option>
-                            <option value="won" <?php echo $deal->is_won ? 'selected' : ''; ?>>✅ موفق</option>
-                            <option value="lost" <?php echo $deal->is_lost ? 'selected' : ''; ?>>❌ ناموفق</option>
-                        </select>
-                    </div>
+            <div class="progress mb-3" style="height:8px;"><div class="progress-bar" style="width:<?php echo $progressPct; ?>%;background:linear-gradient(90deg,#667eea,#764ba2);"></div></div>
+            <div class="d-flex justify-content-between">
+                <?php foreach ($allStages as $idx => $s): ?>
+                <div class="text-center flex-grow-1">
+                    <div class="rounded-circle mx-auto mb-1" style="width:10px;height:10px;background:<?php echo ($idx+1)<=$currentOrder?$s->color:'#e0e0e0'; ?>;"></div>
+                    <small class="text-muted d-block" style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($s->name); ?></small>
                 </div>
-                <div class="ajax-error alert alert-danger" style="display:none;font-size:12px;padding:8px 12px;margin-top:8px;"></div>
-                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;padding:10px;font-size:14px;font-weight:bold;">💾 ذخیره تغییرات</button>
+                <?php endforeach; ?>
+            </div>
+        </div></div>
+
+        <!-- Quick Edit -->
+        <div class="card mb-3"><div class="card-body">
+            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-pencil me-2"></i>ویرایش سریع</h6>
+            <form method="POST" action="<?php echo $config['url']; ?>/deals/update/<?php echo $deal->id; ?>" data-ajax="true">
+                <div class="row g-2">
+                    <div class="col-12"><label class="form-label text-muted small">عنوان</label><input type="text" name="title" class="form-control form-control-sm" value="<?php echo htmlspecialchars($deal->title); ?>"></div>
+                    <div class="col-6"><label class="form-label text-muted small">مرحله</label><select name="stage_id" class="form-select form-select-sm"><?php foreach($stages as $s): ?><option value="<?php echo $s->id; ?>" <?php echo $s->id==$deal->stage_id?'selected':''; ?>><?php echo htmlspecialchars($s->name); ?></option><?php endforeach; ?></select></div>
+                    <div class="col-6"><label class="form-label text-muted small">مبلغ</label><input type="text" name="amount" class="form-control form-control-sm" value="<?php echo number_format($deal->amount); ?>" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small">مسئول</label><select name="assigned_to" class="form-select form-select-sm"><option value="">انتخاب</option><?php foreach($users??[] as $u): ?><option value="<?php echo $u->id; ?>" <?php echo $u->id==$deal->assigned_to?'selected':''; ?>><?php echo htmlspecialchars($u->full_name); ?></option><?php endforeach; ?></select></div>
+                    <div class="col-6"><label class="form-label text-muted small">وضعیت</label><select name="deal_status" class="form-select form-select-sm"><option value="open" <?php echo (!$deal->is_won&&!$deal->is_lost)?'selected':''; ?>>⏳ در جریان</option><option value="won" <?php echo $deal->is_won?'selected':''; ?>>✅ موفق</option><option value="lost" <?php echo $deal->is_lost?'selected':''; ?>>❌ ناموفق</option></select></div>
+                </div>
+                <div class="ajax-error alert alert-danger d-none mt-2 small p-2"></div>
+                <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check-circle me-1"></i>ذخیره</button>
             </form>
-        </div>
+        </div></div>
 
         <!-- Payments -->
-        <div class="card" style="padding:20px;margin-bottom:16px;border-radius:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <h5 style="margin:0;font-weight:bold;font-size:14px;">💳 پرداخت‌ها</h5>
-                <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-sm btn-primary" style="font-size:11px;">+ جدید</a>
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-credit-card me-2"></i>پرداخت‌ها</h6>
+                <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus"></i></a>
             </div>
-            <?php if (empty($payments)): ?>
-            <p style="color:var(--gray-400);font-size:13px;text-align:center;padding:16px;">هیچ پرداختی ثبت نشده است.</p>
+            <?php if(empty($payments)): ?>
+            <p class="text-muted text-center small py-3 mb-0">پرداختی ثبت نشده.</p>
             <?php else: ?>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <?php foreach ($payments as $p): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--gray-50);border-radius:10px;flex-wrap:wrap;gap:4px;">
-                    <div style="flex:1;min-width:0;">
-                        <strong style="font-size:13px;"><?php echo number_format($p->amount); ?> تومان</strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDate($p->created_at); ?></small>
-                        <?php if (!empty($p->short_code) && $p->status == 'pending'): ?>
-                        <div style="margin-top:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                            <input type="text" value="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" readonly onclick="this.select()" style="width:180px;padding:3px 6px;border:1px solid #e0e0e0;border-radius:6px;font-size:10px;font-family:monospace;direction:ltr;text-align:left;background:#fff;">
-                            <button onclick="copyLink(this)" style="padding:3px 8px;border:1px solid #10B981;background:#d1fae5;color:#065f46;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;">📋 کپی</button>
-                            <a href="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" target="_blank" style="font-size:10px;color:var(--primary);font-weight:600;">🔗</a>
-                        </div>
-                        <?php elseif (!empty($p->public_token) && $p->status == 'pending'): ?>
-                        <br><a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" target="_blank" style="font-size:11px;color:var(--primary);font-weight:600;">🔗 لینک پرداخت</a>
+            <div class="d-flex flex-column gap-2">
+                <?php foreach($payments as $p): ?>
+                <div class="bg-light rounded p-2 d-flex justify-content-between align-items-center flex-wrap gap-1">
+                    <div>
+                        <strong class="small"><?php echo number_format($p->amount); ?> تومان</strong>
+                        <br><small class="text-muted"><?php echo \Core\JDate::displayDate($p->created_at); ?></small>
+                        <?php if(!empty($p->public_token)&&$p->status=='pending'): ?>
+                        <br><a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" target="_blank" class="small text-primary fw-bold"><i class="bi bi-link me-1"></i>لینک پرداخت</a>
                         <?php endif; ?>
                     </div>
-                    <span style="padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;
-                        <?php echo $p->status == 'success' ? 'background:#d4edda;color:#155724;' : ($p->status == 'pending' ? 'background:#fff3cd;color:#856404;' : 'background:#f8d7da;color:#721c24;'); ?>">
-                        <?php echo $p->status == 'success' ? 'موفق' : ($p->status == 'pending' ? 'در انتظار' : 'ناموفق'); ?>
-                    </span>
+                    <span class="badge <?php echo $p->status=='success'?'bg-success':($p->status=='pending'?'bg-warning text-dark':'bg-danger'); ?>" style="font-size:11px;"><?php echo $p->status=='success'?'موفق':($p->status=='pending'?'در انتظار':'ناموفق'); ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
-        </div>
-
-        <!-- SMS History -->
-        <?php if ($config['features']['sms'] && !empty($smsHistory)): ?>
-        <div class="card" style="padding:20px;margin-bottom:16px;border-radius:16px;">
-            <h5 style="margin:0 0 12px 0;font-weight:bold;font-size:14px;">✉️ آخرین پیامک‌ها</h5>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <?php foreach (array_slice($smsHistory, 0, 5) as $sms): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--gray-50);border-radius:10px;">
-                    <div>
-                        <strong style="font-size:13px;"><?php echo htmlspecialchars($sms->recipient); ?></strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDate($sms->created_at); ?></small>
-                    </div>
-                    <span style="padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;<?php echo $sms->status == 'sent' ? 'background:#d4edda;color:#155724;' : 'background:#f8d7da;color:#721c24;'; ?>">
-                        <?php echo $sms->status == 'sent' ? 'ارسال' : 'خطا'; ?>
-                    </span>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+        </div></div>
     </div>
 </div>
 
 <!-- SMS Modal -->
-<div class="modal-overlay" id="smsModal">
-    <div class="modal-box" style="max-width:500px;">
-        <div class="modal-header">
-            <h5 class="modal-title">✉️ ارسال پیامک</h5>
-            <button type="button" class="modal-close" onclick="closeModal('smsModal')">&times;</button>
+<div class="modal fade" id="smsModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-envelope me-2"></i>ارسال پیامک</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="ajax-error alert alert-danger d-none mb-0 rounded-0"></div>
+    <form method="POST" action="<?php echo $config['url']; ?>/sms/send" data-ajax="true">
+        <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
+        <div class="modal-body">
+            <div class="row g-3">
+                <div class="col-12"><label class="form-label text-muted small">شماره گیرنده</label><input type="text" name="phone" class="form-control" required value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;"></div>
+                <div class="col-12"><label class="form-label text-muted small">متن پیامک</label><textarea name="message" class="form-control" rows="4" required>معامله: <?php echo htmlspecialchars($deal->title); ?> | مبلغ: <?php echo number_format($deal->amount); ?> تومان</textarea></div>
+            </div>
         </div>
-        <div class="ajax-error alert alert-danger" style="display:none;"></div>
-        <form method="POST" action="<?php echo $config['url']; ?>/sms/send" data-ajax="true">
-            <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
-            <?php if ($deal->contact_id): ?>
-            <input type="hidden" name="contact_id" value="<?php echo $deal->contact_id; ?>">
-            <?php endif; ?>
-            <div class="modal-body">
-                <div class="form-row" style="margin-bottom:12px;">
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">شماره گیرنده *</label>
-                        <input type="text" name="phone" class="form-input" required 
-                               value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" 
-                               placeholder="0912xxxxxxx" style="direction:ltr;text-align:left;">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">📱 شماره ارسال</label>
-                        <select name="from_number" class="form-input">
-                            <?php 
-                            $senderNums = $config['sms']['sender_numbers'] ?? ['+983000505'];
-                            foreach ($senderNums as $num): ?>
-                            <option value="<?php echo htmlspecialchars($num); ?>"><?php echo htmlspecialchars($num); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">متن پیامک *</label>
-                    <textarea name="message" class="form-textarea" rows="4" required 
-                              placeholder="متن پیامک خود را وارد کنید..."
-                              style="min-height:120px;"><?php echo "{$config['name']}"; ?> | 
-معامله: <?php echo htmlspecialchars($deal->title); ?>
-مبلغ: <?php echo number_format($deal->amount); ?> تومان</textarea>
-                    <small style="color:var(--gray-400);font-size:11px;display:block;margin-top:4px;">⚠️ تعداد کاراکترها: <span id="smsCharCount">0</span></small>
-                </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">⏰ ارسال در زمان مشخص (اختیاری)</label>
-                    <input type="datetime-local" name="send_time" class="form-input">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success">✉️ ارسال پیامک</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal('smsModal')">لغو</button>
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="modal-footer"><button type="submit" class="btn btn-success"><i class="bi bi-send me-1"></i>ارسال</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">لغو</button></div>
+    </form>
+</div></div></div>
 
 <!-- Activity Modal -->
-<div class="modal-overlay" id="activityModal">
-    <div class="modal-box" style="max-width:500px;">
-        <div class="modal-header">
-            <h5 class="modal-title">📅 ثبت فعالیت جدید</h5>
-            <button type="button" class="modal-close" onclick="closeModal('activityModal')">&times;</button>
+<div class="modal fade" id="activityModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-calendar-plus me-2"></i>ثبت فعالیت</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="ajax-error alert alert-danger d-none mb-0 rounded-0"></div>
+    <form method="POST" action="<?php echo $config['url']; ?>/deals/add-activity/<?php echo $deal->id; ?>" data-ajax="true">
+        <div class="modal-body">
+            <div class="row g-3">
+                <div class="col-6"><label class="form-label text-muted small">نوع</label><select name="type" class="form-select"><option value="note">📝 یادداشت</option><option value="call">📞 تماس</option><option value="meeting">🤝 جلسه</option></select></div>
+                <div class="col-6"><label class="form-label text-muted small">موضوع</label><input type="text" name="subject" class="form-control" placeholder="موضوع"></div>
+                <div class="col-12"><label class="form-label text-muted small">توضیحات</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div class="col-6"><label class="form-label text-muted small">تاریخ</label><input type="datetime-local" name="activity_date" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>"></div>
+                <div class="col-6"><label class="form-label text-muted small">یادآوری</label><input type="datetime-local" name="reminder_at" class="form-control"></div>
+            </div>
         </div>
-        <div class="ajax-error alert alert-danger" style="display:none;"></div>
-        <form method="POST" action="<?php echo $config['url']; ?>/deals/add-activity/<?php echo $deal->id; ?>" data-ajax="true">
-            <div class="modal-body">
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">نوع فعالیت</label>
-                    <select name="type" class="form-input">
-                        <option value="note">📝 یادداشت</option>
-                        <option value="call">📞 تماس تلفنی</option>
-                        <option value="meeting">🤝 جلسه</option>
-                        <option value="email">📧 ایمیل</option>
-                        <option value="follow_up">📌 پیگیری</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">موضوع</label>
-                    <input type="text" name="subject" class="form-input" placeholder="مثال: پیگیری مدارک مشتری">
-                </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">توضیحات</label>
-                    <textarea name="description" class="form-textarea" rows="3" placeholder="توضیحات بیشتر..."></textarea>
-                </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">تاریخ فعالیت</label>
-                    <input type="datetime-local" name="activity_date" class="form-input" value="<?php echo date('Y-m-d\TH:i'); ?>">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">⏰ یادآوری (اختیاری)</label>
-                    <input type="datetime-local" name="reminder_at" class="form-input">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">✅ ثبت فعالیت</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal('activityModal')">لغو</button>
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="modal-footer"><button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>ثبت</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">لغو</button></div>
+    </form>
+</div></div></div>
 
 <script>
-// SMS character counter
-document.getElementById('smsModal')?.addEventListener('input', function(e) {
-    if (e.target.name === 'message') {
-        document.getElementById('smsCharCount').textContent = e.target.value.length;
-    }
-});
-
-// Copy payment short link
-function copyLink(btn) {
-    var input = btn.parentElement.querySelector('input');
-    if (!input) return;
-    input.select();
-    input.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(input.value).then(function() {
-        var orig = btn.innerHTML;
-        btn.innerHTML = '✅';
-        btn.style.background = '#d1fae5';
-        setTimeout(function() { btn.innerHTML = orig; }, 1500);
-    }).catch(function() { document.execCommand('copy'); });
+function copyLink(btn){
+    var inp=btn.previousElementSibling;inp.select();document.execCommand('copy');
+    btn.innerHTML='<i class="bi bi-check"></i>';setTimeout(function(){btn.innerHTML='<i class="bi bi-clipboard"></i>';},1500);
 }
-
-// Quick edit form: on AJAX success, reload page to show updated data
-document.addEventListener('DOMContentLoaded', function() {
-    var quickForm = document.getElementById('quickEditForm');
-    if (quickForm) {
-        quickForm.addEventListener('ajax:success', function() {
-            location.reload();
-        });
-    }
-});
 </script>

@@ -2,80 +2,91 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?php echo $title ?? 'CRM Travel Agency'; ?> | CRM آژانس مسافرتی</title>
-    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=1.0.0">
+    <!-- Bootstrap 5.3 RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=2.0.0">
     <script>var CRM_BASE_URL = '<?php echo $config['url']; ?>';</script>
-    <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=1.0.1" defer></script>
 </head>
 <body>
-    <div class="app-layout">
+    <div class="d-flex" id="app-wrapper">
         <!-- Sidebar Overlay (mobile) -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
-                <h3>CRM آژانس</h3>
-                <span>مسافرتی</span>
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <span class="brand-icon">✈️</span>
+                    <div>
+                        <h5 class="mb-0 fw-bold text-white">CRM آژانس</h5>
+                        <small class="text-white-50">مسافرتی</small>
+                    </div>
+                </div>
             </div>
             
             <div class="sidebar-section">ناوبری اصلی</div>
             <nav class="sidebar-nav">
                 <a href="<?php echo $config['url']; ?>/dashboard" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/dashboard') !== false ? 'active' : ''; ?>">
-                    <span class="icon">📊</span> داشبورد
+                    <i class="bi bi-speedometer2"></i> <span>داشبورد</span>
                 </a>
                 
                 <?php if (\Core\Auth::hasPermission('pipelines.view')): ?>
                 <a href="<?php echo $config['url']; ?>/pipelines" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/pipelines') !== false && strpos($_SERVER['REQUEST_URI'], '/pipelines/kanban') === false ? 'active' : ''; ?>">
-                    <span class="icon">📋</span> پایپ لاین‌ها
+                    <i class="bi bi-kanban"></i> <span>پایپ لاین‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('deals.view')): ?>
                 <a href="<?php echo $config['url']; ?>/deals" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/deals') !== false && strpos($_SERVER['REQUEST_URI'], '/deals/tag') === false && strpos($_SERVER['REQUEST_URI'], '/deals/tags') === false) ? 'active' : ''; ?>">
-                    <span class="icon">💼</span> معاملات
+                    <i class="bi bi-briefcase"></i> <span>معاملات</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/deals/tags" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/deals/tag') !== false || strpos($_SERVER['REQUEST_URI'], '/deals/tags') !== false) ? 'active' : ''; ?>">
-                    <span class="icon">🏷️</span> هشتگ‌ها
+                    <i class="bi bi-tags"></i> <span>هشتگ‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('contacts.view')): ?>
                 <a href="<?php echo $config['url']; ?>/contacts" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/contacts') !== false ? 'active' : ''; ?>">
-                    <span class="icon">👥</span> مخاطبان
+                    <i class="bi bi-people"></i> <span>مخاطبان</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if ($config['features']['payment_gateway'] && \Core\Auth::hasPermission('payments.view')): ?>
                 <a href="<?php echo $config['url']; ?>/payment/history" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/payment') !== false ? 'active' : ''; ?>">
-                    <span class="icon">💳</span> پرداخت‌ها
+                    <i class="bi bi-credit-card"></i> <span>پرداخت‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if ($config['features']['sms'] && \Core\Auth::hasPermission('sms.send')): ?>
                 <a href="<?php echo $config['url']; ?>/sms/history" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/sms') !== false ? 'active' : ''; ?>">
-                    <span class="icon">✉️</span> پیامک‌ها
+                    <i class="bi bi-envelope"></i> <span>پیامک‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('activities.view')): ?>
                 <a href="<?php echo $config['url']; ?>/activities" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/activities') !== false ? 'active' : ''; ?>">
-                    <span class="icon">📅</span> فعالیت‌ها
+                    <i class="bi bi-calendar-check"></i> <span>فعالیت‌ها</span>
                 </a>
                 <?php endif; ?>
+                
                 <?php if (\Core\Auth::hasPermission('calendar.view')): ?>
                 <a href="<?php echo $config['url']; ?>/calendar" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/calendar') !== false ? 'active' : ''; ?>">
-                    <span class="icon">🗓️</span> تقویم
+                    <i class="bi bi-calendar3"></i> <span>تقویم</span>
                 </a>
                 <?php endif; ?>
+                
                 <?php if (\Core\Auth::hasPermission('reports.view')): ?>
                 <a href="<?php echo $config['url']; ?>/targets" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/targets') !== false ? 'active' : ''; ?>">
-                    <span class="icon">🎯</span> هدف‌گذاری
+                    <i class="bi bi-bullseye"></i> <span>هدف‌گذاری</span>
                 </a>
                 <div class="sidebar-section">گزارشات</div>
                 <a href="<?php echo $config['url']; ?>/reports" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/reports') !== false && strpos($_SERVER['REQUEST_URI'], '/reports/sales') === false && strpos($_SERVER['REQUEST_URI'], '/reports/pipeline') === false && strpos($_SERVER['REQUEST_URI'], '/reports/activities') === false && strpos($_SERVER['REQUEST_URI'], '/reports/contacts') === false) ? 'active' : ''; ?>">
-                    <span class="icon">📈</span> داشبورد گزارشات
+                    <i class="bi bi-graph-up"></i> <span>داشبورد گزارشات</span>
                 </a>
                 <?php endif; ?>
                 
@@ -83,94 +94,89 @@
                 
                 <?php if (\Core\Auth::hasPermission('users.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/users" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/users') !== false ? 'active' : ''; ?>">
-                    <span class="icon">👤</span> کاربران
+                    <i class="bi bi-person"></i> <span>کاربران</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/teams" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/teams') !== false ? 'active' : ''; ?>">
-                    <span class="icon">👥</span> تیم‌ها
+                    <i class="bi bi-people-fill"></i> <span>تیم‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('roles.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/roles" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/roles') !== false ? 'active' : ''; ?>">
-                    <span class="icon">🛡️</span> نقش‌ها
+                    <i class="bi bi-shield-check"></i> <span>نقش‌ها</span>
                 </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/settings" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/settings') !== false && strpos($_SERVER['REQUEST_URI'], '/custom-fields') === false ? 'active' : ''; ?>">
-                    <span class="icon">⚙️</span> تنظیمات
+                    <i class="bi bi-gear"></i> <span>تنظیمات</span>
                 </a>
-                <?php endif; ?>
-                <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/custom-fields" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/custom-fields') !== false ? 'active' : ''; ?>">
-                    <span class="icon">📋</span> فیلدهای اختصاصی
+                    <i class="bi bi-ui-checks"></i> <span>فیلدهای اختصاصی</span>
                 </a>
-                <?php endif; ?>
-                <?php if (\Core\Auth::hasPermission('settings.manage')): ?>
                 <a href="<?php echo $config['url']; ?>/automation" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/automation') !== false ? 'active' : ''; ?>">
-                    <span class="icon">🤖</span> اتوماسیون
+                    <i class="bi bi-robot"></i> <span>اتوماسیون</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/backup" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/backup') !== false ? 'active' : ''; ?>">
-                    <span class="icon">💾</span> بکاپ
+                    <i class="bi bi-cloud-arrow-down"></i> <span>بکاپ</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/system/repair" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/system/repair') !== false) ? 'active' : ''; ?>">
-                    <span class="icon">🔧</span> تعمیر دیتابیس
+                    <i class="bi bi-tools"></i> <span>تعمیر دیتابیس</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/system/error-logs" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/system/error-logs') !== false ? 'active' : ''; ?>">
-                    <span class="icon">⚠️</span> گزارش خطاها
+                    <i class="bi bi-exclamation-triangle"></i> <span>گزارش خطاها</span>
                 </a>
                 <a href="<?php echo $config['url']; ?>/system/logs" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/system/logs') !== false ? 'active' : ''; ?>">
-                    <span class="icon">📝</span> لاگ سیستم
+                    <i class="bi bi-journal-text"></i> <span>لاگ سیستم</span>
                 </a>
                 <?php endif; ?>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="<?php echo $config['url']; ?>/logout">🚪 خروج</a>
+                <a href="<?php echo $config['url']; ?>/logout"><i class="bi bi-box-arrow-right"></i> خروج</a>
             </div>
-        </div>
+        </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <div class="main-content flex-grow-1">
             <!-- Top Header -->
             <header class="top-header">
-                <div class="d-flex align-center gap-12">
-                    <button class="mobile-menu-btn" id="sidebarToggle">☰</button>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-link text-dark d-lg-none p-0 me-2" id="sidebarToggle" type="button">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
                     <!-- Global Search -->
-                    <form action="<?php echo $config['url']; ?>/search" method="GET" class="global-search-form">
-                        <input type="text" name="q" class="global-search-input" placeholder="🔍 جستجوی سراسری..." autocomplete="off" id="globalSearchInput">
+                    <form action="<?php echo $config['url']; ?>/search" method="GET" class="global-search-form d-none d-md-block">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="q" class="form-control border-start-0 bg-light" placeholder="جستجوی سراسری..." autocomplete="off" id="globalSearchInput">
+                        </div>
                         <div class="search-suggestions" id="searchSuggestions" style="display:none;"></div>
                     </form>
                 </div>
-                <div class="user-area">
+                <div class="d-flex align-items-center gap-2 gap-md-3">
                     <!-- Export Links -->
-                    <div class="header-export-links" style="display:flex;gap:6px;align-items:center;">
-                        <a href="<?php echo $config['url']; ?>/export/deals" title="خروجی اکسل معاملات" class="header-btn">📊</a>
-                    </div>
+                    <a href="<?php echo $config['url']; ?>/export/deals" title="خروجی اکسل معاملات" class="btn btn-link text-decoration-none d-none d-lg-inline-block p-1">
+                        <i class="bi bi-file-earmark-excel text-success fs-5"></i>
+                    </a>
                     <!-- Notification Bell -->
-                    <div class="notification-bell" id="notificationBell">
-                        <a href="<?php echo $config['url']; ?>/notifications" class="notification-bell-btn">
-                            🔔
-                            <span class="notification-badge" id="notifBadge" style="display:none;">0</span>
+                    <div class="dropdown" id="notificationBell">
+                        <a href="<?php echo $config['url']; ?>/notifications" class="btn btn-link text-decoration-none p-1 position-relative" id="notifDropdownBtn">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="display:none;font-size:10px;">0</span>
                         </a>
-                        <div class="notification-dropdown" id="notifDropdown" style="display:none;">
-                            <div class="notif-header">اعلان‌ها <a href="#" onclick="markAllNotifRead()" class="notif-mark-all">خواندن همه</a></div>
-                            <div class="notif-list" id="notifList"></div>
-                            <a href="<?php echo $config['url']; ?>/notifications" class="notif-view-all">مشاهده همه</a>
-                        </div>
                     </div>
-                    <span class="header-date">📅 <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
-                    <div class="user-dropdown">
-                        <button class="user-dropdown-btn">
-                            <span class="user-avatar">👤</span>
-                            <span class="user-name"><?php echo \Core\Auth::user()->full_name ?? ''; ?></span>
-                            <span class="user-arrow">▼</span>
+                    <span class="text-muted small d-none d-xl-inline-block"><i class="bi bi-calendar3"></i> <?php echo \Core\JDate::date('l'); ?> - <?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-md-inline"><?php echo \Core\Auth::user()->full_name ?? ''; ?></span>
                         </button>
-                        <div class="user-dropdown-menu">
-                            <span class="item-text"><?php echo \Core\Auth::user()->role_name ?? ''; ?></span>
-                            <div class="divider"></div>
-                            <a href="<?php echo $config['url']; ?>/logout" class="item danger">🚪 خروج</a>
-                        </div>
+                        <ul class="dropdown-menu dropdown-menu-start">
+                            <li><span class="dropdown-item-text text-muted small"><?php echo \Core\Auth::user()->role_name ?? ''; ?></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="<?php echo $config['url']; ?>/logout"><i class="bi bi-box-arrow-right"></i> خروج</a></li>
+                        </ul>
                     </div>
                 </div>
             </header>
@@ -178,65 +184,38 @@
             <!-- Page Content -->
             <div class="page-content">
                 <!-- Flash Messages -->
-                <div class="flash-container">
-                    <?php 
-                    $flashes = \Core\Session::getFlashes();
-                    foreach ($flashes as $flash): 
-                    ?>
-                        <div class="flash flash-<?php echo $flash['type']; ?>">
-                            <span><?php 
-                                $icons = ['success'=>'✅', 'danger'=>'❌', 'warning'=>'⚠️', 'info'=>'ℹ️'];
-                                echo $icons[$flash['type']] ?? 'ℹ️';
-                            ?></span>
-                            <span><?php echo htmlspecialchars($flash['message']); ?></span>
-                            <button class="close-btn">&times;</button>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                <?php 
+                $flashes = \Core\Session::getFlashes();
+                foreach ($flashes as $flash): 
+                ?>
+                    <div class="alert alert-<?php echo $flash['type'] === 'danger' ? 'danger' : ($flash['type'] === 'success' ? 'success' : ($flash['type'] === 'warning' ? 'warning' : 'info')); ?> alert-dismissible fade show" role="alert">
+                        <?php 
+                            $icons = ['success'=>'bi-check-circle', 'danger'=>'bi-x-circle', 'warning'=>'bi-exclamation-triangle', 'info'=>'bi-info-circle'];
+                            $bsType = $flash['type'] === 'danger' ? 'danger' : ($flash['type'] === 'success' ? 'success' : ($flash['type'] === 'warning' ? 'warning' : 'info'));
+                        ?>
+                        <i class="bi <?php echo $icons[$flash['type']] ?? 'bi-info-circle'; ?> me-2"></i>
+                        <?php echo htmlspecialchars($flash['message']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endforeach; ?>
 
                 <?php echo $content ?? ''; ?>
             </div>
-        </main>
+        </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=2.0.0" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Flash auto-hide
-        document.querySelectorAll('.flash').forEach(function(flash) {
-            setTimeout(function() {
-                flash.style.opacity = '0';
-                flash.style.transform = 'translateX(80px)';
-                flash.style.transition = 'all 0.3s ease';
-                setTimeout(function() { flash.remove(); }, 300);
-            }, 5000);
-        });
-        // Flash close
-        document.querySelectorAll('.flash .close-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                this.parentElement.remove();
-            });
-        });
-        // User dropdown
-        document.querySelectorAll('.user-dropdown-btn').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var menu = this.nextElementSibling;
-                menu.classList.toggle('show');
-            });
-        });
-        document.addEventListener('click', function() {
-            document.querySelectorAll('.user-dropdown-menu.show').forEach(function(m) {
-                m.classList.remove('show');
-            });
-        });
-        // Sidebar toggle - use direct onclick for reliability
+        // Sidebar toggle
         var toggleBtn = document.getElementById('sidebarToggle');
         var sidebarEl = document.getElementById('sidebar');
         var overlayEl = document.getElementById('sidebarOverlay');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 if (sidebarEl) sidebarEl.classList.toggle('open');
                 if (overlayEl) overlayEl.classList.toggle('show');
             });
@@ -251,8 +230,6 @@
         // ===== NOTIFICATION BELL =====
         var baseUrl = '<?php echo $config['url']; ?>';
         var notifBadge = document.getElementById('notifBadge');
-        var notifDropdown = document.getElementById('notifDropdown');
-        var notifList = document.getElementById('notifList');
         
         function loadNotifications() {
             fetch(baseUrl + '/notifications/unread')
@@ -260,52 +237,13 @@
                 .then(function(data) {
                     if (data.count > 0) {
                         notifBadge.textContent = data.count;
-                        notifBadge.style.display = 'flex';
+                        notifBadge.style.display = 'inline-flex';
                     } else {
                         notifBadge.style.display = 'none';
-                    }
-                    if (notifList) {
-                        if (data.notifications && data.notifications.length > 0) {
-                            notifList.innerHTML = data.notifications.slice(0, 8).map(function(n) {
-                                return '<div class="notif-item unread" onclick="markNotifRead(' + n.id + ', \'' + (n.link || '') + '\')">' +
-                                    '<div class="notif-title">' + (n.from_user_name ? n.from_user_name + ': ' : '') + n.title + '</div>' +
-                                    '<div class="notif-msg">' + (n.message || '') + '</div>' +
-                                    '<div class="notif-time">' + (n.created_at || '') + '</div></div>';
-                            }).join('');
-                        } else {
-                            notifList.innerHTML = '<div class="notif-empty">🔔 اعلان جدیدی ندارید</div>';
-                        }
                     }
                 })
                 .catch(function() {});
         }
-        
-        // Toggle dropdown on bell click
-        var bellBtn = document.querySelector('.notification-bell-btn');
-        if (bellBtn) {
-            bellBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (notifDropdown) notifDropdown.style.display = notifDropdown.style.display === 'none' ? 'block' : 'none';
-            });
-        }
-        document.addEventListener('click', function(e) {
-            if (notifDropdown && !document.getElementById('notificationBell').contains(e.target)) {
-                notifDropdown.style.display = 'none';
-            }
-        });
-        
-        window.markNotifRead = function(id, link) {
-            fetch(baseUrl + '/notifications/mark-read/' + id, {method:'POST'})
-                .then(function() {
-                    if (link) window.location.href = baseUrl + link;
-                    else loadNotifications();
-                });
-        };
-        window.markAllNotifRead = function() {
-            fetch(baseUrl + '/notifications/mark-all-read', {method:'POST'})
-                .then(function() { loadNotifications(); });
-        };
         
         loadNotifications();
         setInterval(loadNotifications, 60000);
@@ -327,16 +265,16 @@
                             if (data.deals && data.deals.length) {
                                 html += '<div class="search-section-label">معاملات</div>';
                                 data.deals.forEach(function(d) {
-                                    html += '<a href="' + baseUrl + '/deals/view/' + d.id + '" class="search-suggestion-item"><div class="ss-title">💼 ' + d.title + '</div></a>';
+                                    html += '<a href="' + baseUrl + '/deals/view/' + d.id + '" class="search-suggestion-item"><div class="ss-title"><i class="bi bi-briefcase me-1"></i>' + d.title + '</div></a>';
                                 });
                             }
                             if (data.contacts && data.contacts.length) {
                                 html += '<div class="search-section-label">مخاطبان</div>';
                                 data.contacts.forEach(function(c) {
-                                    html += '<a href="' + baseUrl + '/contacts/view/' + c.id + '" class="search-suggestion-item"><div class="ss-title">👤 ' + c.full_name + '</div><div class="ss-sub">' + (c.phone||'') + '</div></a>';
+                                    html += '<a href="' + baseUrl + '/contacts/view/' + c.id + '" class="search-suggestion-item"><div class="ss-title"><i class="bi bi-person me-1"></i>' + c.full_name + '</div><div class="ss-sub">' + (c.phone||'') + '</div></a>';
                                 });
                             }
-                            if (!html) html = '<div class="notif-empty">نتیجه‌ای یافت نشد</div>';
+                            if (!html) html = '<div class="text-center text-muted py-4">نتیجه‌ای یافت نشد</div>';
                             suggestions.innerHTML = html;
                             suggestions.style.display = 'block';
                         })
