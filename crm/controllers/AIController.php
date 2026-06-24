@@ -120,7 +120,7 @@ class AIController
         $payStats = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM payments WHERE status='success'");
 
         $lossReasons = $db->fetchAll(
-            "SELECT COALESCE(loss_reason,'نامشخص') as r, COUNT(*) as c FROM deals WHERE is_lost=1" . $sw . " GROUP BY loss_reason ORDER BY c DESC LIMIT 5", $sp
+            "SELECT COALESCE(dlr.name, d.lost_reason, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_loss_reasons dlr ON d.loss_reason_id=dlr.id WHERE d.is_lost=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
         );
 
         $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts");
