@@ -33,8 +33,9 @@ class AIController
             if ($modelSetting && !empty($modelSetting->setting_value)) $model = $modelSetting->setting_value;
         } catch (\Exception $e) { }
 
+        // Auto-create ai_analyses table
         try {
-            $db->execute("CREATE TABLE IF NOT EXISTS `ai_analyses` (
+            $db->query("CREATE TABLE IF NOT EXISTS `ai_analyses` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `user_id` INT NOT NULL,
                 `model` VARCHAR(100),
@@ -51,6 +52,10 @@ class AIController
             exit;
         }
 
+        // Get selected data categories from POST
+        $categories = $_POST['categories'] ?? 'deals,stages,activities,users';
+        $selectedCats = is_array($categories) ? $categories : explode(',', $categories);
+        
         try {
             $userId = Auth::id();
             $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
@@ -62,101 +67,132 @@ class AIController
             $dealsLost = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_lost=1" . $sw, $sp);
             $dealsActive = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_lost=0 AND is_won=0" . $sw, $sp);
 
-            $dealsByStage = $db->fetchAll(
-                "SELECT s.name, COUNT(d.id) as cnt, COALESCE(SUM(d.amount),0) as tot
-                 FROM stages s LEFT JOIN deals d ON d.stage_id=s.id AND d.is_lost=0" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
-                 WHERE s.is_active=1 GROUP BY s.id,s.name ORDER BY s.order_index", $sp
-            );
-
-            $dealsBySource = $db->fetchAll(
-                "SELECT COALESCE(source,'نامشخص') as src, COUNT(*) as cnt, COALESCE(SUM(amount),0) as tot
-                 FROM deals WHERE 1=1" . $sw . " GROUP BY source ORDER BY cnt DESC", $sp
-            );
-
-            $weeklyTrend = [];
-            for ($w = 3; $w >= 0; $w--) {
-                $ws = date('Y-m-d', strtotime("-{$w} weeks monday"));
-                $we = date('Y-m-d', strtotime("-{$w} weeks sunday"));
-                $wd = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE created_at>=:s AND created_at<=:e" . $sw,
-                    array_merge([':s' => $ws.' 00:00:00', ':e' => $we.' 23:59:59'], $sp));
-                $weeklyTrend[] = ['week' => $ws.' to '.$we, 'count' => (int)$wd->c, 'total' => (int)$wd->t];
-            }
-
-            $dailyTrend = [];
-            for ($d = 6; $d >= 0; $d--) {
-                $day = date('Y-m-d', strtotime("-{$d} days"));
-                $dd = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE DATE(created_at)=:d" . $sw,
-                    array_merge([':d' => $day], $sp));
-                $dailyTrend[] = ['date' => $day, 'count' => (int)$dd->c, 'total' => (int)$dd->t];
-            }
-
-            $actSum = $db->fetchAll(
-                "SELECT type, COUNT(*) as cnt, SUM(CASE WHEN is_done=1 THEN 1 ELSE 0 END) as done
-                 FROM deal_activities WHERE created_at>=:s" . ($isAdmin ? '' : " AND user_id=:uid") . " GROUP BY type",
-                $isAdmin ? [':s' => date('Y-m-d', strtotime('-30 days'))] : [':s' => date('Y-m-d', strtotime('-30 days')), ':uid' => $userId]
-            );
-
-            $overdue = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE is_done=0 AND activity_date<NOW()" . ($isAdmin ? '' : " AND user_id=:uid"),
-                $isAdmin ? [] : [':uid' => $userId]);
-
-            $pipePerf = $db->fetchAll(
-                "SELECT p.name, COUNT(d.id) as td,
-                        SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as w,
-                        SUM(CASE WHEN d.is_lost=1 THEN 1 ELSE 0 END) as l,
-                        COALESCE(SUM(d.amount),0) as ta
-                 FROM pipelines p LEFT JOIN deals d ON d.pipeline_id=p.id" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
-                 WHERE p.is_active=1 GROUP BY p.id,p.name"
-            );
-
-            $userPerf = $db->fetchAll(
-                "SELECT u.full_name, COUNT(d.id) as td,
-                        SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as w,
-                        COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as wa,
-                        COUNT(CASE WHEN d.created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as lw
-                 FROM users u LEFT JOIN deals d ON d.assigned_to=u.id
-                 WHERE u.is_active=1 GROUP BY u.id,u.full_name ORDER BY wa DESC"
-            );
-
-            $payStats = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM payments WHERE status='success'");
-
-            $lossReasons = $db->fetchAll(
-                "SELECT COALESCE(dlr.name, d.lost_reason, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_loss_reasons dlr ON d.loss_reason_id=dlr.id WHERE d.is_lost=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
-            );
-
-            $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts");
-            $contactsWeek = $db->fetch("SELECT COUNT(*) as c FROM contacts WHERE created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY)");
-
+            // Build prompt based on selected categories
             $p = "تو یک تحلیلگر حرفه‌ای CRM و فروش هستی. اطلاعات زیر از سیستم CRM آژانس مسافرتی را تحلیل کن و گزارش جامعی به فارسی ارائه بده.\n\n";
             $p .= "تاریخ: " . \Core\JDate::displayDate(date('Y-m-d')) . "\n\n";
+            
+            // Always include basic deal stats
+            $winRate = $dealsTotal->c > 0 ? round(($dealsWon->c / $dealsTotal->c) * 100, 1) : 0;
             $p .= "== آمار کلی معاملات ==\n";
             $p .= "کل: {$dealsTotal->c} (مبلغ: " . number_format($dealsTotal->t) . " تومان)\n";
             $p .= "موفق: {$dealsWon->c} (" . number_format($dealsWon->t) . " ت)\n";
             $p .= "ناموفق: {$dealsLost->c} (" . number_format($dealsLost->t) . " ت)\n";
             $p .= "درجریان: {$dealsActive->c} (" . number_format($dealsActive->t) . " ت)\n";
-            $winRate = $dealsTotal->c > 0 ? round(($dealsWon->c / $dealsTotal->c) * 100, 1) : 0;
             $p .= "نرخ برد: {$winRate}%\n\n";
-            $p .= "== بر اساس مرحله ==\n";
-            foreach ($dealsByStage as $s) $p .= "- {$s->name}: {$s->cnt} معامله (" . number_format($s->tot) . " ت)\n";
-            $p .= "\n== بر اساس منبع ==\n";
-            foreach ($dealsBySource as $s) $p .= "- {$s->src}: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
-            $p .= "\n== روند هفتگی ==\n";
-            foreach ($weeklyTrend as $w) $p .= "- {$w['week']}: {$w['count']} (" . number_format($w['total']) . " ت)\n";
-            $p .= "\n== روند روزانه ==\n";
-            foreach ($dailyTrend as $d) $p .= "- {$d['date']}: {$d['count']} (" . number_format($d['total']) . " ت)\n";
-            $p .= "\n== پایپ لاین‌ها ==\n";
-            foreach ($pipePerf as $pp) $p .= "- {$pp->name}: کل={$pp->td} موفق={$pp->w} ناموفق={$pp->l}\n";
-            $p .= "\n== کاربران ==\n";
-            foreach ($userPerf as $u) $p .= "- {$u->full_name}: کل={$u->td} موفق={$u->w} مبلغ=" . number_format($u->wa) . " هفته={$u->lw}\n";
-            $p .= "\n== دلایل باخت ==\n";
-            foreach ($lossReasons as $r) $p .= "- {$r->r}: {$r->c}\n";
-            $p .= "\n== فعالیت‌ها(30روز) ==\n";
-            foreach ($actSum as $a) $p .= "- {$a->type}: {$a->cnt} (done={$a->done})\n";
-            $p .= "سررسیدگذشته: {$overdue->c}\n";
-            $p .= "\n== مخاطبان ==\n";
-            $p .= "کل: {$contactsTotal->c} | جدید هفته: {$contactsWeek->c}\n";
-            $p .= "\n== پرداخت‌ها ==\n";
-            $p .= "موفق: {$payStats->c} (" . number_format($payStats->t) . " ت)\n";
-            $p .= "\n\nلطفاً شامل:\n";
+
+            // Stages
+            if (in_array('stages', $selectedCats)) {
+                $dealsByStage = $db->fetchAll(
+                    "SELECT s.name, COUNT(d.id) as cnt, COALESCE(SUM(d.amount),0) as tot
+                     FROM stages s LEFT JOIN deals d ON d.stage_id=s.id AND d.is_lost=0" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
+                     WHERE s.is_active=1 GROUP BY s.id,s.name ORDER BY s.order_index", $sp
+                );
+                $p .= "== بر اساس مرحله ==\n";
+                foreach ($dealsByStage as $s) $p .= "- {$s->name}: {$s->cnt} معامله (" . number_format($s->tot) . " ت)\n";
+                $p .= "\n";
+            }
+
+            // Sources
+            if (in_array('sources', $selectedCats)) {
+                $dealsBySource = $db->fetchAll(
+                    "SELECT COALESCE(source,'نامشخص') as src, COUNT(*) as cnt, COALESCE(SUM(amount),0) as tot
+                     FROM deals WHERE 1=1" . $sw . " GROUP BY source ORDER BY cnt DESC", $sp
+                );
+                $p .= "== بر اساس منبع ==\n";
+                foreach ($dealsBySource as $s) $p .= "- {$s->src}: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
+                $p .= "\n";
+            }
+
+            // Weekly trend
+            if (in_array('trends', $selectedCats)) {
+                $weeklyTrend = [];
+                for ($w = 3; $w >= 0; $w--) {
+                    $ws = date('Y-m-d', strtotime("-{$w} weeks monday"));
+                    $we = date('Y-m-d', strtotime("-{$w} weeks sunday"));
+                    $wd = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE created_at>=:s AND created_at<=:e" . $sw,
+                        array_merge([':s' => $ws.' 00:00:00', ':e' => $we.' 23:59:59'], $sp));
+                    $weeklyTrend[] = ['week' => $ws.' to '.$we, 'count' => (int)$wd->c, 'total' => (int)$wd->t];
+                }
+                $p .= "== روند هفتگی ==\n";
+                foreach ($weeklyTrend as $w) $p .= "- {$w['week']}: {$w['count']} (" . number_format($w['total']) . " ت)\n";
+                $p .= "\n";
+
+                $dailyTrend = [];
+                for ($d = 6; $d >= 0; $d--) {
+                    $day = date('Y-m-d', strtotime("-{$d} days"));
+                    $dd = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE DATE(created_at)=:d" . $sw,
+                        array_merge([':d' => $day], $sp));
+                    $dailyTrend[] = ['date' => $day, 'count' => (int)$dd->c, 'total' => (int)$dd->t];
+                }
+                $p .= "== روند روزانه ==\n";
+                foreach ($dailyTrend as $d) $p .= "- {$d['date']}: {$d['count']} (" . number_format($d['total']) . " ت)\n";
+                $p .= "\n";
+            }
+
+            // Pipelines
+            if (in_array('pipelines', $selectedCats)) {
+                $pipePerf = $db->fetchAll(
+                    "SELECT p.name, COUNT(d.id) as td,
+                            SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as w,
+                            SUM(CASE WHEN d.is_lost=1 THEN 1 ELSE 0 END) as l,
+                            COALESCE(SUM(d.amount),0) as ta
+                     FROM pipelines p LEFT JOIN deals d ON d.pipeline_id=p.id" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
+                     WHERE p.is_active=1 GROUP BY p.id,p.name"
+                );
+                $p .= "== پایپ لاین‌ها ==\n";
+                foreach ($pipePerf as $pp) $p .= "- {$pp->name}: کل={$pp->td} موفق={$pp->w} ناموفق={$pp->l}\n";
+                $p .= "\n";
+            }
+
+            // Users
+            if (in_array('users', $selectedCats)) {
+                $userPerf = $db->fetchAll(
+                    "SELECT u.full_name, COUNT(d.id) as td,
+                            SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as w,
+                            COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as wa,
+                            COUNT(CASE WHEN d.created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) as lw
+                     FROM users u LEFT JOIN deals d ON d.assigned_to=u.id
+                     WHERE u.is_active=1 GROUP BY u.id,u.full_name ORDER BY wa DESC"
+                );
+                $p .= "== کاربران ==\n";
+                foreach ($userPerf as $u) $p .= "- {$u->full_name}: کل={$u->td} موفق={$u->w} مبلغ=" . number_format($u->wa) . " هفته={$u->lw}\n";
+                $p .= "\n";
+            }
+
+            // Activities
+            if (in_array('activities', $selectedCats)) {
+                $actSum = $db->fetchAll(
+                    "SELECT type, COUNT(*) as cnt, SUM(CASE WHEN is_done=1 THEN 1 ELSE 0 END) as done
+                     FROM deal_activities WHERE created_at>=:s" . ($isAdmin ? '' : " AND user_id=:uid") . " GROUP BY type",
+                    $isAdmin ? [':s' => date('Y-m-d', strtotime('-30 days'))] : [':s' => date('Y-m-d', strtotime('-30 days')), ':uid' => $userId]
+                );
+                $overdue = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE is_done=0 AND activity_date<NOW()" . ($isAdmin ? '' : " AND user_id=:uid"),
+                    $isAdmin ? [] : [':uid' => $userId]);
+                $p .= "== فعالیت‌ها(30روز) ==\n";
+                foreach ($actSum as $a) $p .= "- {$a->type}: {$a->cnt} (done={$a->done})\n";
+                $p .= "سررسیدگذشته: {$overdue->c}\n";
+                $p .= "\n";
+            }
+
+            // Loss reasons
+            if (in_array('loss_reasons', $selectedCats)) {
+                $lossReasons = $db->fetchAll(
+                    "SELECT COALESCE(dlr.name, d.lost_reason, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_loss_reasons dlr ON d.loss_reason_id=dlr.id WHERE d.is_lost=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
+                );
+                $p .= "== دلایل باخت ==\n";
+                foreach ($lossReasons as $r) $p .= "- {$r->r}: {$r->c}\n";
+                $p .= "\n";
+            }
+
+            // Contacts
+            if (in_array('contacts', $selectedCats)) {
+                $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts");
+                $contactsWeek = $db->fetch("SELECT COUNT(*) as c FROM contacts WHERE created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY)");
+                $p .= "== مخاطبان ==\n";
+                $p .= "کل: {$contactsTotal->c} | جدید هفته: {$contactsWeek->c}\n\n";
+            }
+
+            $p .= "\nلطفاً شامل:\n";
             $p .= "1. 📊 خلاصه وضعیت\n2. 📈 پیش‌بینی فروش هفته آینده (عدد ریالی)\n";
             $p .= "3. 💪 نقاط قوت\n4. ⚠️ نقاط ضعف\n5. 🔍 الگوهای مشکوک\n";
             $p .= "6. 💡 پیشنهادات بهبود\n7. 🎯 اقدامات فوری هفته آینده\n";
@@ -199,7 +235,6 @@ class AIController
             if ($httpCode === 200 && isset($result['choices'][0]['message']['content'])) {
                 $analysisText = $result['choices'][0]['message']['content'];
                 
-                // Save to database
                 try {
                     $db->insert('ai_analyses', [
                         'user_id' => $userId,
@@ -209,7 +244,7 @@ class AIController
                         'deals_count' => (int)$dealsTotal->c,
                         'total_amount' => (float)$dealsTotal->t,
                     ]);
-                } catch (\Exception $e) { /* ignore save errors */ }
+                } catch (\Exception $e) { }
                 
                 echo json_encode([
                     'success' => true,
@@ -233,12 +268,11 @@ class AIController
     {
         Auth::requireAuth();
         $db = Database::getInstance();
-        $config = $GLOBALS['app_config'];
         $userId = Auth::id();
         $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
         
         try {
-            $db->execute("CREATE TABLE IF NOT EXISTS `ai_analyses` (
+            $db->query("CREATE TABLE IF NOT EXISTS `ai_analyses` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `user_id` INT NOT NULL,
                 `model` VARCHAR(100),

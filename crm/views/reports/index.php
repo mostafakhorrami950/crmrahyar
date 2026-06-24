@@ -20,6 +20,51 @@
     </div>
 </div>
 
+<!-- AI Data Selection -->
+<div class="card border-0 shadow-sm mb-4" id="aiDataSelector">
+    <div class="card-body py-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-bold small text-muted"><i class="bi bi-funnel me-1"></i>اطلاعات ارسالی به AI:</span>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catDeals" value="deals" checked disabled>
+                <label class="form-check-label small" for="catDeals">📊 معاملات</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catStages" value="stages" checked>
+                <label class="form-check-label small" for="catStages">📋 مراحل</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catSources" value="sources" checked>
+                <label class="form-check-label small" for="catSources">🔗 منابع</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catTrends" value="trends" checked>
+                <label class="form-check-label small" for="catTrends">📈 روندها</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catPipelines" value="pipelines" checked>
+                <label class="form-check-label small" for="catPipelines">🔀 پایپ‌لاین</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catUsers" value="users" checked>
+                <label class="form-check-label small" for="catUsers">👥 کاربران</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catActivities" value="activities" checked>
+                <label class="form-check-label small" for="catActivities">📅 فعالیت‌ها</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catLoss" value="loss_reasons">
+                <label class="form-check-label small" for="catLoss">❌ دلایل باخت</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catContacts" value="contacts">
+                <label class="form-check-label small" for="catContacts">👤 مخاطبان</label>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- AI Analysis Result Card -->
 <div class="card border-0 shadow mb-4" id="aiResultCard" style="display:none;">
     <div class="card-header bg-gradient d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; border-radius: var(--radius) var(--radius) 0 0;">
@@ -429,10 +474,18 @@ function runAIAnalysis() {
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>در حال تحلیل...';
 
+    // Collect selected categories
+    var cats = [];
+    document.querySelectorAll('.ai-cat:checked').forEach(function(cb) { cats.push(cb.value); });
+    
+    var formData = new FormData();
+    formData.append('categories', cats.join(','));
+    
     fetch('<?php echo $config['url']; ?>/ai/analyze', {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        body: formData
     })
     .then(function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
