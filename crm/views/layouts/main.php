@@ -222,6 +222,26 @@
     <?php include __DIR__ . '/../contacts/_quick_create_modal.php'; ?>
     <?php endif; ?>
 
+    <!-- Quick Create Deal Modal (available on all pages) -->
+    <?php if (\Core\Auth::hasPermission('deals.create')): ?>
+    <?php include __DIR__ . '/../deals/_quick_create_modal.php'; ?>
+    
+    <!-- Floating Action Button -->
+    <div class="fab-container" id="fabContainer">
+        <button type="button" class="fab-main" onclick="toggleFab()" title="ایجاد سریع">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+        <div class="fab-menu" id="fabMenu">
+            <button type="button" class="fab-item fab-deal" data-bs-toggle="modal" data-bs-target="#quickDealModal" onclick="toggleFab()">
+                <i class="bi bi-lightning"></i> <span>معامله جدید</span>
+            </button>
+            <button type="button" class="fab-item fab-contact" data-bs-toggle="modal" data-bs-target="#quickContactModal" onclick="toggleFab()">
+                <i class="bi bi-person-plus"></i> <span>مخاطب جدید</span>
+            </button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery + Persian Datepicker -->
