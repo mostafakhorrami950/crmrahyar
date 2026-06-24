@@ -23,8 +23,8 @@
     <div class="login-box">
         <div class="login-logo">
             <div class="logo-icon">✈️</div>
-            <h2 class="fw-bold text-dark mb-1">CRM آژانس مسافرتی</h2>
-            <p class="text-muted small">سیستم مدیریت ارتباط با مشتریان</p>
+            <h2 class="fw-bold text-dark mb-1">علائدین سفیر آسمان</h2>
+            <p class="text-muted small">سیستم مدیریت ارتباط با مشتریان آژانس مسافرتی</p>
         </div>
 
         <?php 

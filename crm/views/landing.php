@@ -18,8 +18,8 @@
                     <div class="mb-4">
                         <span style="font-size:48px;">✈️</span>
                     </div>
-                    <h1 class="display-4 fw-bold text-white mb-3">سیستم مدیریت<br>ارتباط با مشتریان</h1>
-                    <p class="lead text-white-50 mb-4">مدیریت هوشمند معاملات، مخاطبان و فعالیت‌های آژانس مسافرتی شما با ابزارهای حرفه‌ای CRM</p>
+                    <h1 class="display-4 fw-bold text-white mb-3">علائدین سفیر آسمان</h1>
+                    <p class="lead text-white-50 mb-4">سیستم مدیریت ارتباط با مشتریان آژانس مسافرتی</p>
                     <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
                         <a href="<?php echo $config['url']; ?>/login" class="btn btn-light btn-lg fw-bold px-4">
                             <i class="bi bi-box-arrow-in-left me-2"></i>ورود به سیستم
