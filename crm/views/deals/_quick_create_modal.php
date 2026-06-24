@@ -13,7 +13,7 @@ $defaultPipeline = $db->fetch("SELECT id FROM pipelines WHERE is_default = 1");
 
 <!-- Quick Create Deal Modal -->
 <div class="modal fade" id="quickDealModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
                 <h6 class="modal-title fw-bold"><i class="bi bi-lightning me-2"></i>افزودن سریع معامله</h6>
