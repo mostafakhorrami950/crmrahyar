@@ -1,0 +1,1 @@
+ALTER TABLE dashboard_notes ADD COLUMN is_archived TINYINT(1) DEFAULT 0;

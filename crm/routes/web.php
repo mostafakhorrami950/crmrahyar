@@ -141,6 +141,7 @@ Router::group('/payment', function() {
     Router::post('/callback', [PaymentController::class, 'callback']);
     Router::get('/inquiry/{track_id}', [PaymentController::class, 'inquiry'], 'payments.view');
     Router::get('/history', [PaymentController::class, 'history'], 'payments.view');
+    Router::post('/delete/{id}', [PaymentController::class, 'delete'], 'payments.create');
 });
 
 // Public payment routes (no auth required)

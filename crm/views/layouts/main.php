@@ -121,6 +121,9 @@
                 <a href="<?php echo $config['url']; ?>/automation" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/automation') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-robot"></i> <span>اتوماسیون</span>
                 </a>
+                <a href="<?php echo $config['url']; ?>/dashboard/notes" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/notes') !== false ? 'active' : ''; ?>">
+                    <i class="bi bi-sticky"></i> <span>یادداشت‌ها</span>
+                </a>
                 <a href="<?php echo $config['url']; ?>/backup" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/backup') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-cloud-arrow-down"></i> <span>بکاپ</span>
                 </a>

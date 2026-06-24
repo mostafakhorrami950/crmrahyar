@@ -92,15 +92,31 @@ class DashboardController
             $isAdmin ? [] : [':uid' => $userId]
         );
 
-        // Admin notes for this user
-        $adminNotes = $db->fetchAll(
-            "SELECT dn.*, u.full_name as author_name 
-             FROM dashboard_notes dn 
-             LEFT JOIN users u ON dn.created_by = u.id 
-             WHERE dn.target_user_id = :uid AND (dn.is_archived IS NULL OR dn.is_archived = 0)
-             ORDER BY dn.is_pinned DESC, dn.created_at DESC LIMIT 5",
-            [':uid' => $userId]
-        );
+        // Admin notes for this user (handle missing is_archived column gracefully)
+        $adminNotes = [];
+        try {
+            $adminNotes = $db->fetchAll(
+                "SELECT dn.*, u.full_name as author_name 
+                 FROM dashboard_notes dn 
+                 LEFT JOIN users u ON dn.created_by = u.id 
+                 WHERE dn.target_user_id = :uid AND (dn.is_archived IS NULL OR dn.is_archived = 0)
+                 ORDER BY dn.is_pinned DESC, dn.created_at DESC LIMIT 5",
+                [':uid' => $userId]
+            );
+        } catch (\Exception $e) {
+            // Column might not exist yet, try without it
+            $adminNotes = $db->fetchAll(
+                "SELECT dn.*, u.full_name as author_name 
+                 FROM dashboard_notes dn 
+                 LEFT JOIN users u ON dn.created_by = u.id 
+                 WHERE dn.target_user_id = :uid
+                 ORDER BY dn.created_at DESC LIMIT 5",
+                [':uid' => $userId]
+            );
+        }
+
+        // Check for activity reminders and create notifications
+        $this->checkActivityReminders($db, $userId);
 
         // Unread notifications count
         $unreadNotifs = $db->fetch(
@@ -352,5 +368,55 @@ class DashboardController
 
         echo json_encode(['success' => true]);
         exit;
+    }
+
+    // Check for activity reminders and send notifications
+    private function checkActivityReminders(Database $db, int $userId): void
+    {
+        try {
+            $now = date('Y-m-d H:i:s');
+            $soon = date('Y-m-d H:i:s', time() + 15 * 60);
+            $recentlyPassed = date('Y-m-d H:i:s', time() - 60 * 60);
+
+            $activities = $db->fetchAll(
+                "SELECT da.*, d.title as deal_title 
+                 FROM deal_activities da
+                 JOIN deals d ON da.deal_id = d.id
+                 WHERE da.is_done = 0 
+                 AND da.activity_date IS NOT NULL
+                 AND da.activity_date >= :recent
+                 AND da.activity_date <= :soon
+                 AND da.user_id = :uid",
+                [':recent' => $recentlyPassed, ':soon' => $soon, ':uid' => $userId]
+            );
+
+            $typeNames = ['call' => 'تماس', 'meeting' => 'جلسه', 'sms' => 'پیامک', 'email' => 'ایمیل', 'follow_up' => 'پیگیری', 'note' => 'یادداشت'];
+
+            foreach ($activities as $act) {
+                // Check if we already sent a notification for this activity recently
+                $existing = $db->fetch(
+                    "SELECT id FROM notifications WHERE user_id = :uid AND link LIKE :link AND created_at > :since",
+                    [':uid' => $userId, ':link' => '%/deals/view/' . $act->deal_id, ':since' => date('Y-m-d H:i:s', time() - 30 * 60)]
+                );
+                if ($existing) continue;
+
+                $isOverdue = strtotime($act->activity_date) < time();
+                $title = $isOverdue ? '⏰ فعالیت سررسید گذشته' : '⏰ یادآوری فعالیت';
+                $typeName = $typeNames[$act->type] ?? $act->type;
+                $message = $typeName . ': ' . ($act->subject ?? 'فعالیت') . "\n";
+                $message .= 'معامله: ' . ($act->deal_title ?? '-') . "\n";
+                $message .= 'زمان: ' . \Core\JDate::displayDateTime($act->activity_date);
+
+                $db->insert('notifications', [
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'message' => $message,
+                    'type' => $isOverdue ? 'warning' : 'info',
+                    'link' => '/deals/view/' . $act->deal_id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
     }
 }

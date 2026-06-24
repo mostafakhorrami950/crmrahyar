@@ -659,4 +659,31 @@ class PaymentController
         require __DIR__ . '/../views/payment/result.php';
         exit;
     }
+
+    public function delete(array $params): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $payment = $db->fetch("SELECT * FROM payments WHERE id = :id", [':id' => $params['id']]);
+        if (!$payment) {
+            echo json_encode(['success' => false, 'message' => 'پرداخت یافت نشد']);
+            exit;
+        }
+
+        // Only admin or the deal owner can delete
+        $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
+        if (!$isAdmin) {
+            $deal = $db->fetch("SELECT assigned_to, created_by FROM deals WHERE id = :id", [':id' => $payment->deal_id]);
+            if (!$deal || ($deal->assigned_to != Auth::id() && $deal->created_by != Auth::id())) {
+                echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+                exit;
+            }
+        }
+
+        $db->delete('payments', 'id = :id', [':id' => $params['id']]);
+        ActivityLog::log('delete_payment', 'payment', $params['id'], "پرداخت {$params['id']} حذف شد");
+
+        echo json_encode(['success' => true, 'message' => 'پرداخت حذف شد']);
+        exit;
+    }
 }

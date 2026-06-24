@@ -186,7 +186,9 @@ $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','emai
                 </div>
                 
                 <?php if (!empty($act->description)): ?>
-                <div class="mt-1 small text-muted"><?php echo nl2br(htmlspecialchars(mb_substr($act->description, 0, 200))); ?></div>
+                <div class="mt-1 small text-muted activity-desc" style="cursor:pointer;" onclick="if(this.style.maxHeight==='none'){this.style.maxHeight='40px';this.style.overflow='hidden';}else{this.style.maxHeight='none';this.style.overflow='visible';}" title="کلیک برای نمایش/مخفی کردن">
+                    <i class="bi bi-chat-left-text me-1"></i><?php echo nl2br(htmlspecialchars($act->description)); ?>
+                </div>
                 <?php endif; ?>
             </div>
         </div>

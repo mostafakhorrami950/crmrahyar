@@ -116,7 +116,12 @@
                         <span class="text-muted small">-</span>
                         <?php endif; ?>
                     </td>
-                    <td style="white-space:nowrap;"><small class="text-muted"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small></td>
+                    <td style="white-space:nowrap;">
+                        <div class="d-flex align-items-center gap-1">
+                            <small class="text-muted"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deletePayment(<?php echo $p->id; ?>)" title="حذف"><i class="bi bi-trash" style="font-size:11px;"></i></button>
+                        </div>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -149,5 +154,20 @@ function copyPayLink(btn) {
         btn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
         setTimeout(function() { btn.innerHTML = original; }, 2000);
     }).catch(function() { document.execCommand('copy'); });
+}
+
+function deletePayment(id) {
+    if (!confirm('آیا از حذف این پرداخت اطمینان دارید؟')) return;
+    var baseUrl = '<?php echo $config['url']; ?>';
+    fetch(baseUrl + '/payment/delete/' + id, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) { location.reload(); }
+        else { alert(data.message || 'خطا در حذف'); }
+    })
+    .catch(function() { alert('خطای شبکه'); });
 }
 </script>

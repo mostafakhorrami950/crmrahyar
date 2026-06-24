@@ -114,7 +114,10 @@ if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
                 <i class="bi <?php echo $typeIcons[$a->type] ?? 'bi-journal-text'; ?>"></i>
             </div>
             <div class="flex-grow-1">
-                <strong class="<?php echo $a->is_done ? 'text-decoration-line-through' : ''; ?>" style="font-size:14px;"><?php echo htmlspecialchars($a->subject); ?></strong>
+            <strong class="<?php echo $a->is_done ? 'text-decoration-line-through' : ''; ?>" style="font-size:14px;"><?php echo htmlspecialchars($a->subject); ?></strong>
+                <?php if (!empty($a->description)): ?>
+                <div class="small text-muted mt-1" style="max-height:40px;overflow:hidden;cursor:pointer;" onclick="if(this.style.maxHeight==='none'){this.style.maxHeight='40px';}else{this.style.maxHeight='none';}" title="کلیک برای نمایش/مخفی کردن"><i class="bi bi-chat-left-text me-1"></i><?php echo nl2br(htmlspecialchars($a->description)); ?></div>
+                <?php endif; ?>
                 <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
                     <span class="badge bg-light text-dark small"><?php echo $typeNames[$a->type] ?? $a->type; ?></span>
                     <small class="text-muted"><i class="bi bi-calendar me-1"></i><?php echo \Core\JDate::displayDate($a->activity_date); ?></small>
