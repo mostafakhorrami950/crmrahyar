@@ -97,6 +97,27 @@
                     </div>
                 </div>
 
+                <!-- Travel Info -->
+                <div class="col-12">
+                    <div class="bg-light rounded-3 p-3">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-airplane me-2 text-primary"></i>اطلاعات سفر</h6>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-event me-1"></i>تاریخ ورود / شروع سفر</label>
+                                <input type="date" name="travel_date_from" class="form-control">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-check me-1"></i>تاریخ خروج / پایان سفر</label>
+                                <input type="date" name="travel_date_to" class="form-control">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label text-muted small fw-medium"><i class="bi bi-people me-1"></i>تعداد نفرات مسافر</label>
+                                <input type="number" name="passengers_count" class="form-control" min="0" placeholder="مثال: 2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Description -->
                 <div class="col-12">
                     <label class="form-label text-muted small fw-medium"><i class="bi bi-card-text me-1"></i>توضیحات</label>

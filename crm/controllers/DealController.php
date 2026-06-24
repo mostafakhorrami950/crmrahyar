@@ -154,6 +154,9 @@ class DealController
         $assignedTo = (int)($_POST['assigned_to'] ?? 0) ?: null;
         $source = trim($_POST['source'] ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? null;
+        $travelDateFrom = !empty($_POST['travel_date_from']) ? $_POST['travel_date_from'] : null;
+        $travelDateTo = !empty($_POST['travel_date_to']) ? $_POST['travel_date_to'] : null;
+        $passengersCount = (int)($_POST['passengers_count'] ?? 0);
 
         // If user only has 'own' scope for deals.create, force assigned_to to themselves
         if (!Auth::canAccessAll('deals.create')) {
@@ -183,6 +186,9 @@ class DealController
                 'assigned_to' => $assignedTo,
                 'source' => $source,
                 'expected_close_date' => $expectedCloseDate,
+                'travel_date_from' => $travelDateFrom,
+                'travel_date_to' => $travelDateTo,
+                'passengers_count' => $passengersCount,
                 'created_by' => Auth::id(),
             ]);
 
@@ -417,6 +423,9 @@ class DealController
         
         $source = trim($_POST['source'] ?? $existing->source ?? '');
         $expectedCloseDate = $_POST['expected_close_date'] ?? $existing->expected_close_date ?? null;
+        $travelDateFrom = $_POST['travel_date_from'] ?? $existing->travel_date_from ?? null;
+        $travelDateTo = $_POST['travel_date_to'] ?? $existing->travel_date_to ?? null;
+        $passengersCount = (int)($_POST['passengers_count'] ?? $existing->passengers_count ?? 0);
         $probability = (int)($_POST['probability'] ?? $existing->probability ?? 0);
         $lostReason = trim($_POST['lost_reason'] ?? $existing->lost_reason ?? '');
         $lossReasonId = (int)($_POST['loss_reason_id'] ?? $existing->loss_reason_id ?? 0) ?: null;
@@ -441,6 +450,9 @@ class DealController
             'assigned_to' => $assignedTo,
             'source' => $source,
             'expected_close_date' => $expectedCloseDate,
+            'travel_date_from' => $travelDateFrom,
+            'travel_date_to' => $travelDateTo,
+            'passengers_count' => $passengersCount,
             'probability' => $probability,
             'lost_reason' => $lostReason,
             'loss_reason_id' => $lossReasonId,

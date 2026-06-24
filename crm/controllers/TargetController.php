@@ -68,6 +68,8 @@ class TargetController
         $month = (int)($_POST['month'] ?? date('n'));
         $amount = (int)($_POST['target_amount'] ?? 0);
         $deals = (int)($_POST['target_deals'] ?? 0);
+        $dateFrom = !empty($_POST['date_from']) ? $_POST['date_from'] : null;
+        $dateTo = !empty($_POST['date_to']) ? $_POST['date_to'] : null;
         
         // Check if exists
         $existing = $db->fetch(
@@ -75,10 +77,21 @@ class TargetController
             [':t'=>$type, ':tid'=>$targetId, ':y'=>$year, ':m'=>$month]
         );
         
+        $data = [
+            'target_amount'=>$amount, 
+            'target_deals'=>$deals,
+            'date_from'=>$dateFrom,
+            'date_to'=>$dateTo,
+        ];
+        
         if ($existing) {
-            $db->update('sales_targets', ['target_amount'=>$amount, 'target_deals'=>$deals], 'id=:id', [':id'=>$existing->id]);
+            $db->update('sales_targets', $data, 'id=:id', [':id'=>$existing->id]);
         } else {
-            $db->insert('sales_targets', ['target_type'=>$type, 'target_id'=>$targetId, 'year'=>$year, 'month'=>$month, 'target_amount'=>$amount, 'target_deals'=>$deals]);
+            $data['target_type'] = $type;
+            $data['target_id'] = $targetId;
+            $data['year'] = $year;
+            $data['month'] = $month;
+            $db->insert('sales_targets', $data);
         }
         
         Session::setFlash('success', 'هدف فروش ذخیره شد.');
@@ -95,16 +108,20 @@ class TargetController
 
     private function syncAchievements(Database $db, int $year, int $month): void
     {
-        $startDate = sprintf('%04d-%02d-01', $year, $month);
-        $endDate = date('Y-m-t', strtotime($startDate));
-        $startDatetime = $startDate . ' 00:00:00';
-        $endDatetime = $endDate . ' 23:59:59';
-        
         $targets = $db->fetchAll("SELECT * FROM sales_targets WHERE year=:y AND month=:m", [':y'=>$year, ':m'=>$month]);
         foreach ($targets as $t) {
+            // Use custom date range if set, otherwise use month defaults
+            if (!empty($t->date_from) && !empty($t->date_to)) {
+                $startDatetime = $t->date_from . ' 00:00:00';
+                $endDatetime = $t->date_to . ' 23:59:59';
+            } else {
+                $startDate = sprintf('%04d-%02d-01', $year, $month);
+                $endDate = date('Y-m-t', strtotime($startDate));
+                $startDatetime = $startDate . ' 00:00:00';
+                $endDatetime = $endDate . ' 23:59:59';
+            }
+            
             if ($t->target_type === 'user') {
-                // Count won deals for this user in this month
-                // Use COALESCE on closed_at/updated_at to handle NULL closed_at
                 $result = $db->fetch(
                     "SELECT COALESCE(SUM(amount),0) as total, COUNT(*) as cnt FROM deals 
                      WHERE assigned_to=:uid AND is_won=1
