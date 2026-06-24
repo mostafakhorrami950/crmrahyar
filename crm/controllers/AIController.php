@@ -10,21 +10,39 @@ class AIController
 {
     public function analyze(): void
     {
+        // Clean any buffered output to ensure clean JSON response
+        while (ob_get_level()) ob_end_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        
+        try {
         Auth::requireAuth();
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'لطفاً ابتدا وارد شوید']);
+            exit;
+        }
+        
         $config = $GLOBALS['app_config'];
         $db = Database::getInstance();
         
         // Read from DB settings first, fallback to .env config
-        $apiKeySetting = $db->fetch("SELECT setting_value FROM settings WHERE setting_key='openrouter_api_key' AND setting_group='ai'");
-        $modelSetting = $db->fetch("SELECT setting_value FROM settings WHERE setting_key='openrouter_model' AND setting_group='ai'");
+        $apiKey = $config['openrouter']['api_key'] ?? '';
+        $model = $config['openrouter']['model'] ?? '~openai/gpt-latest';
         
-        $apiKey = ($apiKeySetting && !empty($apiKeySetting->setting_value)) ? $apiKeySetting->setting_value : ($config['openrouter']['api_key'] ?? '');
-        $model = ($modelSetting && !empty($modelSetting->setting_value)) ? $modelSetting->setting_value : ($config['openrouter']['model'] ?? '~openai/gpt-latest');
+        try {
+            $apiKeySetting = $db->fetch("SELECT setting_value FROM settings WHERE setting_key='openrouter_api_key' AND setting_group='ai'");
+            $modelSetting = $db->fetch("SELECT setting_value FROM settings WHERE setting_key='openrouter_model' AND setting_group='ai'");
+            if ($apiKeySetting && !empty($apiKeySetting->setting_value)) $apiKey = $apiKeySetting->setting_value;
+            if ($modelSetting && !empty($modelSetting->setting_value)) $model = $modelSetting->setting_value;
+        } catch (\Exception $e) {
+            // Settings table may not have AI entries yet, use .env fallback
+        }
 
         if (empty($apiKey)) {
-            echo json_encode(['success' => false, 'message' => 'کلید API هوش مصنوعی تنظیم نشده. لطفاً از بخش تنظیمات > تنظیمات هوش مصنوعی آن را وارد کنید.']);
+            echo json_encode(['success' => false, 'message' => 'کلید API هوش مصنوعی تنظیم نشده. لطفاً از بخش تنظیمات آن را وارد کنید.']);
             exit;
         }
+
+        try {
 
         $userId = Auth::id();
         $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
@@ -194,5 +212,10 @@ class AIController
             echo json_encode(['success' => false, 'message' => $errMsg]);
         }
         exit;
+        
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'خطای سرور: ' . $e->getMessage()]);
+            exit;
+        }
     }
 }

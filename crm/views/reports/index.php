@@ -428,9 +428,15 @@ function runAIAnalysis() {
 
     fetch('<?php echo $config['url']; ?>/ai/analyze', {
         method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var ct = r.headers.get('content-type') || '';
+        if (ct.indexOf('json') === -1) throw new Error('پاسخ نامعتبر - لطفاً صفحه را رفرش کنید');
+        return r.json();
+    })
     .then(function(data) {
         loading.style.display = 'none';
         btn.disabled = false;
@@ -450,9 +456,8 @@ function runAIAnalysis() {
         loading.style.display = 'none';
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی';
-        error.textContent = 'خطا در ارتباط با سرور';
+        error.textContent = err.message || 'خطا در ارتباط با سرور';
         error.style.display = 'block';
     });
 }
-</script>
 </script>
