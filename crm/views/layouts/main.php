@@ -250,6 +250,25 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=2.0.0" defer></script>
     <script>
+    function toggleFab() {
+        var fabMain = document.querySelector('.fab-main');
+        var fabMenu = document.getElementById('fabMenu');
+        if (fabMain && fabMenu) {
+            fabMain.classList.toggle('active');
+            fabMenu.classList.toggle('show');
+        }
+    }
+    // Close FAB when clicking outside
+    document.addEventListener('click', function(e) {
+        var container = document.getElementById('fabContainer');
+        if (container && !container.contains(e.target)) {
+            var fabMain = document.querySelector('.fab-main');
+            var fabMenu = document.getElementById('fabMenu');
+            if (fabMain) fabMain.classList.remove('active');
+            if (fabMenu) fabMenu.classList.remove('show');
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         // Sidebar toggle
         var toggleBtn = document.getElementById('sidebarToggle');

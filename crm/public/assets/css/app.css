@@ -863,3 +863,95 @@ textarea.form-control {
     background: var(--primary);
     color: #fff;
 }
+
+/* ========== FLOATING ACTION BUTTON (FAB) ========== */
+.fab-container {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 12px;
+}
+.fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.4);
+    transition: all 0.3s ease;
+}
+.fab-main:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(67, 97, 238, 0.5);
+    color: #fff;
+}
+.fab-main.active {
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    box-shadow: 0 4px 20px rgba(239, 71, 111, 0.4);
+}
+.fab-menu {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    animation: fabSlideUp 0.25s ease;
+}
+.fab-menu.show {
+    display: flex;
+}
+.fab-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 28px;
+    font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+}
+.fab-item:hover {
+    transform: translateX(-4px);
+}
+.fab-item i {
+    font-size: 16px;
+}
+.fab-deal {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+}
+.fab-deal:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: #fff;
+}
+.fab-contact {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+}
+.fab-contact:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #fff;
+}
+@keyframes fabSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* Hide FAB on very small screens to not block content */
+@media (max-width: 380px) {
+    .fab-container { bottom: 16px; left: 16px; }
+    .fab-main { width: 48px; height: 48px; font-size: 20px; }
+}
