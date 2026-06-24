@@ -1,21 +1,21 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>✏️ ویرایش تیم: <?php echo htmlspecialchars($team->name); ?></h5>
-    <a href="<?php echo $config['url']; ?>/teams" class="btn btn-secondary">بازگشت</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-pencil me-1"></i>ویرایش تیم: <?php echo htmlspecialchars($team->name); ?></h5>
+    <a href="<?php echo $config['url']; ?>/teams" class="btn btn-outline-secondary">بازگشت</a>
 </div>
 
 <div class="card" style="max-width:600px;">
     <form method="POST" action="<?php echo $config['url']; ?>/teams/update/<?php echo $team->id; ?>">
-        <div class="form-group">
-            <label class="form-label">نام تیم *</label>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-medium">نام تیم *</label>
             <input type="text" name="name" class="form-input" value="<?php echo htmlspecialchars($team->name); ?>" required>
         </div>
-        <div class="form-group">
-            <label class="form-label">توضیحات</label>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-medium">توضیحات</label>
             <textarea name="description" class="form-textarea" rows="3"><?php echo htmlspecialchars($team->description ?? ''); ?></textarea>
         </div>
-        <div class="form-group">
-            <label class="form-label">رهبر تیم</label>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-medium">رهبر تیم</label>
             <select name="leader_id" class="form-select">
                 <option value="">انتخاب کنید...</option>
                 <?php foreach ($users as $u): ?>
@@ -23,8 +23,8 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group">
-            <label class="form-label">اعضای تیم</label>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-medium">اعضای تیم</label>
             <select name="members[]" class="form-select" multiple size="6">
                 <?php foreach ($users as $u): ?>
                 <option value="<?php echo $u->id; ?>" <?php echo in_array($u->id, $memberIds) ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
@@ -32,8 +32,8 @@
             </select>
         </div>
         <div class="d-flex gap-8">
-            <button type="submit" class="btn btn-primary">💾 بروزرسانی</button>
-            <a href="<?php echo $config['url']; ?>/teams" class="btn btn-secondary">انصراف</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> بروزرسانی</button>
+            <a href="<?php echo $config['url']; ?>/teams" class="btn btn-outline-secondary">انصراف</a>
         </div>
     </form>
 </div>

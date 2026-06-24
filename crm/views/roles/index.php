@@ -1,7 +1,7 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>🛡️ مدیریت نقش‌ها و دسترسی‌ها</h5>
-    <a href="<?php echo $config['url']; ?>/roles/create" class="btn btn-primary">➕ نقش جدید</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0">🛡️ مدیریت نقش‌ها و دسترسی‌ها</h5>
+    <a href="<?php echo $config['url']; ?>/roles/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> نقش جدید</a>
 </div>
 
 <!-- Roles Cards -->
@@ -48,7 +48,7 @@
             <!-- Permission Summary -->
             <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
                 <span style="background:var(--gray-100);padding:4px 10px;border-radius:16px;font-size:11px;">
-                    🔑 <?php echo $permCount; ?> دسترسی
+                    <i class="bi bi-key me-1"></i> <?php echo $permCount; ?> دسترسی
                 </span>
                 <?php if ($allCount > 0): ?>
                 <span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:16px;font-size:11px;">
@@ -57,7 +57,7 @@
                 <?php endif; ?>
                 <?php if ($ownCount > 0): ?>
                 <span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:16px;font-size:11px;">
-                    👤 <?php echo $ownCount; ?> فقط خودش
+                    <i class="bi bi-person me-1"></i> <?php echo $ownCount; ?> فقط خودش
                 </span>
                 <?php endif; ?>
             </div>
@@ -70,7 +70,7 @@
                     $module = explode('.', $p->permission)[0];
                     $modules[$module] = true;
                 }
-                $moduleLabels = ['dashboard'=>'📊','deals'=>'💼','contacts'=>'👥','pipelines'=>'📋','payments'=>'💳','sms'=>'📱','reports'=>'📈','users'=>'👤','roles'=>'🛡️','settings'=>'⚙️','database'=>'🗄️','activitylog'=>'📝'];
+                $moduleLabels = ['dashboard'=>'<i class="bi bi-bar-chart me-1"></i>','deals'=>'💼','contacts'=>'<i class="bi bi-people me-1"></i>','pipelines'=>'<i class="bi bi-list-task me-1"></i>','payments'=>'<i class="bi bi-credit-card me-1"></i>','sms'=>'📱','reports'=>'📈','users'=>'<i class="bi bi-person me-1"></i>','roles'=>'🛡️','settings'=>'<i class="bi bi-gear me-1"></i>','database'=>'🗄️','activitylog'=>'<i class="bi bi-journal-text me-1"></i>'];
                 foreach ($modules as $mod => $v):
                 ?>
                 <span style="background:var(--gray-50);padding:3px 8px;border-radius:8px;font-size:13px;" title="<?php echo htmlspecialchars($mod); ?>">
@@ -81,10 +81,10 @@
             
             <!-- Actions -->
             <div style="display:flex;gap:6px;">
-                <a href="<?php echo $config['url']; ?>/roles/edit/<?php echo $role->id; ?>" class="btn btn-sm btn-secondary" style="flex:1;text-align:center;">✏️ ویرایش دسترسی‌ها</a>
+                <a href="<?php echo $config['url']; ?>/roles/edit/<?php echo $role->id; ?>" class="btn btn-sm btn-outline-secondary" style="flex:1;text-align:center;"><i class="bi bi-pencil me-1"></i>ویرایش دسترسی‌ها</a>
                 <?php if (!$role->is_system): ?>
                 <form method="POST" action="<?php echo $config['url']; ?>/roles/delete/<?php echo $role->id; ?>" style="display:inline;" onsubmit="return confirm('آیا از حذف این نقش اطمینان دارید؟')">
-                    <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash me-1"></i></button>
                 </form>
                 <?php endif; ?>
             </div>

@@ -1,29 +1,29 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>👤 مدیریت کاربران</h5>
-    <a href="<?php echo $config['url']; ?>/users/create" class="btn btn-primary">➕ کاربر جدید</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-person me-1"></i> مدیریت کاربران</h5>
+    <a href="<?php echo $config['url']; ?>/users/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> کاربر جدید</a>
 </div>
 
 <!-- Stats -->
 <div class="stats-row" style="margin-bottom:16px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2);">
         <div class="stat-value"><?php echo count($users); ?></div>
-        <div class="stat-label">👥 کل کاربران</div>
+        <div class="stat-label"><i class="bi bi-people me-1"></i> کل کاربران</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
         <?php $active = count(array_filter($users, fn($u) => $u->is_active)); ?>
         <div class="stat-value"><?php echo $active; ?></div>
-        <div class="stat-label">✅ فعال</div>
+        <div class="stat-label"><i class="bi bi-check-circle text-success me-1"></i> فعال</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
         <?php $inactive = count(array_filter($users, fn($u) => !$u->is_active)); ?>
         <div class="stat-value"><?php echo $inactive; ?></div>
-        <div class="stat-label">❌ غیرفعال</div>
+        <div class="stat-label"><i class="bi bi-x-circle text-danger me-1"></i> غیرفعال</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
         <?php $admins = count(array_filter($users, fn($u) => $u->role_slug === 'super_admin' || $u->role_slug === 'admin')); ?>
         <div class="stat-value"><?php echo $admins; ?></div>
-        <div class="stat-label">🔑 مدیران</div>
+        <div class="stat-label"><i class="bi bi-key me-1"></i> مدیران</div>
     </div>
 </div>
 
@@ -31,9 +31,9 @@
 <?php if (empty($users)): ?>
 <div class="card">
     <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
-        <div style="font-size:64px;margin-bottom:16px;">👤</div>
+        <div style="font-size:64px;margin-bottom:16px;"><i class="bi bi-person me-1"></i></div>
         <h3 style="color:var(--gray-500);margin-bottom:8px;">کاربری یافت نشد</h3>
-        <a href="<?php echo $config['url']; ?>/users/create" class="btn btn-primary">➕ ایجاد کاربر</a>
+        <a href="<?php echo $config['url']; ?>/users/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>ایجاد کاربر</a>
     </div>
 </div>
 <?php else: ?>
@@ -42,14 +42,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>کاربر</th>
-                    <th>نقش</th>
-                    <th>معاملات</th>
-                    <th>مخاطبین</th>
-                    <th>پیامک</th>
-                    <th>وضعیت</th>
-                    <th>آخرین ورود</th>
-                    <th>عملیات</th>
+                    <th class="text-nowrap">کاربر</th>
+                    <th class="text-nowrap">نقش</th>
+                    <th class="text-nowrap">معاملات</th>
+                    <th class="text-nowrap">مخاطبین</th>
+                    <th class="text-nowrap">پیامک</th>
+                    <th class="text-nowrap">وضعیت</th>
+                    <th class="text-nowrap">آخرین ورود</th>
+                    <th class="text-nowrap">عملیات</th>
                 </tr>
             </thead>
             <tbody>
@@ -71,7 +71,7 @@
                     </td>
                     <td data-label="نقش">
                         <span style="background:<?php echo $u->role_slug === 'super_admin' ? '#fee2e2' : ($u->role_slug === 'admin' ? '#fef3c7' : ($u->role_slug === 'operator' ? '#dbeafe' : '#d1fae5')); ?>;color:<?php echo $u->role_slug === 'super_admin' ? '#991b1b' : ($u->role_slug === 'admin' ? '#92400e' : ($u->role_slug === 'operator' ? '#1e40af' : '#065f46')); ?>;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">
-                            <?php echo $u->role_slug === 'super_admin' ? '👑' : ($u->role_slug === 'admin' ? '🔑' : ($u->role_slug === 'operator' ? '👨‍💼' : '👤')); ?>
+                            <?php echo $u->role_slug === 'super_admin' ? '👑' : ($u->role_slug === 'admin' ? '<i class="bi bi-key me-1"></i>' : ($u->role_slug === 'operator' ? '👨‍💼' : '<i class="bi bi-person me-1"></i>')); ?>
                             <?php echo htmlspecialchars($u->role_name); ?>
                         </span>
                     </td>
@@ -89,9 +89,9 @@
                     </td>
                     <td data-label="وضعیت">
                         <?php if ($u->is_active): ?>
-                        <span style="background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">✅ فعال</span>
+                        <span style="background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;"><i class="bi bi-check-circle text-success me-1"></i> فعال</span>
                         <?php else: ?>
-                        <span style="background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">❌ غیرفعال</span>
+                        <span style="background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;"><i class="bi bi-x-circle text-danger me-1"></i> غیرفعال</span>
                         <?php endif; ?>
                     </td>
                     <td data-label="آخرین ورود" style="white-space:nowrap;">
@@ -103,10 +103,10 @@
                     </td>
                     <td data-label="عملیات">
                         <div style="display:flex;gap:4px;">
-                            <a href="<?php echo $config['url']; ?>/users/edit/<?php echo $u->id; ?>" class="btn btn-sm btn-secondary" title="ویرایش">✏️</a>
+                            <a href="<?php echo $config['url']; ?>/users/edit/<?php echo $u->id; ?>" class="btn btn-sm btn-outline-secondary" title="ویرایش"><i class="bi bi-pencil me-1"></i></a>
                             <?php if ($u->id !== \Core\Auth::id()): ?>
                             <form method="POST" action="<?php echo $config['url']; ?>/users/delete/<?php echo $u->id; ?>" style="display:inline;" onsubmit="return confirm('آیا از حذف کاربر «<?php echo htmlspecialchars($u->full_name, ENT_QUOTES); ?>» اطمینان دارید؟')">
-                                <button type="submit" class="btn btn-sm btn-danger" title="حذف">🗑️</button>
+                                <button type="submit" class="btn btn-sm btn-danger" title="حذف"><i class="bi bi-trash me-1"></i></button>
                             </form>
                             <?php endif; ?>
                         </div>

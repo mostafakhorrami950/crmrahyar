@@ -1,37 +1,37 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>📊 گزارشات و تحلیل‌ها</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart me-1"></i> گزارشات و تحلیل‌ها</h5>
     <div style="display:flex;gap:8px;">
-        <a href="<?php echo $config['url']; ?>/reports/sales" class="btn btn-secondary btn-sm">💰 فروش</a>
-        <a href="<?php echo $config['url']; ?>/reports/pipeline" class="btn btn-secondary btn-sm">🔄 پایپ لاین</a>
-        <a href="<?php echo $config['url']; ?>/reports/contacts" class="btn btn-secondary btn-sm">👥 مخاطبان</a>
-        <a href="<?php echo $config['url']; ?>/activities" class="btn btn-secondary btn-sm">📅 فعالیت‌ها</a>
+        <a href="<?php echo $config['url']; ?>/reports/sales" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cash me-1"></i> فروش</a>
+        <a href="<?php echo $config['url']; ?>/reports/pipeline" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-repeat me-1"></i> پایپ لاین</a>
+        <a href="<?php echo $config['url']; ?>/reports/contacts" class="btn btn-outline-secondary btn-sm"><i class="bi bi-people me-1"></i> مخاطبان</a>
+        <a href="<?php echo $config['url']; ?>/activities" class="btn btn-outline-secondary btn-sm"><i class="bi bi-calendar me-1"></i> فعالیت‌ها</a>
     </div>
 </div>
 
 <!-- KPI Cards -->
 <div class="stats-row" style="margin-bottom:20px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#667eea,#764ba2);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2);">
         <div class="stat-value"><?php echo number_format($totalDeals->count ?? 0); ?></div>
         <div class="stat-label">💼 کل معاملات</div>
         <div style="font-size:12px;opacity:0.8;margin-top:4px;"><?php echo number_format($totalDeals->total ?? 0); ?> تومان</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
         <div class="stat-value"><?php echo number_format($wonDeals->count ?? 0); ?></div>
-        <div class="stat-label">✅ موفق</div>
+        <div class="stat-label"><i class="bi bi-check-circle text-success me-1"></i> موفق</div>
         <div style="font-size:12px;opacity:0.8;margin-top:4px;"><?php echo number_format($wonDeals->total ?? 0); ?> تومان</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
         <div class="stat-value"><?php echo number_format($lostDeals->count ?? 0); ?></div>
-        <div class="stat-label">❌ ناموفق</div>
+        <div class="stat-label"><i class="bi bi-x-circle text-danger me-1"></i> ناموفق</div>
         <div style="font-size:12px;opacity:0.8;margin-top:4px;"><?php echo number_format($lostDeals->total ?? 0); ?> تومان</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
         <div class="stat-value"><?php echo number_format($openDeals->count ?? 0); ?></div>
-        <div class="stat-label">⏳ در حال بررسی</div>
+        <div class="stat-label"><i class="bi bi-clock text-warning me-1"></i> در حال بررسی</div>
         <div style="font-size:12px;opacity:0.8;margin-top:4px;"><?php echo number_format($openDeals->total ?? 0); ?> تومان</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);">
         <div class="stat-value"><?php echo $conversionRate; ?>%</div>
         <div class="stat-label">📈 نرخ تبدیل</div>
     </div>
@@ -39,20 +39,20 @@
 
 <!-- Second row KPIs -->
 <div class="stats-row" style="margin-bottom:20px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);">
         <div class="stat-value"><?php echo number_format($todayDeals->count ?? 0); ?></div>
-        <div class="stat-label">📌 معاملات امروز</div>
+        <div class="stat-label"><i class="bi bi-pin me-1"></i> معاملات امروز</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#EC4899,#BE185D);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EC4899,#BE185D);">
         <div class="stat-value"><?php echo number_format($contactStats->total ?? 0); ?></div>
-        <div class="stat-label">👥 مخاطبین</div>
+        <div class="stat-label"><i class="bi bi-people me-1"></i> مخاطبین</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#14B8A6,#0D9488);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#14B8A6,#0D9488);">
         <div class="stat-value"><?php echo number_format($paymentStats->successful ?? 0); ?></div>
-        <div class="stat-label">💳 پرداخت موفق</div>
+        <div class="stat-label"><i class="bi bi-credit-card me-1"></i> پرداخت موفق</div>
         <div style="font-size:12px;opacity:0.8;margin-top:4px;"><?php echo number_format($paymentStats->total_paid ?? 0); ?> تومان</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#06B6D4,#0891B2);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#06B6D4,#0891B2);">
         <div class="stat-value"><?php echo number_format($smsStats->sent ?? 0); ?>/<?php echo number_format($smsStats->total ?? 0); ?></div>
         <div class="stat-label">📱 پیامک موفق</div>
     </div>
@@ -64,7 +64,7 @@
     <!-- Monthly Sales -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">📈 فروش ماهانه</h5>
+            <h5 class="fw-bold mb-0">📈 فروش ماهانه</h5>
         </div>
         <?php if (empty($monthlySales)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -93,7 +93,7 @@
     <!-- Pipeline Sales -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">🔄 فروش بر اساس پایپ لاین</h5>
+            <h5 class="fw-bold mb-0"><i class="bi bi-arrow-repeat me-1"></i> فروش بر اساس پایپ لاین</h5>
         </div>
         <?php if (empty($salesByPipeline)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -124,7 +124,7 @@
     <!-- Top Users -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">🏆 کاربران برتر فروش</h5>
+            <h5 class="fw-bold mb-0">🏆 کاربران برتر فروش</h5>
         </div>
         <?php if (empty($topUsers)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -135,7 +135,7 @@
             foreach ($topUsers as $idx => $u): 
             ?>
             <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--gray-100);">
-                <span style="font-size:20px;"><?php echo $medals[$idx] ?? '👤'; ?></span>
+                <span style="font-size:20px;"><?php echo $medals[$idx] ?? '<i class="bi bi-person me-1"></i>'; ?></span>
                 <div style="flex:1;">
                     <strong style="font-size:13px;"><?php echo htmlspecialchars($u->full_name); ?></strong>
                     <div style="font-size:11px;color:var(--gray-400);"><?php echo $u->deals_count; ?> معامله</div>
@@ -150,7 +150,7 @@
     <!-- Deal Sources -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">🎯 منابع جذب معاملات</h5>
+            <h5 class="fw-bold mb-0"><i class="bi bi-crosshair me-1"></i> منابع جذب معاملات</h5>
         </div>
         <?php if (empty($dealSources)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -179,7 +179,7 @@
     <!-- Contact Categories -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">📂 دسته‌بندی مخاطبین</h5>
+            <h5 class="fw-bold mb-0">📂 دسته‌بندی مخاطبین</h5>
         </div>
         <?php if (empty($contactCategories)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -203,7 +203,7 @@
     <!-- Lost Reasons -->
     <div class="card" style="padding:0;border-radius:16px;overflow:hidden;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--gray-200);">
-            <h5 style="margin:0;font-size:15px;font-weight:700;">❌ دلایل عدم موفقیت</h5>
+            <h5 class="fw-bold mb-0"><i class="bi bi-x-circle text-danger me-1"></i> دلایل عدم موفقیت</h5>
         </div>
         <?php if (empty($lostReasons)): ?>
         <div style="text-align:center;padding:30px;color:var(--gray-400);">داده‌ای موجود نیست</div>
@@ -211,7 +211,7 @@
         <div style="max-height:300px;overflow-y:auto;">
             <?php foreach ($lostReasons as $l): ?>
             <div style="display:flex;align-items:center;gap:10px;padding:8px 20px;border-bottom:1px solid var(--gray-100);">
-                <span style="font-size:16px;">❌</span>
+                <span style="font-size:16px;"><i class="bi bi-x-circle text-danger me-1"></i></span>
                 <div style="flex:1;">
                     <span style="font-size:13px;"><?php echo htmlspecialchars($l->lost_reason); ?></span>
                 </div>

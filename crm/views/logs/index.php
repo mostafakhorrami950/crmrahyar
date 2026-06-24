@@ -1,6 +1,6 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>📝 لاگ سیستم</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-journal-text me-1"></i> لاگ سیستم</h5>
 </div>
 
 <div class="card" style="margin-bottom:16px;">

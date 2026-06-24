@@ -1,14 +1,14 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>🔍 نتایج جستجو: «<?php echo htmlspecialchars($query); ?>»</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-search me-1"></i> نتایج جستجو: «<?php echo htmlspecialchars($query); ?>»</h5>
 </div>
 
 <?php $totalResults = count($results['deals']) + count($results['contacts']) + count($results['activities']) + count($results['payments']); ?>
 
 <?php if ($totalResults === 0): ?>
 <div class="empty-state">
-    <div class="empty-icon">🔍</div>
-    <h5>نتیجه‌ای یافت نشد</h5>
+    <div class="empty-icon"><i class="bi bi-search me-1"></i></div>
+    <h5 class="fw-bold mb-0">نتیجه‌ای یافت نشد</h5>
     <p>برای «<?php echo htmlspecialchars($query); ?>» نتیجه‌ای پیدا نشد.</p>
 </div>
 <?php else: ?>
@@ -16,8 +16,8 @@
 <?php if (!empty($results['deals'])): ?>
 <div class="card">
     <div class="card-header">💼 معاملات (<?php echo count($results['deals']); ?>)</div>
-    <div class="table-wrapper"><table>
-        <thead><tr><th>عنوان</th><th>مبلغ</th><th>مرحله</th><th>مخاطب</th><th>وضعیت</th></tr></thead>
+    <div class="table-responsive"><table>
+        <thead><tr><th class="text-nowrap">عنوان</th><th class="text-nowrap">مبلغ</th><th class="text-nowrap">مرحله</th><th class="text-nowrap">مخاطب</th><th class="text-nowrap">وضعیت</th></tr></thead>
         <tbody>
         <?php foreach ($results['deals'] as $d): ?>
         <tr>
@@ -35,9 +35,9 @@
 
 <?php if (!empty($results['contacts'])): ?>
 <div class="card">
-    <div class="card-header">👤 مخاطبان (<?php echo count($results['contacts']); ?>)</div>
-    <div class="table-wrapper"><table>
-        <thead><tr><th>نام</th><th>تلفن</th><th>ایمیل</th><th>شرکت</th></tr></thead>
+    <div class="card-header"><i class="bi bi-person me-1"></i> مخاطبان (<?php echo count($results['contacts']); ?>)</div>
+    <div class="table-responsive"><table>
+        <thead><tr><th class="text-nowrap">نام</th><th class="text-nowrap">تلفن</th><th class="text-nowrap">ایمیل</th><th class="text-nowrap">شرکت</th></tr></thead>
         <tbody>
         <?php foreach ($results['contacts'] as $c): ?>
         <tr>
@@ -54,9 +54,9 @@
 
 <?php if (!empty($results['activities'])): ?>
 <div class="card">
-    <div class="card-header">📅 فعالیت‌ها (<?php echo count($results['activities']); ?>)</div>
-    <div class="table-wrapper"><table>
-        <thead><tr><th>موضوع</th><th>نوع</th><th>تاریخ</th><th>معامله</th></tr></thead>
+    <div class="card-header"><i class="bi bi-calendar me-1"></i> فعالیت‌ها (<?php echo count($results['activities']); ?>)</div>
+    <div class="table-responsive"><table>
+        <thead><tr><th class="text-nowrap">موضوع</th><th class="text-nowrap">نوع</th><th class="text-nowrap">تاریخ</th><th class="text-nowrap">معامله</th></tr></thead>
         <tbody>
         <?php foreach ($results['activities'] as $a): ?>
         <tr>
@@ -73,9 +73,9 @@
 
 <?php if (!empty($results['payments'])): ?>
 <div class="card">
-    <div class="card-header">💳 پرداخت‌ها (<?php echo count($results['payments']); ?>)</div>
-    <div class="table-wrapper"><table>
-        <thead><tr><th>معامله</th><th>مبلغ</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
+    <div class="card-header"><i class="bi bi-credit-card me-1"></i> پرداخت‌ها (<?php echo count($results['payments']); ?>)</div>
+    <div class="table-responsive"><table>
+        <thead><tr><th class="text-nowrap">معامله</th><th class="text-nowrap">مبلغ</th><th class="text-nowrap">وضعیت</th><th class="text-nowrap">تاریخ</th></tr></thead>
         <tbody>
         <?php foreach ($results['payments'] as $p): ?>
         <tr>

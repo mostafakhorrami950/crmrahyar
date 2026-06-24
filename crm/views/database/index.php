@@ -1,5 +1,5 @@
-<div class="page-header">
-    <h5>🔧 تعمیر دیتابیس</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0">🔧 تعمیر دیتابیس</h5>
 </div>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;">
@@ -26,11 +26,11 @@
 </div>
 
 <div class="card">
-    <h6 style="font-weight:bold;margin-bottom:15px;">📋 گزارش تعمیرات قبلی</h6>
+    <h6 style="font-weight:bold;margin-bottom:15px;"><i class="bi bi-list-task me-1"></i> گزارش تعمیرات قبلی</h6>
     <div class="table-responsive">
         <table class="table">
             <thead>
-                <tr><th>جدول</th><th>عملیات</th><th>توضیحات</th><th>وضعیت</th><th>تاریخ</th></tr>
+                <tr><th class="text-nowrap">جدول</th><th class="text-nowrap">عملیات</th><th class="text-nowrap">توضیحات</th><th class="text-nowrap">وضعیت</th><th class="text-nowrap">تاریخ</th></tr>
             </thead>
             <tbody>
                 <?php if (empty($repairLog)): ?>
@@ -55,7 +55,7 @@
 function runRepair() {
     var btn = event.target;
     btn.disabled = true;
-    btn.innerHTML = '⏳ در حال تعمیر...';
+    btn.innerHTML = '<i class="bi bi-clock text-warning me-1"></i> در حال تعمیر...';
     document.getElementById('repairResult').style.display = 'block';
     document.getElementById('repairResult').innerHTML = '<div class="alert alert-info">در حال اجرا...</div>';
     

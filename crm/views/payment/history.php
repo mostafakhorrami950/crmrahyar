@@ -1,27 +1,27 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>💰 تاریخچه پرداخت‌ها</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-cash me-1"></i> تاریخچه پرداخت‌ها</h5>
     <div class="d-flex gap-8">
         <div class="input-group" style="max-width:250px;">
-            <input type="text" class="form-search" id="paymentSearch" placeholder="🔍 جستجوی پرداخت..." oninput="filterPayments(this.value)">
+            <input type="text" class="form-search" id="paymentSearch" placeholder="<i class="bi bi-search me-1"></i>جستجوی پرداخت..." oninput="filterPayments(this.value)">
         </div>
     </div>
 </div>
 
 <div class="stats-row" style="margin-bottom:20px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
         <div class="stat-value" style="font-size:22px;"><?php echo number_format(array_sum(array_map(function($p){ return ($p->status=='success')?$p->amount:0; }, $payments ?? []))); ?></div>
         <div class="stat-label">مجموع پرداخت‌های موفق (تومان)</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
         <div class="stat-value" style="font-size:22px;"><?php echo count(array_filter($payments ?? [], function($p){ return $p->status=='success'; })); ?></div>
         <div class="stat-label">تعداد پرداخت‌های موفق</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
         <div class="stat-value" style="font-size:22px;"><?php echo count(array_filter($payments ?? [], function($p){ return $p->status=='pending'; })); ?></div>
         <div class="stat-label">در انتظار پرداخت</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
         <div class="stat-value" style="font-size:22px;"><?php echo count(array_filter($payments ?? [], function($p){ return $p->status=='failed'; })); ?></div>
         <div class="stat-label">پرداخت‌های ناموفق</div>
     </div>
@@ -33,21 +33,21 @@
             <thead>
                 <tr>
                     <th style="width:50px;">#</th>
-                    <th>معامله</th>
-                    <th>مشتری</th>
-                    <th>مبلغ</th>
-                    <th>کد پیگیری</th>
-                    <th>شماره مرجع</th>
-                    <th>وضعیت</th>
-                    <th>لینک پرداخت</th>
-                    <th>تاریخ</th>
+                    <th class="text-nowrap">معامله</th>
+                    <th class="text-nowrap">مشتری</th>
+                    <th class="text-nowrap">مبلغ</th>
+                    <th class="text-nowrap">کد پیگیری</th>
+                    <th class="text-nowrap">شماره مرجع</th>
+                    <th class="text-nowrap">وضعیت</th>
+                    <th class="text-nowrap">لینک پرداخت</th>
+                    <th class="text-nowrap">تاریخ</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($payments)): ?>
                 <tr>
                     <td colspan="9" class="text-center py-5">
-                        <div style="font-size:48px;margin-bottom:10px;">💳</div>
+                        <div style="font-size:48px;margin-bottom:10px;"><i class="bi bi-credit-card me-1"></i></div>
                         <p style="color:var(--gray-500);">هیچ پرداختی ثبت نشده است.</p>
                         <a href="<?php echo $config['url']; ?>/deals" class="btn btn-primary btn-sm mt-2">مشاهده معاملات</a>
                     </td>
@@ -91,23 +91,23 @@
                     </td>
                     <td data-label="وضعیت">
                         <?php if ($p->status == 'success'): ?>
-                        <span class="badge bg-success">✅ موفق</span>
+                        <span class="badge bg-success"><i class="bi bi-check-circle text-success me-1"></i> موفق</span>
                         <?php elseif ($p->status == 'pending'): ?>
-                        <span class="badge bg-warning">⏳ در انتظار</span>
+                        <span class="badge bg-warning"><i class="bi bi-clock text-warning me-1"></i> در انتظار</span>
                         <?php else: ?>
-                        <span class="badge bg-danger">❌ ناموفق</span>
+                        <span class="badge bg-danger"><i class="bi bi-x-circle text-danger me-1"></i> ناموفق</span>
                         <?php endif; ?>
                     </td>
                     <td data-label="لینک">
                         <?php if (!empty($p->short_code) && $p->status == 'pending'): ?>
                         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                             <input type="text" class="pay-link-input" value="<?php echo $config['url']; ?>/p/<?php echo htmlspecialchars($p->short_code); ?>" readonly onclick="this.select();" style="width:160px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;font-family:monospace;direction:ltr;text-align:left;background:#f9fafb;">
-                            <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت">📋 کپی</button>
+                            <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت"><i class="bi bi-list-task me-1"></i> کپی</button>
                         </div>
                         <?php elseif (!empty($p->public_token) && $p->status == 'pending'): ?>
                         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                             <input type="text" class="pay-link-input" value="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($p->public_token); ?>" readonly onclick="this.select();" style="width:160px;padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:11px;font-family:monospace;direction:ltr;text-align:left;background:#f9fafb;">
-                            <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت">📋 کپی</button>
+                            <button type="button" class="btn btn-sm btn-success" onclick="copyPayLink(this)" style="padding:4px 10px;font-size:12px;white-space:nowrap;" title="کپی لینک پرداخت"><i class="bi bi-list-task me-1"></i> کپی</button>
                         </div>
                         <?php elseif ($p->status == 'success'): ?>
                         <span style="color:var(--gray-400);font-size:11px;">پرداخت شده</span>
@@ -196,7 +196,7 @@ function copyPayLink(btn) {
     input.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(input.value).then(function() {
         var original = btn.innerHTML;
-        btn.innerHTML = '✅ کپی شد';
+        btn.innerHTML = '<i class="bi bi-check-circle text-success me-1"></i> کپی شد';
         btn.classList.remove('btn-success');
         btn.classList.add('btn-primary');
         setTimeout(function() {

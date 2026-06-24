@@ -1,15 +1,15 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>🔔 اعلان‌ها</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-bell me-1"></i> اعلان‌ها</h5>
     <form method="POST" action="<?php echo $config['url']; ?>/notifications/mark-all-read" style="display:inline;">
-        <button type="submit" class="btn btn-sm btn-secondary">✅ خواندن همه</button>
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-check-circle text-success me-1"></i> خواندن همه</button>
     </form>
 </div>
 
 <?php if (empty($notifications)): ?>
 <div class="empty-state">
-    <div class="empty-icon">🔔</div>
-    <h5>اعلانی ندارید</h5>
+    <div class="empty-icon"><i class="bi bi-bell me-1"></i></div>
+    <h5 class="fw-bold mb-0">اعلانی ندارید</h5>
 </div>
 <?php else: ?>
 <div class="card">

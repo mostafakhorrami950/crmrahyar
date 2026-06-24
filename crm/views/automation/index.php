@@ -1,23 +1,23 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>🤖 اتوماسیون</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0">🤖 اتوماسیون</h5>
     <div class="d-flex gap-8">
-        <a href="<?php echo $config['url']; ?>/automation/logs" class="btn btn-sm btn-secondary">📝 لاگ اتوماسیون</a>
-        <a href="<?php echo $config['url']; ?>/automation/create" class="btn btn-primary">➕ قانون جدید</a>
+        <a href="<?php echo $config['url']; ?>/automation/logs" class="btn btn-sm btn-outline-secondary"><i class="bi bi-journal-text me-1"></i> لاگ اتوماسیون</a>
+        <a href="<?php echo $config['url']; ?>/automation/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> قانون جدید</a>
     </div>
 </div>
 
 <?php if (empty($rules)): ?>
 <div class="empty-state">
     <div class="empty-icon">🤖</div>
-    <h5>هنوز قانون اتوماسیونی تعریف نشده</h5>
+    <h5 class="fw-bold mb-0">هنوز قانون اتوماسیونی تعریف نشده</h5>
     <p>با اتوماسیون، کارهای تکراری را خودکار کنید</p>
-    <a href="<?php echo $config['url']; ?>/automation/create" class="btn btn-primary">➕ ایجاد قانون</a>
+    <a href="<?php echo $config['url']; ?>/automation/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>ایجاد قانون</a>
 </div>
 <?php else: ?>
 <div class="card">
-    <div class="table-wrapper"><table>
-        <thead><tr><th>نام</th><th>ماشه</th><th>اقدام</th><th>اجراها</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+    <div class="table-responsive"><table>
+        <thead><tr><th class="text-nowrap">نام</th><th class="text-nowrap">ماشه</th><th class="text-nowrap">اقدام</th><th class="text-nowrap">اجراها</th><th class="text-nowrap">وضعیت</th><th class="text-nowrap">عملیات</th></tr></thead>
         <tbody>
         <?php
             $triggerTypes = \Controllers\AutomationController::getTriggerTypes();
@@ -48,9 +48,9 @@
             </td>
             <td>
                 <div class="d-flex gap-4">
-                    <a href="<?php echo $config['url']; ?>/automation/edit/<?php echo $r->id; ?>" class="btn btn-sm btn-secondary">✏️</a>
+                    <a href="<?php echo $config['url']; ?>/automation/edit/<?php echo $r->id; ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil me-1"></i></a>
                     <form method="POST" action="<?php echo $config['url']; ?>/automation/delete/<?php echo $r->id; ?>" style="display:inline;" onsubmit="return confirm('حذف شود؟')">
-                        <button class="btn btn-sm btn-danger">🗑️</button>
+                        <button class="btn btn-sm btn-danger"><i class="bi bi-trash me-1"></i></button>
                     </form>
                 </div>
             </td>

@@ -1,19 +1,19 @@
-<div class="page-header">
-    <h5>📋 فیلدهای اختصاصی</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-list-task me-1"></i> فیلدهای اختصاصی</h5>
 </div>
 
 <div class="card" style="margin-bottom:16px;">
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
         <div style="flex:1;min-width:180px;">
-            <label class="form-label">نوع موجودیت</label>
+            <label class="form-label text-muted small fw-medium">نوع موجودیت</label>
             <select class="form-select" onchange="location.href='?entity='+this.value">
                 <option value="deals" <?php echo $entityType === 'deals' ? 'selected' : ''; ?>>معاملات</option>
                 <option value="contacts" <?php echo $entityType === 'contacts' ? 'selected' : ''; ?>>اشخاص</option>
             </select>
         </div>
         <div style="flex:2;min-width:200px;">
-            <label class="form-label">&nbsp;</label>
-            <button type="button" class="btn btn-primary" style="width:100%;" onclick="showAddFieldModal()">➕ افزودن فیلد جدید</button>
+            <label class="form-label text-muted small fw-medium">&nbsp;</label>
+            <button type="button" class="btn btn-primary" style="width:100%;" onclick="showAddFieldModal()"><i class="bi bi-plus-circle me-1"></i> افزودن فیلد جدید</button>
         </div>
     </div>
 </div>
@@ -23,11 +23,11 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>عنوان فیلد</th>
-                    <th>نوع</th>
-                    <th>اجباری</th>
-                    <th>فعال</th>
-                    <th>عملیات</th>
+                    <th class="text-nowrap">عنوان فیلد</th>
+                    <th class="text-nowrap">نوع</th>
+                    <th class="text-nowrap">اجباری</th>
+                    <th class="text-nowrap">فعال</th>
+                    <th class="text-nowrap">عملیات</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,12 +38,12 @@
                 <tr>
                     <td data-label="عنوان"><?php echo htmlspecialchars($f->field_label); ?></td>
                     <td data-label="نوع"><?php echo $f->field_type; ?></td>
-                    <td data-label="اجباری"><?php echo $f->is_required ? '✅' : '❌'; ?></td>
-                    <td data-label="فعال"><?php echo $f->is_active ? '✅' : '❌'; ?></td>
+                    <td data-label="اجباری"><?php echo $f->is_required ? '<i class="bi bi-check-circle text-success me-1"></i>' : '<i class="bi bi-x-circle text-danger me-1"></i>'; ?></td>
+                    <td data-label="فعال"><?php echo $f->is_active ? '<i class="bi bi-check-circle text-success me-1"></i>' : '<i class="bi bi-x-circle text-danger me-1"></i>'; ?></td>
                     <td data-label="عملیات">
                         <div style="display:flex;gap:4px;">
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="editField(<?php echo $f->id; ?>, '<?php echo htmlspecialchars($f->field_label, ENT_QUOTES); ?>', '<?php echo $f->field_type; ?>', '<?php echo htmlspecialchars($f->field_options ?? '', ENT_QUOTES); ?>', <?php echo $f->is_required; ?>, <?php echo $f->is_active; ?>)">✏️</button>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteField(<?php echo $f->id; ?>)">🗑️</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editField(<?php echo $f->id; ?>, '<?php echo htmlspecialchars($f->field_label, ENT_QUOTES); ?>', '<?php echo $f->field_type; ?>', '<?php echo htmlspecialchars($f->field_options ?? '', ENT_QUOTES); ?>', <?php echo $f->is_required; ?>, <?php echo $f->is_active; ?>)"><i class="bi bi-pencil me-1"></i></button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteField(<?php echo $f->id; ?>)"><i class="bi bi-trash me-1"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -58,17 +58,17 @@
 <div class="modal-overlay" id="fieldModal">
     <div class="modal-box">
         <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle">فیلد جدید</h5>
+            <h5 class="fw-bold mb-0">فیلد جدید</h5>
             <button type="button" class="modal-close" onclick="closeModal('fieldModal')">&times;</button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="editFieldId" value="">
             <div class="mb-3">
-                <label class="form-label">عنوان فیلد *</label>
+                <label class="form-label text-muted small fw-medium">عنوان فیلد *</label>
                 <input type="text" id="fieldLabel" class="form-control" placeholder="مثال: شماره پاسپورت">
             </div>
             <div class="mb-3">
-                <label class="form-label">نوع فیلد</label>
+                <label class="form-label text-muted small fw-medium">نوع فیلد</label>
                 <select id="fieldType" class="form-select">
                     <option value="text">متن</option>
                     <option value="number">عدد</option>
@@ -79,7 +79,7 @@
                 </select>
             </div>
             <div class="mb-3" id="optionsDiv" style="display:none;">
-                <label class="form-label">گزینه‌ها (هر خط یک گزینه)</label>
+                <label class="form-label text-muted small fw-medium">گزینه‌ها (هر خط یک گزینه)</label>
                 <textarea id="fieldOptions" class="form-textarea" rows="3" placeholder="گزینه 1&#10;گزینه 2&#10;گزینه 3"></textarea>
             </div>
             <div class="mb-3">
@@ -98,7 +98,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-primary" onclick="saveField()">ذخیره</button>
-            <button type="button" class="btn btn-secondary" onclick="closeModal('fieldModal')">انصراف</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="closeModal('fieldModal')">انصراف</button>
         </div>
     </div>
 </div>
@@ -109,7 +109,7 @@ document.getElementById('fieldType')?.addEventListener('change', function() {
 });
 
 function showAddFieldModal() {
-    document.getElementById('modalTitle').textContent = '➕ فیلد جدید';
+    document.getElementById('modalTitle').textContent = '<i class="bi bi-plus-circle me-1"></i> فیلد جدید';
     document.getElementById('editFieldId').value = '';
     document.getElementById('fieldLabel').value = '';
     document.getElementById('fieldType').value = 'text';
@@ -122,7 +122,7 @@ function showAddFieldModal() {
 }
 
 function editField(id, label, type, options, required, active) {
-    document.getElementById('modalTitle').textContent = '✏️ ویرایش فیلد';
+    document.getElementById('modalTitle').textContent = '<i class="bi bi-pencil me-1"></i>ویرایش فیلد';
     document.getElementById('editFieldId').value = id;
     document.getElementById('fieldLabel').value = label;
     document.getElementById('fieldType').value = type;

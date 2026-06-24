@@ -1,13 +1,13 @@
 <?php $config = $GLOBALS['app_config']; 
 $triggerTypes = $triggerTypes ?? [];
 $actionTypes = $actionTypes ?? [];
-$activityTypes = $activityTypes ?? ['follow_up'=>'📌 پیگیری','call'=>'📞 تماس','meeting'=>'🤝 جلسه','note'=>'📝 یادداشت','email'=>'📧 ایمیل','other'=>'📋 سایر'];
+$activityTypes = $activityTypes ?? ['follow_up'=>'<i class="bi bi-pin me-1"></i> پیگیری','call'=>'<i class="bi bi-telephone me-1"></i> تماس','meeting'=>'🤝 جلسه','note'=>'<i class="bi bi-journal-text me-1"></i> یادداشت','email'=>'📧 ایمیل','other'=>'<i class="bi bi-list-task me-1"></i> سایر'];
 $triggerTypesJson = json_encode($triggerTypes);
 $actionTypesJson = json_encode($actionTypes);
 ?>
-<div class="page-header">
-    <h5>➕ قانون اتوماسیون جدید</h5>
-    <a href="<?php echo $config['url']; ?>/automation" class="btn btn-secondary">بازگشت</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-1"></i> قانون اتوماسیون جدید</h5>
+    <a href="<?php echo $config['url']; ?>/automation" class="btn btn-outline-secondary">بازگشت</a>
 </div>
 
 <!-- راهنمای کلی -->
@@ -15,7 +15,7 @@ $actionTypesJson = json_encode($actionTypes);
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
         <span style="font-size:32px;">🤖</span>
         <div>
-            <h4 style="margin:0;">اتوماسیون چیست؟</h4>
+            <h5 class="fw-bold mb-0">اتوماسیون چیست؟</h4>
             <p style="margin:4px 0 0;color:var(--gray-600);font-size:13px;">با اتوماسیون می‌توانید کارهای تکراری را خودکار کنید. یک قانون اتوماسیون از دو بخش تشکیل شده: <strong>ماشه</strong> (رویدادی که قانون را فعال می‌کند) و <strong>اقدام</strong> (کاری که خودکار انجام می‌شود).</p>
         </div>
     </div>
@@ -50,15 +50,15 @@ $actionTypesJson = json_encode($actionTypes);
         
         <!-- بخش ۱: نام قانون -->
         <div style="margin-bottom:24px;">
-            <h6 style="margin-bottom:16px;display:flex;align-items:center;gap:8px;">📝 بخش ۰: اطلاعات قانون</h6>
+            <h6 style="margin-bottom:16px;display:flex;align-items:center;gap:8px;"><i class="bi bi-journal-text me-1"></i> بخش ۰: اطلاعات قانون</h6>
             <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">نام قانون *</label>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">نام قانون *</label>
                     <input type="text" name="name" class="form-input" required placeholder="مثال: ارسال لینک پرداخت به مشتری">
                     <p class="form-hint">نام واضح و قابل تشخیص انتخاب کنید تا بعداً بتوانید آن را پیدا کنید</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">توضیحات</label>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">توضیحات</label>
                     <input type="text" name="description" class="form-input" placeholder="مثال: پس از ایجاد لینک پرداخت، لینک کوتاه پیامک شود">
                     <p class="form-hint">توضیح کوتاه برای یادآوری عملکرد این قانون</p>
                 </div>
@@ -70,8 +70,8 @@ $actionTypesJson = json_encode($actionTypes);
             <h6 style="margin-bottom:8px;display:flex;align-items:center;gap:8px;">🔥 بخش ۱: ماشه (Trigger)</h6>
             <p style="font-size:12px;color:var(--gray-500);margin-bottom:16px;">ماشه رویدادی است که باعث فعال شدن این قانون می‌شود. ابتدا نوع ماشه را انتخاب کنید، سپس فیلترهای دلخواه را تعیین کنید.</p>
             
-            <div class="form-group">
-                <label class="form-label">رویداد ماشه *</label>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-medium">رویداد ماشه *</label>
                 <select name="trigger_type" class="form-select" required id="triggerType" onchange="onTriggerChange()">
                     <option value="">— انتخاب کنید —</option>
                     <?php 
@@ -107,14 +107,14 @@ $actionTypesJson = json_encode($actionTypes);
                 <div style="background:#fff;padding:12px;border-radius:8px;margin-bottom:12px;">
                     <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">🔽 <strong>فیلتر اختیاری:</strong> اگر خالی بگذارید، قانون برای همه پایپ‌لاین‌ها و مراحل اعمال می‌شود</p>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">پایپ‌لاین مشخص</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">پایپ‌لاین مشخص</label>
                             <select name="trigger_conditions[pipeline_id]" class="form-select" id="pipelineSelect" onchange="loadStages()">
                                 <option value="">همه پایپ‌لاین‌ها</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">مرحله مشخص</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">مرحله مشخص</label>
                             <select name="trigger_conditions[stage_id]" class="form-select" id="stageSelect">
                                 <option value="">همه مراحل</option>
                             </select>
@@ -127,8 +127,8 @@ $actionTypesJson = json_encode($actionTypes);
             <!-- شرط حداقل مبلغ -->
             <div id="amountCondition" style="display:none;">
                 <div style="background:#fff;padding:12px;border-radius:8px;">
-                    <div class="form-group">
-                        <label class="form-label">حداقل مبلغ (تومان)</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">حداقل مبلغ (تومان)</label>
                         <input type="number" name="trigger_conditions[min_amount]" class="form-input" placeholder="خالی = بدون محدودیت مبلغ">
                         <p class="form-hint">فقط وقتی مبلغ پرداخت/معامله بیشتر از این مقدار باشد فعال شود. خالی بگذارید = بدون محدودیت</p>
                     </div>
@@ -141,8 +141,8 @@ $actionTypesJson = json_encode($actionTypes);
             <h6 style="margin-bottom:8px;display:flex;align-items:center;gap:8px;">⚡ بخش ۲: اقدام (Action)</h6>
             <p style="font-size:12px;color:var(--gray-500);margin-bottom:16px;">اقدام کاری است که پس از فعال شدن ماشه، به صورت خودکار انجام می‌شود.</p>
             
-            <div class="form-group">
-                <label class="form-label">نوع اقدام *</label>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-medium">نوع اقدام *</label>
                 <select name="action_type" class="form-select" required id="actionType" onchange="onActionChange()">
                     <option value="">— انتخاب کنید —</option>
                     <?php 
@@ -169,17 +169,17 @@ $actionTypesJson = json_encode($actionTypes);
             <div id="config-send_sms" class="action-config" style="display:none;">
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#fffbeb;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #fcd34d;font-size:12px;">
-                        💡 <strong>راهنما:</strong> با استفاده از متغیرهای داخل آکولاد مثل <code>{contact_name}</code> می‌توانید متن پویا بسازید. مثلاً: <em>«سلام {contact_name} عزیز، معامله {deal_title} شما ثبت شد.»</em>
+                        <i class="bi bi-lightbulb me-1"></i> <strong>راهنما:</strong> با استفاده از متغیرهای داخل آکولاد مثل <code>{contact_name}</code> می‌توانید متن پویا بسازید. مثلاً: <em>«سلام {contact_name} عزیز، معامله {deal_title} شما ثبت شد.»</em>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">شماره گیرنده</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">شماره گیرنده</label>
                         <select name="action_config[phone_field]" class="form-select">
-                            <option value="contact">📞 شماره مخاطب معامله</option>
+                            <option value="contact"><i class="bi bi-telephone me-1"></i> شماره مخاطب معامله</option>
                         </select>
                         <p class="form-hint">پیامک به شماره تلفن مخاطب متصل به معامله ارسال می‌شود</p>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">📝 متن پیامک *</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i> متن پیامک *</label>
                         <textarea name="action_config[message_template]" class="form-textarea" rows="4" placeholder="سلام {contact_name} عزیز، معامله {deal_title} شما با مبلغ {amount} ثبت شد."></textarea>
                         <p class="form-hint">متنی که می‌خواهید پیامک شود. از متغیرهای زیر استفاده کنید.</p>
                     </div>
@@ -195,13 +195,13 @@ $actionTypesJson = json_encode($actionTypes);
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#ecfdf5;padding:12px;border-radius:8px;margin-bottom:16px;border:1px solid #a7f3d0;">
                         <p style="font-size:13px;color:#065f46;margin:0;">
-                            💡 <strong>نحوه کار:</strong> این اقدام آخرین لینک کوتاه پرداخت معامله را پیدا کرده و همراه متن پیامک به مشتری ارسال می‌کند. 
+                            <i class="bi bi-lightbulb me-1"></i> <strong>نحوه کار:</strong> این اقدام آخرین لینک کوتاه پرداخت معامله را پیدا کرده و همراه متن پیامک به مشتری ارسال می‌کند. 
                             اگر متن پیامک را خالی بگذارید، متن پیش‌فرض ارسال می‌شود (شامل نام مخاطب، مبلغ و لینک کوتاه پرداخت).
                             <br>⚠️ <strong>نکته:</strong> حتماً این اقدام را با ماشه «<strong>ایجاد لینک پرداخت</strong>» یا «<strong>تایید پرداخت</strong>» استفاده کنید.
                         </p>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">📝 متن پیامک (اختیاری)</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i> متن پیامک (اختیاری)</label>
                         <textarea name="action_config[message_template]" class="form-textarea" rows="3" placeholder="خالی بگذارید تا متن پیش‌فرض ارسال شود. یا متن دلخواه: سلام {contact_name} عزیز، لینک پرداخت شما: {payment_short_link}"></textarea>
                         <p class="form-hint">خالی = متن پیش‌فرض | سفارشی = از متغیرهای زیر استفاده کنید</p>
                     </div>
@@ -216,18 +216,18 @@ $actionTypesJson = json_encode($actionTypes);
             <div id="config-send_notification" class="action-config" style="display:none;">
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#eff6ff;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #bfdbfe;font-size:12px;">
-                        💡 <strong>راهنما:</strong> اعلان داخلی در سیستم نمایش داده می‌شود. می‌توانید به خودتان یا کاربر دیگری اعلان بفرستید.
+                        <i class="bi bi-lightbulb me-1"></i> <strong>راهنما:</strong> اعلان داخلی در سیستم نمایش داده می‌شود. می‌توانید به خودتان یا کاربر دیگری اعلان بفرستید.
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">عنوان اعلان</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">عنوان اعلان</label>
                         <input type="text" name="action_config[title]" class="form-input" placeholder="مثال: پرداخت جدید برای {deal_title}">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">متن اعلان</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">متن اعلان</label>
                         <input type="text" name="action_config[message]" class="form-input" placeholder="مثال: مبلغ {amount} تومان پرداخت شد">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">شناسه کاربر گیرنده</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">شناسه کاربر گیرنده</label>
                         <input type="number" name="action_config[user_id]" class="form-input" placeholder="شناسه عددی کاربر">
                         <p class="form-hint">خالی بگذارید = مسئول معامله اعلان را دریافت می‌کند. شناسه عددی کاربر مورد نظر را وارد کنید.</p>
                     </div>
@@ -238,15 +238,15 @@ $actionTypesJson = json_encode($actionTypes);
             <div id="config-create_activity" class="action-config" style="display:none;">
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#fffbeb;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #fcd34d;font-size:12px;">
-                        💡 <strong>راهنما:</strong> یک فعالیت جدید (مثلاً یادآوری پیگیری تلفنی) به صورت خودکار برای معامله ایجاد می‌شود. می‌توانید مشخص کنید چند روز بعد از ماشه، این فعالیت ایجاد شود.
+                        <i class="bi bi-lightbulb me-1"></i> <strong>راهنما:</strong> یک فعالیت جدید (مثلاً یادآوری پیگیری تلفنی) به صورت خودکار برای معامله ایجاد می‌شود. می‌توانید مشخص کنید چند روز بعد از ماشه، این فعالیت ایجاد شود.
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">موضوع فعالیت</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">موضوع فعالیت</label>
                             <input type="text" name="action_config[subject]" class="form-input" placeholder="مثال: پیگیری تلفنی پرداخت">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">نوع فعالیت</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">نوع فعالیت</label>
                             <select name="action_config[activity_type]" class="form-select">
                                 <?php foreach ($activityTypes as $k => $v): ?>
                                 <option value="<?php echo $k; ?>"><?php echo $v; ?></option>
@@ -255,13 +255,13 @@ $actionTypesJson = json_encode($actionTypes);
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">تعداد روز بعد از ماشه</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">تعداد روز بعد از ماشه</label>
                             <input type="number" name="action_config[days]" class="form-input" value="1" min="0">
                             <p class="form-hint">0 = همان لحظه | 1 = فردا | 7 = یک هفته بعد</p>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">توضیحات فعالیت</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">توضیحات فعالیت</label>
                             <input type="text" name="action_config[description]" class="form-input" placeholder="توضیح اضافی اختیاری">
                         </div>
                     </div>
@@ -272,10 +272,10 @@ $actionTypesJson = json_encode($actionTypes);
             <div id="config-assign_user" class="action-config" style="display:none;">
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#eff6ff;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #bfdbfe;font-size:12px;">
-                        💡 <strong>راهنما:</strong> معامله به صورت خودکار به کاربر مشخصی اختصاص داده می‌شود. مثلاً هنگام ورود به مرحله «رزرو بلیط» به کاربر بخش بلیط اختصاص یابد.
+                        <i class="bi bi-lightbulb me-1"></i> <strong>راهنما:</strong> معامله به صورت خودکار به کاربر مشخصی اختصاص داده می‌شود. مثلاً هنگام ورود به مرحله «رزرو بلیط» به کاربر بخش بلیط اختصاص یابد.
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">شناسه کاربر مسئول</label>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">شناسه کاربر مسئول</label>
                         <input type="number" name="action_config[assign_to]" class="form-input" placeholder="شناسه عددی کاربر">
                         <p class="form-hint">شناسه عددی کاربر مورد نظر را وارد کنید (از بخش مدیریت کاربران قابل مشاهده است)</p>
                     </div>
@@ -286,19 +286,19 @@ $actionTypesJson = json_encode($actionTypes);
             <div id="config-update_deal_field" class="action-config" style="display:none;">
                 <div style="background:#fff;padding:16px;border-radius:8px;">
                     <div style="background:#eff6ff;padding:12px;border-radius:8px;margin-bottom:12px;border:1px solid #bfdbfe;font-size:12px;">
-                        💡 <strong>راهنما:</strong> فیلد مشخصی از معامله به صورت خودکار بروزرسانی می‌شود.
+                        <i class="bi bi-lightbulb me-1"></i> <strong>راهنما:</strong> فیلد مشخصی از معامله به صورت خودکار بروزرسانی می‌شود.
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">فیلد مورد نظر</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">فیلد مورد نظر</label>
                             <select name="action_config[field]" class="form-select">
                                 <option value="source">منبع آشنایی</option>
                                 <option value="priority">اولویت</option>
                                 <option value="tags">برچسب‌ها</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">مقدار جدید</label>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-medium">مقدار جدید</label>
                             <input type="text" name="action_config[value]" class="form-input" placeholder="مقدار جدید">
                         </div>
                     </div>
@@ -308,30 +308,30 @@ $actionTypesJson = json_encode($actionTypes);
 
         <!-- مثال‌های رایج -->
         <div style="background:#f0fdf4;padding:16px;border-radius:12px;margin-bottom:20px;border:1px solid #86efac;">
-            <h6 style="margin-bottom:12px;">💡 مثال‌های رایج برای آژانس هواپیمایی:</h6>
+            <h6 style="margin-bottom:12px;"><i class="bi bi-lightbulb me-1"></i> مثال‌های رایج برای آژانس هواپیمایی:</h6>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;">
                 <div style="background:#fff;padding:10px;border-radius:8px;">
                     <strong>📨 ارسال خودکار لینک پرداخت:</strong><br>
                     ماشه: ایجاد لینک پرداخت → اقدام: ارسال پیامک لینک پرداخت
                 </div>
                 <div style="background:#fff;padding:10px;border-radius:8px;">
-                    <strong>✅ تایید پرداخت:</strong><br>
+                    <strong><i class="bi bi-check-circle text-success me-1"></i> تایید پرداخت:</strong><br>
                     ماشه: تایید پرداخت → اقدام: ارسال پیامک + اعلان به مدیر
                 </div>
                 <div style="background:#fff;padding:10px;border-radius:8px;">
-                    <strong>📞 پیگیری خودکار:</strong><br>
+                    <strong><i class="bi bi-telephone me-1"></i> پیگیری خودکار:</strong><br>
                     ماشه: ایجاد معامله → اقدام: ایجاد فعالیت (۳ روز بعد)
                 </div>
                 <div style="background:#fff;padding:10px;border-radius:8px;">
-                    <strong>🔄 انتقال به بخش بلیط:</strong><br>
+                    <strong><i class="bi bi-arrow-repeat me-1"></i> انتقال به بخش بلیط:</strong><br>
                     ماشه: تغییر مرحله → اقدام: تخصیص به کاربر بلیط
                 </div>
             </div>
         </div>
 
         <div class="d-flex gap-8">
-            <button type="submit" class="btn btn-primary btn-lg">💾 ذخیره قانون</button>
-            <a href="<?php echo $config['url']; ?>/automation" class="btn btn-secondary">انصراف</a>
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle me-1"></i>ذخیره قانون</button>
+            <a href="<?php echo $config['url']; ?>/automation" class="btn btn-outline-secondary">انصراف</a>
         </div>
     </form>
 </div>
@@ -357,7 +357,7 @@ function populatePipelines() {
     allPipelines.forEach(function(p) {
         var opt = document.createElement('option');
         opt.value = p.id;
-        opt.textContent = '📋 ' + p.name + (p.is_active ? '' : ' (غیرفعال)');
+        opt.textContent = '<i class="bi bi-list-task me-1"></i> ' + p.name + (p.is_active ? '' : ' (غیرفعال)');
         sel.appendChild(opt);
     });
 }
@@ -424,7 +424,7 @@ function updateTriggerVarHelp(triggerType) {
     if (triggerType === 'payment_created' || triggerType === 'payment_verified') {
         vars['{payment_link}'] = '🔗 لینک کوتاه پرداخت';
         vars['{payment_short_link}'] = '🔗 لینک کوتاه پرداخت (یکسان)';
-        vars['{payment_amount}'] = '💰 مبلغ پرداخت (تومان)';
+        vars['{payment_amount}'] = '<i class="bi bi-cash me-1"></i> مبلغ پرداخت (تومان)';
     }
     
     var html = '';
@@ -480,7 +480,7 @@ function updatePlaceholderHelp() {
     if (triggerType === 'payment_created' || triggerType === 'payment_verified') {
         placeholders['{payment_link}'] = '🔗 لینک کوتاه پرداخت';
         placeholders['{payment_short_link}'] = '🔗 لینک کوتاه پرداخت';
-        placeholders['{payment_amount}'] = '💰 مبلغ پرداخت (تومان)';
+        placeholders['{payment_amount}'] = '<i class="bi bi-cash me-1"></i> مبلغ پرداخت (تومان)';
     }
     
     var html = '';

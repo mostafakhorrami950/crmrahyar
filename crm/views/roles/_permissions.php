@@ -41,7 +41,7 @@ $rolePermsMap = $rolePermsMap ?? [];
                     <label class="scope-radio">
                         <input type="radio" name="scopes[<?php echo $perm['slug']; ?>]" value="own" 
                                <?php echo $currentScope === 'own' ? 'checked' : ''; ?>>
-                        <span class="scope-badge scope-own">👤 فقط خودش</span>
+                        <span class="scope-badge scope-own"><i class="bi bi-person me-1"></i> فقط خودش</span>
                     </label>
                 </div>
                 <?php endif; ?>

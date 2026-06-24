@@ -1,24 +1,24 @@
-<div class="page-header">
-    <h5>✏️ ویرایش پایپ لاین: <?php echo htmlspecialchars($pipeline->name); ?></h5>
-    <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-secondary">بازگشت به لیست</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-pencil me-1"></i>ویرایش پایپ لاین: <?php echo htmlspecialchars($pipeline->name); ?></h5>
+    <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-outline-secondary">بازگشت به لیست</a>
 </div>
 
 <div class="card">
     <form method="POST" action="<?php echo $config['url']; ?>/pipelines/update/<?php echo $pipeline->id; ?>" data-ajax="true">
         <div class="form-row">
-            <div class="form-group">
-                <label class="form-label">نام پایپ لاین *</label>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-medium">نام پایپ لاین *</label>
                 <input type="text" name="name" class="form-input" required value="<?php echo htmlspecialchars($pipeline->name); ?>" placeholder="مثال: فروش تور">
             </div>
-            <div class="form-group">
-                <label class="form-label">توضیحات پایپ لاین</label>
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-medium">توضیحات پایپ لاین</label>
                 <textarea name="description" class="form-textarea" rows="3" placeholder="توضیح مختصری درباره این پایپ لاین..."><?php echo htmlspecialchars($pipeline->description ?? ''); ?></textarea>
             </div>
         </div>
 
         <hr style="margin:20px 0;border:none;border-top:1px solid var(--gray-200);">
 
-        <h5 style="font-weight:bold;margin-bottom:15px;">📌 مراحل پایپ لاین</h5>
+        <h5 class="fw-bold mb-0"><i class="bi bi-pin me-1"></i> مراحل پایپ لاین</h5>
         <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">
             برای هر مرحله یک نام، رنگ و توضیحات وارد کنید.
         </p>
@@ -28,21 +28,21 @@
             <?php foreach ($stages as $stage): ?>
             <div class="stage-row" style="background:var(--gray-50);border-radius:10px;padding:14px;border:2px solid var(--gray-200);">
                 <div class="form-row">
-                    <div class="form-group" style="flex:2;">
-                        <label class="form-label">نام مرحله *</label>
+                    <div class="mb-3" style="flex:2;">
+                        <label class="form-label text-muted small fw-medium">نام مرحله *</label>
                         <input type="text" name="stages[<?php echo $editIndex; ?>][name]" class="form-input" required value="<?php echo htmlspecialchars($stage->name); ?>" placeholder="مثال: مذاکره اولیه">
                     </div>
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">رنگ مرحله</label>
+                    <div class="mb-3" style="flex:1;">
+                        <label class="form-label text-muted small fw-medium">رنگ مرحله</label>
                         <input type="color" name="stages[<?php echo $editIndex; ?>][color]" class="form-input" value="<?php echo $stage->color; ?>" style="padding:4px;height:40px;">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">توضیحات مرحله (اختیاری)</label>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">توضیحات مرحله (اختیاری)</label>
                     <textarea name="stages[<?php echo $editIndex; ?>][description]" class="form-textarea" rows="2" placeholder="توضیح دهید در این مرحله چه اتفاقی می‌افتد..."><?php echo htmlspecialchars($stage->description ?? ''); ?></textarea>
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:8px;">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeStage(this)" <?php echo count($stages) <= 1 ? 'style="display:none;"' : ''; ?>>🗑️ حذف مرحله</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeStage(this)" <?php echo count($stages) <= 1 ? 'style="display:none;"' : ''; ?>><i class="bi bi-trash me-1"></i>حذف مرحله</button>
                 </div>
             </div>
             <?php $editIndex++; ?>
@@ -50,14 +50,14 @@
         </div>
 
         <div style="margin:16px 0;">
-            <button type="button" class="btn btn-success" onclick="addStage()">➕ افزودن مرحله جدید</button>
+            <button type="button" class="btn btn-success" onclick="addStage()"><i class="bi bi-plus-circle me-1"></i> افزودن مرحله جدید</button>
         </div>
 
         <hr style="margin:20px 0;border:none;border-top:1px solid var(--gray-200);">
         
         <div class="ajax-error alert alert-danger" style="display:none;"></div>
-        <button type="submit" class="btn btn-primary btn-lg">✅ بروزرسانی پایپ لاین</button>
-        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-secondary">لغو</a>
+        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle text-success me-1"></i> بروزرسانی پایپ لاین</button>
+        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-outline-secondary">لغو</a>
     </form>
 </div>
 
@@ -68,11 +68,11 @@ function addStage() {
     var container = document.getElementById('stagesContainer');
     var html = '<div class="stage-row" style="background:var(--gray-50);border-radius:10px;padding:14px;border:2px solid var(--gray-200);">';
     html += '<div class="form-row">';
-    html += '<div class="form-group" style="flex:2;"><label class="form-label">نام مرحله *</label><input type="text" name="stages[' + stageIndex + '][name]" class="form-input" required placeholder="مثال: مذاکره اولیه"></div>';
-    html += '<div class="form-group" style="flex:1;"><label class="form-label">رنگ مرحله</label><input type="color" name="stages[' + stageIndex + '][color]" class="form-input" value="#4361ee" style="padding:4px;height:40px;"></div>';
+    html += '<div class="mb-3" style="flex:2;"><label class="form-label text-muted small fw-medium">نام مرحله *</label><input type="text" name="stages[' + stageIndex + '][name]" class="form-input" required placeholder="مثال: مذاکره اولیه"></div>';
+    html += '<div class="mb-3" style="flex:1;"><label class="form-label text-muted small fw-medium">رنگ مرحله</label><input type="color" name="stages[' + stageIndex + '][color]" class="form-input" value="#4361ee" style="padding:4px;height:40px;"></div>';
     html += '</div>';
-    html += '<div class="form-group"><label class="form-label">توضیحات مرحله (اختیاری)</label><textarea name="stages[' + stageIndex + '][description]" class="form-textarea" rows="2" placeholder="توضیح دهید در این مرحله چه اتفاقی می‌افتد..."></textarea></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:8px;"><button type="button" class="btn btn-danger btn-sm" onclick="removeStage(this)">🗑️ حذف مرحله</button></div>';
+    html += '<div class="mb-3"><label class="form-label text-muted small fw-medium">توضیحات مرحله (اختیاری)</label><textarea name="stages[' + stageIndex + '][description]" class="form-textarea" rows="2" placeholder="توضیح دهید در این مرحله چه اتفاقی می‌افتد..."></textarea></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:8px;"><button type="button" class="btn btn-danger btn-sm" onclick="removeStage(this)"><i class="bi bi-trash me-1"></i>حذف مرحله</button></div>';
     html += '</div>';
     
     var div = document.createElement('div');

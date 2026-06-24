@@ -1,35 +1,35 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>📱 تاریخچه پیامک‌ها</h5>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0">📱 تاریخچه پیامک‌ها</h5>
     <div class="d-flex gap-8">
         <a href="<?php echo $config['url']; ?>/sms/send/0" class="btn btn-primary btn-sm">📤 ارسال انبوه</a>
     </div>
 </div>
 
 <div class="stats-row" style="margin-bottom:16px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
         <div class="stat-value"><?php echo number_format($stats['total']); ?></div>
         <div class="stat-label">کل پیامک‌ها</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
         <div class="stat-value"><?php echo number_format($stats['sent']); ?></div>
         <div class="stat-label">ارسال موفق</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
         <div class="stat-value"><?php echo number_format($stats['failed']); ?></div>
         <div class="stat-label">ارسال ناموفق</div>
     </div>
 </div>
 
 <div class="card" style="padding:12px;">
-    <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
-        <input type="text" name="search" class="form-input" style="flex:2;min-width:200px;" placeholder="🔍 جستجو: نام مخاطب، شماره، متن پیام، معامله..." value="<?php echo htmlspecialchars($search); ?>">
+    <form method="GET" class="d-flex gap-2 flex-wrap">
+        <input type="text" name="search" class="form-input" style="flex:2;min-width:200px;" placeholder="<i class="bi bi-search me-1"></i>جستجو: نام مخاطب، شماره، متن پیام، معامله..." value="<?php echo htmlspecialchars($search); ?>">
         <select name="status" class="form-input" style="width:auto;">
             <option value="">همه وضعیت‌ها</option>
-            <option value="sent" <?php echo $selectedStatus === 'sent' ? 'selected' : ''; ?>>✅ موفق</option>
-            <option value="failed" <?php echo $selectedStatus === 'failed' ? 'selected' : ''; ?>>❌ ناموفق</option>
+            <option value="sent" <?php echo $selectedStatus === 'sent' ? 'selected' : ''; ?>><i class="bi bi-check-circle text-success me-1"></i> موفق</option>
+            <option value="failed" <?php echo $selectedStatus === 'failed' ? 'selected' : ''; ?>><i class="bi bi-x-circle text-danger me-1"></i> ناموفق</option>
         </select>
-        <button type="submit" class="btn btn-primary">🔍</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i></button>
     </form>
 </div>
 
@@ -39,13 +39,13 @@
             <thead>
                 <tr>
                     <th style="width:40px;">#</th>
-                    <th>مخاطب</th>
-                    <th>شماره</th>
-                    <th>متن پیامک</th>
-                    <th>معامله</th>
-                    <th>ارسال‌کننده</th>
-                    <th>وضعیت</th>
-                    <th>تاریخ</th>
+                    <th class="text-nowrap">مخاطب</th>
+                    <th class="text-nowrap">شماره</th>
+                    <th class="text-nowrap">متن پیامک</th>
+                    <th class="text-nowrap">معامله</th>
+                    <th class="text-nowrap">ارسال‌کننده</th>
+                    <th class="text-nowrap">وضعیت</th>
+                    <th class="text-nowrap">تاریخ</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,9 +89,9 @@
                     <td data-label="ارسال‌کننده"><small style="color:var(--gray-500);"><?php echo htmlspecialchars($msg->sender_name ?? '-'); ?></small></td>
                     <td data-label="وضعیت">
                         <?php if ($msg->status == 'sent'): ?>
-                        <span class="badge bg-success">✅ موفق</span>
+                        <span class="badge bg-success"><i class="bi bi-check-circle text-success me-1"></i> موفق</span>
                         <?php else: ?>
-                        <span class="badge bg-danger" title="<?php echo htmlspecialchars($msg->error_message ?? ''); ?>">❌ ناموفق</span>
+                        <span class="badge bg-danger" title="<?php echo htmlspecialchars($msg->error_message ?? ''); ?>"><i class="bi bi-x-circle text-danger me-1"></i> ناموفق</span>
                         <?php endif; ?>
                     </td>
                     <td data-label="تاریخ" style="white-space:nowrap;"><small style="color:var(--gray-500);"><?php echo \Core\JDate::displayDateTime($msg->created_at); ?></small></td>
@@ -107,14 +107,14 @@
 <?php if (($totalPages ?? 1) > 1): ?>
 <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap;">
     <?php if ($page > 1): ?>
-    <a href="?page=<?php echo $page-1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">◀ قبلی</a>
+    <a href="?page=<?php echo $page-1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-outline-secondary">◀ قبلی</a>
     <?php endif; ?>
     
     <?php 
     $startPage = max(1, $page - 3);
     $endPage = min($totalPages, $page + 3);
     if ($startPage > 1): ?>
-        <a href="?page=1&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">1</a>
+        <a href="?page=1&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-outline-secondary">1</a>
         <?php if ($startPage > 2): ?><span style="color:var(--gray-400);">...</span><?php endif; ?>
     <?php endif; ?>
     
@@ -124,11 +124,11 @@
     
     <?php if ($endPage < $totalPages): ?>
         <?php if ($endPage < $totalPages - 1): ?><span style="color:var(--gray-400);">...</span><?php endif; ?>
-        <a href="?page=<?php echo $totalPages; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary"><?php echo $totalPages; ?></a>
+        <a href="?page=<?php echo $totalPages; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-outline-secondary"><?php echo $totalPages; ?></a>
     <?php endif; ?>
     
     <?php if ($page < $totalPages): ?>
-    <a href="?page=<?php echo $page+1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-secondary">بعدی ▶</a>
+    <a href="?page=<?php echo $page+1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($selectedStatus); ?>" class="btn btn-sm btn-outline-secondary">بعدی ▶</a>
     <?php endif; ?>
     
     <span style="color:var(--gray-500);font-size:12px;margin-right:12px;">صفحه <?php echo $page; ?> از <?php echo $totalPages; ?> (<?php echo number_format($totalRecords ?? 0); ?> رکورد)</span>

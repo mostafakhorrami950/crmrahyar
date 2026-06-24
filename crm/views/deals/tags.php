@@ -1,15 +1,15 @@
-<div class="page-header">
-    <h5>🏷️ همه هشتگ‌ها</h5>
-    <a href="<?php echo $config['url']; ?>/deals" class="btn btn-secondary">بازگشت به معاملات</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-tag me-1"></i> همه هشتگ‌ها</h5>
+    <a href="<?php echo $config['url']; ?>/deals" class="btn btn-outline-secondary">بازگشت به معاملات</a>
 </div>
 
 <div class="card">
     <?php if (empty($tags)): ?>
     <div class="empty-state">
-        <div class="empty-icon">🏷️</div>
-        <h5>هیچ هشتگی وجود ندارد</h5>
+        <div class="empty-icon"><i class="bi bi-tag me-1"></i></div>
+        <h5 class="fw-bold mb-0">هیچ هشتگی وجود ندارد</h5>
         <p>برای استفاده از هشتگ‌ها، در توضیحات معاملات از <strong>#</strong> استفاده کنید.</p>
-        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary">➕ ایجاد معامله جدید</a>
+        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>ایجاد معامله جدید</a>
     </div>
     <?php else: ?>
     <div style="display:flex;flex-wrap:wrap;gap:10px;padding:20px;">

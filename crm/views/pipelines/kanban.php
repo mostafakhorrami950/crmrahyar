@@ -1,8 +1,8 @@
 <?php $config = $GLOBALS['app_config']; $db = \Core\Database::getInstance(); ?>
-<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div style="display:flex;align-items:center;gap:12px;">
-        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-sm btn-secondary">← پایپ لاین‌ها</a>
-        <h5 style="margin:0;">📋 <?php echo htmlspecialchars($pipeline->name); ?></h5>
+        <a href="<?php echo $config['url']; ?>/pipelines" class="btn btn-sm btn-outline-secondary">← پایپ لاین‌ها</a>
+        <h5 class="fw-bold mb-0"><i class="bi bi-list-task me-1"></i> <?php echo htmlspecialchars($pipeline->name); ?></h5>
         <!-- Pipeline Switcher -->
         <?php if (count($pipelines) > 1): ?>
         <select onchange="if(this.value)window.location='<?php echo $config['url']; ?>/pipelines/kanban/'+this.value" class="form-input" style="width:auto;font-size:13px;padding:4px 8px;">
@@ -13,8 +13,8 @@
         <?php endif; ?>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="kanbanSearch" class="form-input" placeholder="🔍 جستجوی معامله..." style="width:200px;font-size:13px;padding:6px 10px;" oninput="filterKanbanCards(this.value)">
-        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-primary">➕ معامله جدید</a>
+        <input type="text" id="kanbanSearch" class="form-input" placeholder="<i class="bi bi-search me-1"></i>جستجوی معامله..." style="width:200px;font-size:13px;padding:6px 10px;" oninput="filterKanbanCards(this.value)">
+        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle me-1"></i> معامله جدید</a>
     </div>
 </div>
 
@@ -33,10 +33,10 @@
         💼 <strong><?php echo $totalDeals; ?></strong> معامله
     </span>
     <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        💰 <strong><?php echo number_format($totalAmount); ?></strong> تومان
+        <i class="bi bi-cash me-1"></i> <strong><?php echo number_format($totalAmount); ?></strong> تومان
     </span>
     <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        📊 <strong><?php echo count($stages); ?></strong> مرحله
+        <i class="bi bi-bar-chart me-1"></i> <strong><?php echo count($stages); ?></strong> مرحله
     </span>
 </div>
 
@@ -56,7 +56,7 @@
                         <?php echo count($stageDeals); ?> معامله • <?php echo number_format($stageTotal); ?> ت
                     </div>
                 </div>
-                <a href="<?php echo $config['url']; ?>/deals/create" style="font-size:18px;color:var(--gray-400);text-decoration:none;" title="افزودن معامله">➕</a>
+                <a href="<?php echo $config['url']; ?>/deals/create" style="font-size:18px;color:var(--gray-400);text-decoration:none;" title="افزودن معامله"><i class="bi bi-plus-circle me-1"></i></a>
             </div>
         </div>
         
@@ -98,7 +98,7 @@
                 <!-- Contact -->
                 <?php if (!empty($deal->contact_name)): ?>
                 <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--gray-600);margin-bottom:4px;">
-                    👤 <?php echo htmlspecialchars(mb_substr($deal->contact_name, 0, 20)); ?>
+                    <i class="bi bi-person me-1"></i> <?php echo htmlspecialchars(mb_substr($deal->contact_name, 0, 20)); ?>
                     <?php if (!empty($deal->contact_phone)): ?>
                     <span dir="ltr" style="color:var(--gray-400);font-size:11px;">(<?php echo htmlspecialchars($deal->contact_phone); ?>)</span>
                     <?php endif; ?>
@@ -137,11 +137,11 @@
 <div class="modal-overlay" id="dealQuickView" style="display:none;">
     <div class="modal-box" style="max-width:450px;">
         <div class="modal-header">
-            <h5 id="qvTitle">-</h5>
+            <h5 class="fw-bold mb-0">-</h5>
             <button type="button" class="modal-close" onclick="closeQuickView()">&times;</button>
         </div>
         <div class="modal-body" id="qvBody">
-            <div style="text-align:center;padding:20px;">⏳ در حال بارگذاری...</div>
+            <div style="text-align:center;padding:20px;"><i class="bi bi-clock text-warning me-1"></i> در حال بارگذاری...</div>
         </div>
     </div>
 </div>
@@ -338,7 +338,7 @@ document.querySelectorAll('.kanban-card').forEach(function(card) {
 
 function openQuickView(dealId) {
     document.getElementById('dealQuickView').style.display = 'flex';
-    document.getElementById('qvBody').innerHTML = '<div style="text-align:center;padding:20px;">⏳ در حال بارگذاری...</div>';
+    document.getElementById('qvBody').innerHTML = '<div style="text-align:center;padding:20px;"><i class="bi bi-clock text-warning me-1"></i> در حال بارگذاری...</div>';
     
     fetch('<?php echo $config['url']; ?>/deals/get-data/' + dealId)
     .then(function(r) { return r.json(); })
@@ -347,12 +347,12 @@ function openQuickView(dealId) {
             var deal = d.deal;
             document.getElementById('qvTitle').textContent = deal.title || '-';
             var amount = deal.amount ? (parseInt(deal.amount).toLocaleString('en-US') + ' تومان') : '-';
-            var status = deal.is_won ? '✅ موفق' : (deal.is_lost ? '❌ ناموفق' : '⏳ در حال بررسی');
+            var status = deal.is_won ? '<i class="bi bi-check-circle text-success me-1"></i> موفق' : (deal.is_lost ? '<i class="bi bi-x-circle text-danger me-1"></i> ناموفق' : '<i class="bi bi-clock text-warning me-1"></i> در حال بررسی');
             
             document.getElementById('qvBody').innerHTML = 
                 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);">💰 مبلغ</div><strong>' + amount + '</strong></div>' +
-                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);">📊 وضعیت</div><strong>' + status + '</strong></div>' +
+                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);"><i class="bi bi-cash me-1"></i> مبلغ</div><strong>' + amount + '</strong></div>' +
+                    '<div style="background:var(--gray-50);padding:10px;border-radius:8px;"><div style="font-size:11px;color:var(--gray-400);"><i class="bi bi-bar-chart me-1"></i> وضعیت</div><strong>' + status + '</strong></div>' +
                 '</div>' +
                 '<div style="margin-top:12px;"><a href="<?php echo $config['url']; ?>/deals/view/' + dealId + '" class="btn btn-primary" style="width:100%;text-align:center;">مشاهده جزئیات کامل</a></div>';
         } else {

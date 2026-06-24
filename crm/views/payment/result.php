@@ -314,14 +314,14 @@
             <!-- SUCCESS HEADER -->
             <div class="result-header success">
                 <div class="confetti-container" id="confettiContainer"></div>
-                <div class="icon-wrap">✅</div>
+                <div class="icon-wrap"><i class="bi bi-check-circle text-success me-1"></i></div>
                 <h1 class="status-label">پرداخت با موفقیت انجام شد</h1>
                 <p class="status-sub">از اعتماد شما سپاسگزاریم. پرداخت شما با موفقیت تایید شد.</p>
             </div>
             <?php elseif (!empty($trackId) || !empty($message)): ?>
             <!-- FAILED HEADER -->
             <div class="result-header failed">
-                <div class="icon-wrap">❌</div>
+                <div class="icon-wrap"><i class="bi bi-x-circle text-danger me-1"></i></div>
                 <h1 class="status-label">پرداخت ناموفق</h1>
                 <p class="status-sub"><?php echo htmlspecialchars($message ?: 'متاسفانه پرداخت شما ناموفق بود.'); ?></p>
             </div>
@@ -351,12 +351,12 @@
                     <?php endif; ?>
                     <?php if (!empty($amount)): ?>
                     <div class="row">
-                        <span class="label">💰 مبلغ</span>
+                        <span class="label"><i class="bi bi-cash me-1"></i> مبلغ</span>
                         <span class="value amount-value"><?php echo number_format($amount); ?> تومان</span>
                     </div>
                     <?php endif; ?>
                     <div class="row">
-                        <span class="label">📅 تاریخ</span>
+                        <span class="label"><i class="bi bi-calendar me-1"></i> تاریخ</span>
                         <span class="value"><?php echo \Core\JDate::displayDateTime(date('Y-m-d H:i:s')); ?></span>
                     </div>
                 </div>
@@ -378,7 +378,7 @@
                     <?php else: ?>
                         <?php if (!empty($publicToken)): ?>
                         <a href="<?php echo $config['url']; ?>/pay/<?php echo htmlspecialchars($publicToken); ?>" class="btn-return primary">
-                            🔄 تلاش مجدد
+                            <i class="bi bi-arrow-repeat me-1"></i> تلاش مجدد
                         </a>
                         <?php endif; ?>
                         <a href="<?php echo $config['url']; ?>" class="btn-return secondary">

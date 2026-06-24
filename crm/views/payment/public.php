@@ -409,7 +409,7 @@
         <div class="payment-card">
             <!-- Header -->
             <div class="card-header-gradient">
-                <div class="icon-wrap">💳</div>
+                <div class="icon-wrap"><i class="bi bi-credit-card me-1"></i></div>
                 <h1>پرداخت آنلاین</h1>
                 <p>با اطمینان و امنیت کامل پرداخت کنید</p>
             </div>
@@ -421,12 +421,12 @@
                 <!-- Deal Info -->
                 <div class="deal-info">
                     <div class="row">
-                        <span class="label">📋 عنوان پرداخت</span>
+                        <span class="label"><i class="bi bi-list-task me-1"></i> عنوان پرداخت</span>
                         <span class="value"><?php echo htmlspecialchars($payment->description ?: 'پرداخت آنلاین'); ?></span>
                     </div>
                     <?php if (!empty($deal)): ?>
                     <div class="row">
-                        <span class="label">👤 مشتری</span>
+                        <span class="label"><i class="bi bi-person me-1"></i> مشتری</span>
                         <span class="value"><?php echo htmlspecialchars($deal->contact_name ?? 'نامشخص'); ?></span>
                     </div>
                     <?php endif; ?>
@@ -437,18 +437,18 @@
                     </div>
                     <?php endif; ?>
                     <div class="row">
-                        <span class="label">📅 تاریخ</span>
+                        <span class="label"><i class="bi bi-calendar me-1"></i> تاریخ</span>
                         <span class="value"><?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></span>
                     </div>
                     <div class="row" style="margin-top:4px;">
-                        <span class="amount-label">💰 مبلغ</span>
+                        <span class="amount-label"><i class="bi bi-cash me-1"></i> مبلغ</span>
                         <span class="amount-value"><?php echo number_format($payment->amount); ?> تومان</span>
                     </div>
                 </div>
 
                 <?php if (!empty($payment->description)): ?>
                 <div class="deal-description">
-                    <span class="label">📝 توضیحات</span>
+                    <span class="label"><i class="bi bi-journal-text me-1"></i> توضیحات</span>
                     <?php echo nl2br(htmlspecialchars($payment->description)); ?>
                 </div>
                 <?php endif; ?>
@@ -462,7 +462,7 @@
                     <input type="hidden" name="token" value="<?php echo htmlspecialchars($payment->public_token); ?>">
                     <button type="submit" class="btn-pay" id="payBtn">
                         <span class="spinner"></span>
-                        <span class="btn-text">💳 پرداخت وجه</span>
+                        <span class="btn-text"><i class="bi bi-credit-card me-1"></i> پرداخت وجه</span>
                     </button>
                 </form>
 

@@ -1,26 +1,26 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="page-header">
-    <h5>📅 مدیریت فعالیت‌ها</h5>
-    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary btn-sm">➕ فعالیت جدید</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-calendar me-1"></i> مدیریت فعالیت‌ها</h5>
+    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i> فعالیت جدید</a>
 </div>
 
 <!-- Stats -->
 <div class="stats-row" style="margin-bottom:16px;">
-    <div class="stat-box" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
         <div class="stat-value"><?php echo $overdueCount; ?></div>
         <div class="stat-label">⚠️ سررسید گذشته</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
         <div class="stat-value"><?php echo $todayCount; ?></div>
-        <div class="stat-label">📌 امروز</div>
+        <div class="stat-label"><i class="bi bi-pin me-1"></i> امروز</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#10B981,#059669);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
         <div class="stat-value"><?php echo $doneTodayCount; ?></div>
-        <div class="stat-label">✅ انجام شده امروز</div>
+        <div class="stat-label"><i class="bi bi-check-circle text-success me-1"></i> انجام شده امروز</div>
     </div>
-    <div class="stat-box" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+    <div class="stat-card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
         <div class="stat-value"><?php echo $upcomingCount; ?></div>
-        <div class="stat-label">📅 ۷ روز آینده</div>
+        <div class="stat-label"><i class="bi bi-calendar me-1"></i> ۷ روز آینده</div>
     </div>
 </div>
 
@@ -29,7 +29,7 @@
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
     <?php foreach ($activitySummary as $sum): ?>
     <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        <?php echo $sum->type == 'call' ? '📞' : ($sum->type == 'meeting' ? '🤝' : ($sum->type == 'sms' ? '✉️' : ($sum->type == 'email' ? '📧' : ($sum->type == 'follow_up' ? '📌' : '📝')))); ?>
+        <?php echo $sum->type == 'call' ? '<i class="bi bi-telephone me-1"></i>' : ($sum->type == 'meeting' ? '🤝' : ($sum->type == 'sms' ? '<i class="bi bi-envelope me-1"></i>' : ($sum->type == 'email' ? '📧' : ($sum->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i>' : '<i class="bi bi-journal-text me-1"></i>')))); ?>
         <?php echo $sum->type == 'call' ? 'تماس' : ($sum->type == 'meeting' ? 'جلسه' : ($sum->type == 'sms' ? 'پیامک' : ($sum->type == 'email' ? 'ایمیل' : ($sum->type == 'follow_up' ? 'پیگیری' : 'یادداشت')))); ?>
         <strong>(<?php echo $sum->count; ?>)</strong>
     </span>
@@ -39,7 +39,7 @@
 
 <!-- Filters -->
 <div class="card" style="padding:16px;margin-bottom:16px;">
-    <form method="GET" action="<?php echo $config['url']; ?>/activities" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <form method="GET" action="<?php echo $config['url']; ?>/activities" class="d-flex gap-2 flex-wrap">
         <input type="date" name="date_from" class="form-input" value="<?php echo $dateFrom; ?>" style="flex:1;min-width:140px;" title="از تاریخ">
         <input type="date" name="date_to" class="form-input" value="<?php echo $dateTo; ?>" style="flex:1;min-width:140px;" title="تا تاریخ">
         <select name="user_id" class="form-input" style="flex:1;min-width:140px;">
@@ -50,20 +50,20 @@
         </select>
         <select name="type" class="form-input" style="flex:1;min-width:140px;">
             <option value="">همه انواع</option>
-            <option value="call" <?php echo $selectedType === 'call' ? 'selected' : ''; ?>>📞 تماس</option>
+            <option value="call" <?php echo $selectedType === 'call' ? 'selected' : ''; ?>><i class="bi bi-telephone me-1"></i> تماس</option>
             <option value="meeting" <?php echo $selectedType === 'meeting' ? 'selected' : ''; ?>>🤝 جلسه</option>
-            <option value="follow_up" <?php echo $selectedType === 'follow_up' ? 'selected' : ''; ?>>📌 پیگیری</option>
+            <option value="follow_up" <?php echo $selectedType === 'follow_up' ? 'selected' : ''; ?>><i class="bi bi-pin me-1"></i> پیگیری</option>
             <option value="email" <?php echo $selectedType === 'email' ? 'selected' : ''; ?>>📧 ایمیل</option>
-            <option value="sms" <?php echo $selectedType === 'sms' ? 'selected' : ''; ?>>✉️ پیامک</option>
-            <option value="note" <?php echo $selectedType === 'note' ? 'selected' : ''; ?>>📝 یادداشت</option>
+            <option value="sms" <?php echo $selectedType === 'sms' ? 'selected' : ''; ?>><i class="bi bi-envelope me-1"></i> پیامک</option>
+            <option value="note" <?php echo $selectedType === 'note' ? 'selected' : ''; ?>><i class="bi bi-journal-text me-1"></i> یادداشت</option>
         </select>
         <select name="status" class="form-input" style="flex:1;min-width:140px;">
             <option value="">همه وضعیت‌ها</option>
-            <option value="pending" <?php echo $selectedStatus === 'pending' ? 'selected' : ''; ?>>⏳ انجام نشده</option>
-            <option value="done" <?php echo $selectedStatus === 'done' ? 'selected' : ''; ?>>✅ انجام شده</option>
+            <option value="pending" <?php echo $selectedStatus === 'pending' ? 'selected' : ''; ?>><i class="bi bi-clock text-warning me-1"></i> انجام نشده</option>
+            <option value="done" <?php echo $selectedStatus === 'done' ? 'selected' : ''; ?>><i class="bi bi-check-circle text-success me-1"></i> انجام شده</option>
             <option value="overdue" <?php echo $selectedStatus === 'overdue' ? 'selected' : ''; ?>>⚠️ سررسید گذشته</option>
         </select>
-        <button type="submit" class="btn btn-primary">🔍 فیلتر</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i> فیلتر</button>
     </form>
 </div>
 
@@ -71,8 +71,8 @@
 <div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
     <span id="bulkCount">۰ مورد انتخاب شده</span>
     <div style="display:flex;gap:8px;">
-        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm">🗑️ حذف انتخاب شده‌ها</button>
-        <button onclick="clearSelection()" class="btn btn-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm"><i class="bi bi-trash me-1"></i>حذف انتخاب شده‌ها</button>
+        <button onclick="clearSelection()" class="btn btn-outline-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
     </div>
 </div>
 
@@ -85,7 +85,7 @@
     </div>
     <?php if (empty($activities)): ?>
     <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
-        <div style="font-size:64px;margin-bottom:16px;">📅</div>
+        <div style="font-size:64px;margin-bottom:16px;"><i class="bi bi-calendar me-1"></i></div>
         <h3 style="color:var(--gray-500);margin-bottom:8px;">هیچ فعالیتی یافت نشد</h3>
         <p>فیلترها را تغییر دهید یا فعالیت جدید ایجاد کنید</p>
     </div>
@@ -102,7 +102,7 @@
                 $currentDate = $actDate;
         ?>
             <div style="padding:10px 20px;background:var(--gray-50);font-weight:700;font-size:14px;color:var(--gray-700);border-bottom:1px solid var(--gray-200);">
-                📅 <?php echo $actDate; ?>
+                <i class="bi bi-calendar me-1"></i> <?php echo $actDate; ?>
                 <?php if ($isToday): ?><span style="color:var(--primary);font-size:12px;font-weight:600;">(امروز)</span><?php endif; ?>
             </div>
         <?php endif; ?>
@@ -113,13 +113,13 @@
             <!-- Toggle Done -->
             <form method="POST" action="<?php echo $config['url']; ?>/activities/toggle-done/<?php echo $act->id; ?>" data-ajax="true" style="flex-shrink:0;margin-top:4px;">
                 <button type="submit" class="btn btn-sm <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-secondary'); ?>" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">
-                    <?php echo $act->is_done ? '✅' : ($isOverdue ? '⚠️' : '⬜'); ?>
+                    <?php echo $act->is_done ? '<i class="bi bi-check-circle text-success me-1"></i>' : ($isOverdue ? '⚠️' : '⬜'); ?>
                 </button>
             </form>
             
             <!-- Type Icon -->
             <div style="width:40px;height:40px;border-radius:10px;background:<?php echo $act->type == 'call' ? '#e3f2fd' : ($act->type == 'meeting' ? '#fce4ec' : ($act->type == 'follow_up' ? '#e8f5e9' : ($act->type == 'email' ? '#fff3e0' : '#f3e5f5'))); ?>;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
-                <?php echo $act->type == 'call' ? '📞' : ($act->type == 'meeting' ? '🤝' : ($act->type == 'follow_up' ? '📌' : ($act->type == 'email' ? '📧' : ($act->type == 'sms' ? '✉️' : '📝')))); ?>
+                <?php echo $act->type == 'call' ? '<i class="bi bi-telephone me-1"></i>' : ($act->type == 'meeting' ? '🤝' : ($act->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i>' : ($act->type == 'email' ? '📧' : ($act->type == 'sms' ? '<i class="bi bi-envelope me-1"></i>' : '<i class="bi bi-journal-text me-1"></i>')))); ?>
             </div>
             
             <!-- Content -->
@@ -129,10 +129,10 @@
                         <strong style="font-size:14px;<?php echo $act->is_done ? 'text-decoration:line-through;' : ''; ?>"><?php echo htmlspecialchars($act->subject ?? '-'); ?></strong>
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px;">
                             <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--gray-100);color:var(--gray-600);">
-                                <?php echo $act->type == 'call' ? '📞 تماس' : ($act->type == 'meeting' ? '🤝 جلسه' : ($act->type == 'follow_up' ? '📌 پیگیری' : ($act->type == 'email' ? '📧 ایمیل' : ($act->type == 'sms' ? '✉️ پیامک' : '📝 یادداشت')))); ?>
+                                <?php echo $act->type == 'call' ? '<i class="bi bi-telephone me-1"></i> تماس' : ($act->type == 'meeting' ? '🤝 جلسه' : ($act->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i> پیگیری' : ($act->type == 'email' ? '📧 ایمیل' : ($act->type == 'sms' ? '<i class="bi bi-envelope me-1"></i> پیامک' : '<i class="bi bi-journal-text me-1"></i> یادداشت')))); ?>
                             </span>
                             <?php if ($act->user_name): ?>
-                            <span style="font-size:11px;color:var(--gray-400);">👤 <?php echo htmlspecialchars($act->user_name); ?></span>
+                            <span style="font-size:11px;color:var(--gray-400);"><i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($act->user_name); ?></span>
                             <?php endif; ?>
                             <?php if ($act->activity_date): ?>
                             <span style="font-size:11px;color:<?php echo $isOverdue ? '#EF4444' : 'var(--gray-400)'; ?>;">⏰ <?php echo \Core\JDate::displayDateTime($act->activity_date); ?></span>
@@ -155,7 +155,7 @@
                     <?php endif; ?>
                     <?php if (!empty($act->contact_name)): ?>
                     <span style="font-size:12px;color:var(--gray-500);">
-                        👤 <?php echo htmlspecialchars($act->contact_name); ?>
+                        <i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($act->contact_name); ?>
                         <?php if (!empty($act->contact_phone)): ?>
                         <span dir="ltr">(<?php echo htmlspecialchars($act->contact_phone); ?>)</span>
                         <?php endif; ?>

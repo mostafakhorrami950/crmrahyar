@@ -1,14 +1,14 @@
 <?php $config = $GLOBALS['app_config']; ?>
 
-<div class="page-header">
-    <h5>📥 ایمپورت مخاطبین</h5>
-    <a href="<?php echo $config['url']; ?>/contacts" class="btn btn-secondary">بازگشت به لیست</a>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="fw-bold mb-0">📥 ایمپورت مخاطبین</h5>
+    <a href="<?php echo $config['url']; ?>/contacts" class="btn btn-outline-secondary">بازگشت به لیست</a>
 </div>
 
 <div class="card" style="max-width:700px;">
     <!-- راهنما -->
     <div style="background:#eff6ff;padding:16px;border-radius:10px;margin-bottom:20px;border:1px solid #bfdbfe;">
-        <h6 style="margin-bottom:12px;">📋 راهنمای ایمپورت</h6>
+        <h6 style="margin-bottom:12px;"><i class="bi bi-list-task me-1"></i> راهنمای ایمپورت</h6>
         <ul style="font-size:13px;color:var(--gray-600);padding-right:20px;line-height:2;">
             <li>فرمت‌های مجاز: <strong>CSV</strong> و <strong>XLSX</strong> (اکسل)</li>
             <li>حداکثر حجم فایل: <strong>5 مگابایت</strong></li>
@@ -20,7 +20,7 @@
     </div>
 
     <div style="background:#f0fdf4;padding:16px;border-radius:10px;margin-bottom:20px;border:1px solid #86efac;">
-        <h6 style="margin-bottom:8px;">💡 نکته برای فایل‌های اکسل فارسی</h6>
+        <h6 style="margin-bottom:8px;"><i class="bi bi-lightbulb me-1"></i> نکته برای فایل‌های اکسل فارسی</h6>
         <p style="font-size:12px;color:var(--gray-600);margin:0;">
             اگر فایل اکسل شما فارسی است، آن را به صورت <strong>CSV با کدگذاری UTF-8</strong> ذخیره کنید تا کاراکترهای فارسی درست نمایش داده شوند.
             <br>در اکسل: File → Save As → CSV UTF-8 (Comma delimited)
@@ -28,8 +28,8 @@
     </div>
 
     <form method="POST" action="<?php echo $config['url']; ?>/contacts/import/upload" enctype="multipart/form-data" id="importForm">
-        <div class="form-group" style="margin-bottom:20px;">
-            <label class="form-label" style="font-size:14px;font-weight:600;">📁 فایل مخاطبین را انتخاب کنید</label>
+        <div class="mb-3" style="margin-bottom:20px;">
+            <label class="form-label text-muted small fw-medium" style="font-size:14px;font-weight:600;">📁 فایل مخاطبین را انتخاب کنید</label>
             <div style="border:2px dashed var(--gray-300);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;background:var(--gray-50);transition:all 0.2s;" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <div style="font-size:48px;margin-bottom:12px;" id="dropIcon">📤</div>
                 <p style="font-weight:600;color:var(--gray-700);margin:0;" id="dropText">فایل را اینجا بکشید یا کلیک کنید</p>
@@ -82,7 +82,7 @@ fileInput.addEventListener('change', function() {
 
 function showFileInfo(file) {
     var ext = file.name.split('.').pop().toLowerCase();
-    var icon = ext === 'csv' ? '📄' : '📊';
+    var icon = ext === 'csv' ? '📄' : '<i class="bi bi-bar-chart me-1"></i>';
     fileName.textContent = icon + ' ' + file.name + ' (' + formatSize(file.size) + ')';
     fileInfo.style.display = 'block';
     uploadBtn.disabled = false;
@@ -108,7 +108,7 @@ function formatSize(bytes) {
 
 // Show loading on submit
 document.getElementById('importForm').addEventListener('submit', function() {
-    uploadBtn.textContent = '⏳ در حال آپلود...';
+    uploadBtn.textContent = '<i class="bi bi-clock text-warning me-1"></i> در حال آپلود...';
     uploadBtn.disabled = true;
 });
 </script>
