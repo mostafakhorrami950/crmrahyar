@@ -2,7 +2,8 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h5 class="fw-bold mb-0"><i class="bi bi-briefcase me-2"></i>مدیریت معاملات</h5>
     <?php if (\Core\Auth::hasPermission('deals.create')): ?>
-    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>معامله جدید</a>
+    <button type="button" class="btn btn-primary btn-sm" onclick="new bootstrap.Modal(document.getElementById('quickDealModal')).show()"><i class="bi bi-lightning me-1"></i>افزودن سریع</button>
+    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>معامله جدید</a>
     <?php endif; ?>
 </div>
 
@@ -250,3 +251,5 @@ document.getElementById('qe_status')?.addEventListener('change', function() {
     document.getElementById('lostReasonDiv').classList.toggle('d-none', this.value !== 'lost');
 });
 </script>
+
+<?php include __DIR__ . '/_quick_create_modal.php'; ?>

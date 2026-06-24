@@ -23,8 +23,8 @@
             <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
             <input type="text" id="kanbanSearch" class="form-control" placeholder="جستجوی معامله..." oninput="filterKanbanCards(this.value)">
         </div>
-        <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>معامله جدید
+        <button type="button" class="btn btn-sm btn-primary" onclick="new bootstrap.Modal(document.getElementById('quickDealModal')).show()">
+            <i class="bi bi-lightning me-1"></i>افزودن سریع
         </a>
     </div>
 </div>
@@ -413,3 +413,5 @@ function openQuickView(dealId) {
     });
 }
 </script>
+
+<?php include __DIR__ . '/../deals/_quick_create_modal.php'; ?>
