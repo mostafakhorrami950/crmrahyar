@@ -1,36 +1,48 @@
 <?php $config = $GLOBALS['app_config']; ?>
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h5 class="fw-bold mb-0"><i class="bi bi-calendar me-1"></i> مدیریت فعالیت‌ها</h5>
-    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i> فعالیت جدید</a>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h5 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2 text-primary"></i>مدیریت فعالیت‌ها</h5>
+    <a href="<?php echo $config['url']; ?>/deals/create" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>فعالیت جدید</a>
 </div>
 
 <!-- Stats -->
-<div class="stats-row" style="margin-bottom:16px;">
-    <div class="stat-card" style="background:linear-gradient(135deg,#EF4444,#DC2626);">
-        <div class="stat-value"><?php echo $overdueCount; ?></div>
-        <div class="stat-label">⚠️ سررسید گذشته</div>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-right:4px solid #EF4444!important;">
+            <div class="fw-bold fs-4 text-danger"><?php echo $overdueCount; ?></div>
+            <small class="text-muted"><i class="bi bi-exclamation-triangle me-1"></i>سررسید گذشته</small>
+        </div>
     </div>
-    <div class="stat-card" style="background:linear-gradient(135deg,#F59E0B,#D97706);">
-        <div class="stat-value"><?php echo $todayCount; ?></div>
-        <div class="stat-label"><i class="bi bi-pin me-1"></i> امروز</div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-right:4px solid #F59E0B!important;">
+            <div class="fw-bold fs-4 text-warning"><?php echo $todayCount; ?></div>
+            <small class="text-muted"><i class="bi bi-pin me-1"></i>امروز</small>
+        </div>
     </div>
-    <div class="stat-card" style="background:linear-gradient(135deg,#10B981,#059669);">
-        <div class="stat-value"><?php echo $doneTodayCount; ?></div>
-        <div class="stat-label"><i class="bi bi-check-circle text-success me-1"></i> انجام شده امروز</div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-right:4px solid #10B981!important;">
+            <div class="fw-bold fs-4 text-success"><?php echo $doneTodayCount; ?></div>
+            <small class="text-muted"><i class="bi bi-check-circle me-1"></i>انجام شده امروز</small>
+        </div>
     </div>
-    <div class="stat-card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
-        <div class="stat-value"><?php echo $upcomingCount; ?></div>
-        <div class="stat-label"><i class="bi bi-calendar me-1"></i> ۷ روز آینده</div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm text-center p-3" style="border-right:4px solid #3B82F6!important;">
+            <div class="fw-bold fs-4 text-primary"><?php echo $upcomingCount; ?></div>
+            <small class="text-muted"><i class="bi bi-calendar me-1"></i>۷ روز آینده</small>
+        </div>
     </div>
 </div>
 
 <!-- Summary by type -->
 <?php if (!empty($activitySummary)): ?>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
-    <?php foreach ($activitySummary as $sum): ?>
-    <span style="background:var(--gray-100);padding:6px 14px;border-radius:20px;font-size:13px;">
-        <?php echo $sum->type == 'call' ? '<i class="bi bi-telephone me-1"></i>' : ($sum->type == 'meeting' ? '🤝' : ($sum->type == 'sms' ? '<i class="bi bi-envelope me-1"></i>' : ($sum->type == 'email' ? '📧' : ($sum->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i>' : '<i class="bi bi-journal-text me-1"></i>')))); ?>
-        <?php echo $sum->type == 'call' ? 'تماس' : ($sum->type == 'meeting' ? 'جلسه' : ($sum->type == 'sms' ? 'پیامک' : ($sum->type == 'email' ? 'ایمیل' : ($sum->type == 'follow_up' ? 'پیگیری' : 'یادداشت')))); ?>
+<div class="d-flex gap-2 flex-wrap mb-3">
+    <?php foreach ($activitySummary as $sum): 
+        $typeIcons = ['call'=>'bi-telephone','meeting'=>'bi-people','sms'=>'bi-envelope','email'=>'bi-envelope-at','follow_up'=>'bi-pin','note'=>'bi-journal-text'];
+        $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','email'=>'ایمیل','follow_up'=>'پیگیری','note'=>'یادداشت'];
+    ?>
+    <span class="badge bg-light text-dark border px-3 py-2">
+        <i class="bi <?php echo $typeIcons[$sum->type] ?? 'bi-circle'; ?> me-1"></i>
+        <?php echo $typeNames[$sum->type] ?? $sum->type; ?>
         <strong>(<?php echo $sum->count; ?>)</strong>
     </span>
     <?php endforeach; ?>
@@ -38,59 +50,75 @@
 <?php endif; ?>
 
 <!-- Filters -->
-<div class="card" style="padding:16px;margin-bottom:16px;">
-    <form method="GET" action="<?php echo $config['url']; ?>/activities" class="d-flex gap-2 flex-wrap">
-        <input type="date" name="date_from" class="form-input" value="<?php echo $dateFrom; ?>" style="flex:1;min-width:140px;" title="از تاریخ">
-        <input type="date" name="date_to" class="form-input" value="<?php echo $dateTo; ?>" style="flex:1;min-width:140px;" title="تا تاریخ">
-        <select name="user_id" class="form-input" style="flex:1;min-width:140px;">
-            <option value="">همه کاربران</option>
-            <?php foreach ($users as $u): ?>
-            <option value="<?php echo $u->id; ?>" <?php echo $selectedUser == $u->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="type" class="form-input" style="flex:1;min-width:140px;">
-            <option value="">همه انواع</option>
-            <option value="call" <?php echo $selectedType === 'call' ? 'selected' : ''; ?>><i class="bi bi-telephone me-1"></i> تماس</option>
-            <option value="meeting" <?php echo $selectedType === 'meeting' ? 'selected' : ''; ?>>🤝 جلسه</option>
-            <option value="follow_up" <?php echo $selectedType === 'follow_up' ? 'selected' : ''; ?>><i class="bi bi-pin me-1"></i> پیگیری</option>
-            <option value="email" <?php echo $selectedType === 'email' ? 'selected' : ''; ?>>📧 ایمیل</option>
-            <option value="sms" <?php echo $selectedType === 'sms' ? 'selected' : ''; ?>><i class="bi bi-envelope me-1"></i> پیامک</option>
-            <option value="note" <?php echo $selectedType === 'note' ? 'selected' : ''; ?>><i class="bi bi-journal-text me-1"></i> یادداشت</option>
-        </select>
-        <select name="status" class="form-input" style="flex:1;min-width:140px;">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="pending" <?php echo $selectedStatus === 'pending' ? 'selected' : ''; ?>><i class="bi bi-clock text-warning me-1"></i> انجام نشده</option>
-            <option value="done" <?php echo $selectedStatus === 'done' ? 'selected' : ''; ?>><i class="bi bi-check-circle text-success me-1"></i> انجام شده</option>
-            <option value="overdue" <?php echo $selectedStatus === 'overdue' ? 'selected' : ''; ?>>⚠️ سررسید گذشته</option>
-        </select>
-        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i> فیلتر</button>
-    </form>
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-3">
+        <form method="GET" action="<?php echo $config['url']; ?>/activities">
+            <div class="row g-2 align-items-end">
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted small">از تاریخ</label>
+                    <input type="date" name="date_from" class="form-control form-control-sm" value="<?php echo $dateFrom; ?>">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted small">تا تاریخ</label>
+                    <input type="date" name="date_to" class="form-control form-control-sm" value="<?php echo $dateTo; ?>">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted small">کاربر</label>
+                    <select name="user_id" class="form-select form-select-sm">
+                        <option value="">همه</option>
+                        <?php foreach ($users as $u): ?>
+                        <option value="<?php echo $u->id; ?>" <?php echo $selectedUser == $u->id ? 'selected' : ''; ?>><?php echo htmlspecialchars($u->full_name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted small">نوع</label>
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="">همه</option>
+                        <option value="call" <?php echo $selectedType === 'call' ? 'selected' : ''; ?>>تماس</option>
+                        <option value="meeting" <?php echo $selectedType === 'meeting' ? 'selected' : ''; ?>>جلسه</option>
+                        <option value="follow_up" <?php echo $selectedType === 'follow_up' ? 'selected' : ''; ?>>پیگیری</option>
+                        <option value="email" <?php echo $selectedType === 'email' ? 'selected' : ''; ?>>ایمیل</option>
+                        <option value="sms" <?php echo $selectedType === 'sms' ? 'selected' : ''; ?>>پیامک</option>
+                        <option value="note" <?php echo $selectedType === 'note' ? 'selected' : ''; ?>>یادداشت</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label text-muted small">وضعیت</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">همه</option>
+                        <option value="pending" <?php echo $selectedStatus === 'pending' ? 'selected' : ''; ?>>انجام نشده</option>
+                        <option value="done" <?php echo $selectedStatus === 'done' ? 'selected' : ''; ?>>انجام شده</option>
+                        <option value="overdue" <?php echo $selectedStatus === 'overdue' ? 'selected' : ''; ?>>سررسید گذشته</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 btn-sm"><i class="bi bi-search me-1"></i>فیلتر</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Bulk Actions Bar -->
-<div id="bulkBar" style="display:none;position:sticky;top:0;z-index:100;background:#1e293b;color:#fff;padding:12px 16px;border-radius:12px;margin-bottom:12px;align-items:center;justify-content:space-between;">
-    <span id="bulkCount">۰ مورد انتخاب شده</span>
-    <div style="display:flex;gap:8px;">
-        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm"><i class="bi bi-trash me-1"></i>حذف انتخاب شده‌ها</button>
-        <button onclick="clearSelection()" class="btn btn-outline-secondary btn-sm" style="background:#475569;">✕ لغو انتخاب</button>
+<!-- Bulk Actions -->
+<div id="bulkBar" class="alert alert-dark d-none align-items-center justify-content-between py-2 mb-2">
+    <span id="bulkCount" class="text-white">۰ مورد انتخاب شده</span>
+    <div class="d-flex gap-2">
+        <button onclick="bulkDelete('activity_logs')" class="btn btn-danger btn-sm"><i class="bi bi-trash me-1"></i>حذف</button>
+        <button onclick="clearSelection()" class="btn btn-secondary btn-sm"><i class="bi bi-x-lg me-1"></i>لغو</button>
     </div>
 </div>
 
 <!-- Activities List -->
-<div class="card" style="padding:0;">
-    <div style="padding:10px 20px;border-bottom:1px solid var(--gray-200);background:var(--gray-50);">
-        <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;">
-            <input type="checkbox" id="selectAll" onchange="toggleAll(this)"> انتخاب همه
-        </label>
-    </div>
-    <?php if (empty($activities)): ?>
-    <div style="text-align:center;padding:60px 20px;color:var(--gray-400);">
-        <div style="font-size:64px;margin-bottom:16px;"><i class="bi bi-calendar me-1"></i></div>
-        <h3 style="color:var(--gray-500);margin-bottom:8px;">هیچ فعالیتی یافت نشد</h3>
-        <p>فیلترها را تغییر دهید یا فعالیت جدید ایجاد کنید</p>
-    </div>
-    <?php else: ?>
-    <div style="display:flex;flex-direction:column;">
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <?php if (empty($activities)): ?>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-calendar-check"></i></div>
+            <h5>هیچ فعالیتی یافت نشد</h5>
+            <p>فیلترها را تغییر دهید یا فعالیت جدید ایجاد کنید</p>
+        </div>
+        <?php else: ?>
         <?php 
         $currentDate = '';
         foreach ($activities as $act): 
@@ -101,87 +129,69 @@
             if ($actDate !== $currentDate):
                 $currentDate = $actDate;
         ?>
-            <div style="padding:10px 20px;background:var(--gray-50);font-weight:700;font-size:14px;color:var(--gray-700);border-bottom:1px solid var(--gray-200);">
-                <i class="bi bi-calendar me-1"></i> <?php echo $actDate; ?>
-                <?php if ($isToday): ?><span style="color:var(--primary);font-size:12px;font-weight:600;">(امروز)</span><?php endif; ?>
+            <div class="px-3 py-2 bg-light fw-bold small text-dark border-bottom">
+                <i class="bi bi-calendar3 me-1"></i><?php echo $actDate; ?>
+                <?php if ($isToday): ?><span class="badge bg-primary ms-2">امروز</span><?php endif; ?>
             </div>
         <?php endif; ?>
         
-        <div class="activity-item" style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);<?php echo $act->is_done ? 'opacity:0.6;' : ''; ?><?php echo $isOverdue ? 'background:#fff5f5;' : ''; ?>" data-id="<?php echo $act->id; ?>">
-            <!-- Checkbox -->
-            <input type="checkbox" class="row-check" value="<?php echo $act->id; ?>" onchange="updateBulkBar()" style="margin-top:12px;flex-shrink:0;">
-            <!-- Toggle Done -->
-            <form method="POST" action="<?php echo $config['url']; ?>/activities/toggle-done/<?php echo $act->id; ?>" data-ajax="true" style="flex-shrink:0;margin-top:4px;">
-                <button type="submit" class="btn btn-sm <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-secondary'); ?>" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">
-                    <?php echo $act->is_done ? '<i class="bi bi-check-circle text-success me-1"></i>' : ($isOverdue ? '⚠️' : '⬜'); ?>
-                </button>
-            </form>
+        <div class="d-flex align-items-start gap-3 px-3 py-3 border-bottom <?php echo $act->is_done ? 'opacity-50' : ''; ?> <?php echo $isOverdue ? 'bg-danger bg-opacity-5' : ''; ?>" data-id="<?php echo $act->id; ?>">
+            <!-- Checkbox + Toggle -->
+            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0">
+                <input type="checkbox" class="row-check form-check-input" value="<?php echo $act->id; ?>" onchange="updateBulkBar()">
+                <form method="POST" action="<?php echo $config['url']; ?>/activities/toggle-done/<?php echo $act->id; ?>" data-ajax="true">
+                    <button type="submit" class="btn btn-sm rounded-circle <?php echo $act->is_done ? 'btn-success' : ($isOverdue ? 'btn-danger' : 'btn-outline-secondary'); ?>" style="width:32px;height:32px;padding:0;" title="<?php echo $act->is_done ? 'انجام شده' : 'انجام نشده'; ?>">
+                        <i class="bi <?php echo $act->is_done ? 'bi-check-lg' : ($isOverdue ? 'bi-exclamation' : 'bi-circle'); ?>"></i>
+                    </button>
+                </form>
+            </div>
             
             <!-- Type Icon -->
-            <div style="width:40px;height:40px;border-radius:10px;background:<?php echo $act->type == 'call' ? '#e3f2fd' : ($act->type == 'meeting' ? '#fce4ec' : ($act->type == 'follow_up' ? '#e8f5e9' : ($act->type == 'email' ? '#fff3e0' : '#f3e5f5'))); ?>;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
-                <?php echo $act->type == 'call' ? '<i class="bi bi-telephone me-1"></i>' : ($act->type == 'meeting' ? '🤝' : ($act->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i>' : ($act->type == 'email' ? '📧' : ($act->type == 'sms' ? '<i class="bi bi-envelope me-1"></i>' : '<i class="bi bi-journal-text me-1"></i>')))); ?>
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background:<?php echo $act->type == 'call' ? '#e3f2fd' : ($act->type == 'meeting' ? '#fce4ec' : ($act->type == 'follow_up' ? '#e8f5e9' : ($act->type == 'email' ? '#fff3e0' : ($act->type == 'sms' ? '#e0f7fa' : '#f3e5f5')))); ?>;">
+                <i class="bi <?php echo ($typeIcons[$act->type] ?? 'bi-journal-text') . ' fs-5'; ?>"></i>
             </div>
             
             <!-- Content -->
-            <div style="flex:1;min-width:0;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+            <div class="flex-grow-1 min-width-0">
+                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
                     <div>
-                        <strong style="font-size:14px;<?php echo $act->is_done ? 'text-decoration:line-through;' : ''; ?>"><?php echo htmlspecialchars($act->subject ?? '-'); ?></strong>
-                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px;">
-                            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--gray-100);color:var(--gray-600);">
-                                <?php echo $act->type == 'call' ? '<i class="bi bi-telephone me-1"></i> تماس' : ($act->type == 'meeting' ? '🤝 جلسه' : ($act->type == 'follow_up' ? '<i class="bi bi-pin me-1"></i> پیگیری' : ($act->type == 'email' ? '📧 ایمیل' : ($act->type == 'sms' ? '<i class="bi bi-envelope me-1"></i> پیامک' : '<i class="bi bi-journal-text me-1"></i> یادداشت')))); ?>
-                            </span>
+                        <strong class="<?php echo $act->is_done ? 'text-decoration-line-through' : ''; ?>" style="font-size:14px;"><?php echo htmlspecialchars($act->subject ?? '-'); ?></strong>
+                        <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
+                            <span class="badge bg-light text-dark small"><?php echo $typeNames[$act->type] ?? $act->type; ?></span>
                             <?php if ($act->user_name): ?>
-                            <span style="font-size:11px;color:var(--gray-400);"><i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($act->user_name); ?></span>
+                            <small class="text-muted"><i class="bi bi-person me-1"></i><?php echo htmlspecialchars($act->user_name); ?></small>
                             <?php endif; ?>
                             <?php if ($act->activity_date): ?>
-                            <span style="font-size:11px;color:<?php echo $isOverdue ? '#EF4444' : 'var(--gray-400)'; ?>;">⏰ <?php echo \Core\JDate::displayDateTime($act->activity_date); ?></span>
+                            <small class="<?php echo $isOverdue ? 'text-danger fw-bold' : 'text-muted'; ?>">
+                                <i class="bi bi-clock me-1"></i><?php echo \Core\JDate::displayDateTime($act->activity_date); ?>
+                            </small>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Deal + Contact info -->
-                <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+                <div class="d-flex gap-2 mt-2 flex-wrap">
                     <?php if ($act->deal_id): ?>
-                    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--primary);background:#eef2ff;padding:4px 10px;border-radius:8px;text-decoration:none;font-weight:600;">
-                        💼 <?php echo htmlspecialchars(mb_substr($act->deal_title ?? '-', 0, 30)); ?> 🔗
+                    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $act->deal_id; ?>" class="badge bg-primary bg-opacity-10 text-primary text-decoration-none px-2 py-1">
+                        <i class="bi bi-briefcase me-1"></i><?php echo htmlspecialchars(mb_substr($act->deal_title ?? '-', 0, 30)); ?>
                     </a>
                     <?php endif; ?>
                     <?php if (!empty($act->stage_name)): ?>
-                    <span style="font-size:11px;background:<?php echo $act->stage_color; ?>20;color:<?php echo $act->stage_color; ?>;padding:4px 10px;border-radius:8px;">
-                        <?php echo htmlspecialchars($act->stage_name); ?>
-                    </span>
+                    <span class="badge px-2 py-1" style="background:<?php echo $act->stage_color; ?>20;color:<?php echo $act->stage_color; ?>;"><?php echo htmlspecialchars($act->stage_name); ?></span>
                     <?php endif; ?>
                     <?php if (!empty($act->contact_name)): ?>
-                    <span style="font-size:12px;color:var(--gray-500);">
-                        <i class="bi bi-person me-1"></i> <?php echo htmlspecialchars($act->contact_name); ?>
-                        <?php if (!empty($act->contact_phone)): ?>
-                        <span dir="ltr">(<?php echo htmlspecialchars($act->contact_phone); ?>)</span>
-                        <?php endif; ?>
-                    </span>
+                    <small class="text-muted"><i class="bi bi-person me-1"></i><?php echo htmlspecialchars($act->contact_name); ?>
+                    <?php if (!empty($act->contact_phone)): ?><span dir="ltr">(<?php echo htmlspecialchars($act->contact_phone); ?>)</span><?php endif; ?>
+                    </small>
                     <?php endif; ?>
                 </div>
                 
                 <?php if (!empty($act->description)): ?>
-                <div style="margin-top:6px;font-size:12px;color:var(--gray-500);line-height:1.6;"><?php echo nl2br(htmlspecialchars(mb_substr($act->description, 0, 200))); ?></div>
+                <div class="mt-1 small text-muted"><?php echo nl2br(htmlspecialchars(mb_substr($act->description, 0, 200))); ?></div>
                 <?php endif; ?>
             </div>
         </div>
         <?php endforeach; ?>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
 </div>
-
-<style>
-.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
-.stat-box { color:white; padding:16px; border-radius:12px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-.stat-value { font-weight:800; font-size:28px; }
-.stat-label { font-size:12px; opacity:0.9; }
-.activity-item:hover { background:var(--gray-50); }
-.btn { border:none; cursor:pointer; font-weight:600; }
-.btn-sm { padding:6px 10px; font-size:12px; border-radius:8px; }
-.btn-success { background:#d1fae5; color:#065f46; }
-.btn-secondary { background:var(--gray-200); color:var(--gray-700); }
-.btn-danger { background:#fee2e2; color:#991b1b; }
-</style>

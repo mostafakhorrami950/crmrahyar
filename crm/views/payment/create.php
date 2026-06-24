@@ -1,101 +1,109 @@
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h5 class="fw-bold mb-0"><i class="bi bi-credit-card me-1"></i> ایجاد لینک پرداخت</h5>
-    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary"><i class="bi bi-arrow-right me-1"></i>بازگشت به معامله</a>
+<?php $config = $GLOBALS['app_config']; ?>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h5 class="fw-bold mb-0"><i class="bi bi-credit-card me-2 text-primary"></i>ایجاد لینک پرداخت</h5>
+    <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت به معامله</a>
 </div>
 
-<div class="row" style="margin-top:16px;">
-    <div class="col-md-6">
+<div class="row g-3">
+    <div class="col-12 col-md-6">
         <!-- Create Payment Form -->
-        <div class="card" style="padding:24px;">
-            <h5 class="fw-bold mb-0">🔗 ایجاد لینک اختصاصی پرداخت</h5>
-            
-            <!-- Deal Info -->
-            <div style="display:flex;gap:16px;padding:16px;background:var(--gray-50);border-radius:12px;margin-bottom:20px;">
-                <div style="width:48px;height:48px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;flex-shrink:0;"><i class="bi bi-cash me-1"></i></div>
-                <div>
-                    <strong style="font-size:16px;"><?php echo htmlspecialchars($deal->title); ?></strong>
-                    <br><small style="color:var(--gray-500);"><?php echo htmlspecialchars($deal->contact_name ?? ''); ?> | <?php echo htmlspecialchars($deal->contact_phone ?? ''); ?></small>
-                    <br><strong style="color:var(--primary);font-size:15px;"><?php echo number_format($deal->amount); ?> تومان</strong>
-                </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg me-2 text-primary"></i>ایجاد لینک اختصاصی پرداخت</h6>
             </div>
-
-            <div class="ajax-error alert alert-danger" style="display:none;"></div>
-            <div class="ajax-success alert alert-success" style="display:none;"></div>
-            <form method="POST" action="<?php echo $config['url']; ?>/payment/request" data-ajax="true">
-                <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
-                
-                <div class="mb-3" style="margin-bottom:16px;">
-                    <label class="form-label text-muted small fw-medium">مبلغ (تومان) *</label>
-                    <input type="number" name="amount" class="form-input" value="<?php echo $deal->amount ?: 0; ?>" required min="1000" step="1000" style="font-size:18px;font-weight:bold;direction:ltr;text-align:left;">
-                    <small style="color:var(--gray-400);font-size:11px;">مبلغ پیش‌فرض: <?php echo number_format($deal->amount); ?> تومان</small>
+            <div class="card-body">
+                <!-- Deal Info -->
+                <div class="d-flex gap-3 p-3 bg-light rounded-3 mb-3">
+                    <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:48px;height:48px;">
+                        <i class="bi bi-briefcase fs-4"></i>
+                    </div>
+                    <div>
+                        <strong class="d-block"><?php echo htmlspecialchars($deal->title); ?></strong>
+                        <small class="text-muted"><?php echo htmlspecialchars($deal->contact_name ?? ''); ?> | <?php echo htmlspecialchars($deal->contact_phone ?? ''); ?></small>
+                        <br><strong class="text-primary"><?php echo number_format($deal->amount); ?> تومان</strong>
+                    </div>
                 </div>
 
-                <div class="mb-3" style="margin-bottom:16px;">
-                    <label class="form-label text-muted small fw-medium">📱 شماره موبایل پرداخت کننده (برای نمایش کارت‌ها)</label>
-                    <input type="text" name="mobile" class="form-input" placeholder="09120000000" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" style="direction:ltr;text-align:left;">
-                </div>
+                <div class="ajax-error alert alert-danger d-none mb-3"></div>
+                <div class="ajax-success alert alert-success d-none mb-3"></div>
+                <form method="POST" action="<?php echo $config['url']; ?>/payment/request" data-ajax="true">
+                    <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">مبلغ (تومان) <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" class="form-control form-control-lg" value="<?php echo $deal->amount ?: 0; ?>" required min="1000" step="1000" dir="ltr" style="text-align:left;font-weight:bold;">
+                        <small class="text-muted">مبلغ پیش‌فرض: <?php echo number_format($deal->amount); ?> تومان</small>
+                    </div>
 
-                <div class="mb-3" style="margin-bottom:16px;">
-                    <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i> توضیحات (نمایش در صفحه پرداخت)</label>
-                    <textarea name="description" class="form-textarea" rows="2" placeholder="توضیحات این پرداخت..."><?php echo htmlspecialchars($deal->title); ?></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>شماره موبایل پرداخت کننده</label>
+                        <input type="text" name="mobile" class="form-control" placeholder="09120000000" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;">
+                    </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:16px;font-weight:bold;" id="submitPayBtn">
-                    <i class="bi bi-credit-card me-1"></i> اتصال به درگاه پرداخت زیبال
-                </button>
-                <p style="text-align:center;color:var(--gray-400);font-size:12px;margin-top:8px;">
-                    🔒 پرداخت امن توسط درگاه زیبال
-                </p>
-            </form>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>توضیحات</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="توضیحات این پرداخت..."><?php echo htmlspecialchars($deal->title); ?></textarea>
+                    </div>
 
-            <!-- Public Payment Link Section (hidden by default) -->
-            <div id="publicLinkSection" style="display:none;margin-top:20px;padding:16px;background:#d4edda;border-radius:12px;border:2px dashed #28a745;">
-                <h6 style="margin:0 0 10px 0;color:#155724;"><i class="bi bi-check-circle text-success me-1"></i> لینک پرداخت اختصاصی مشتری</h6>
-                <p style="font-size:13px;color:#155724;margin:0 0 10px 0;">این لینک را برای مشتری ارسال کنید. مشتری با کلیک روی آن می‌تواند مستقیماً پرداخت کند:</p>
-                <div style="display:flex;gap:8px;">
-                    <input type="text" id="publicPayLink" style="flex:1;padding:10px;border:1px solid #28a745;border-radius:8px;font-size:13px;direction:ltr;text-align:left;background:#fff;" readonly>
-                    <button type="button" class="btn btn-success" onclick="copyPublicLink()" style="white-space:nowrap;"><i class="bi bi-list-task me-1"></i> کپی</button>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold" id="submitPayBtn">
+                        <i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال
+                    </button>
+                    <p class="text-center text-muted small mt-2"><i class="bi bi-shield-lock me-1"></i>پرداخت امن توسط درگاه زیبال</p>
+                </form>
+
+                <!-- Public Payment Link Section -->
+                <div id="publicLinkSection" class="d-none mt-3 p-3 rounded-3 border border-success border-dashed" style="background:#d4edda;">
+                    <h6 class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i>لینک پرداخت اختصاصی مشتری</h6>
+                    <p class="small text-success mb-2">این لینک را برای مشتری ارسال کنید:</p>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="publicPayLink" class="form-control form-control-sm" dir="ltr" style="text-align:left;" readonly>
+                        <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="copyPublicLink()"><i class="bi bi-clipboard me-1"></i>کپی</button>
+                    </div>
                 </div>
-                <p style="font-size:12px;color:#155724;margin:10px 0 0 0;">
-                    همچنین می‌توانید مستقیماً به درگاه پرداخت متصل شوید:
-                    <button type="button" class="btn btn-sm btn-primary" id="directPayBtn" style="margin-top:6px;"><i class="bi bi-credit-card me-1"></i> پرداخت مستقیم</button>
-                </p>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-12 col-md-6">
         <!-- Previous Payments -->
-        <div class="card" style="padding:24px;">
-            <h5 class="fw-bold mb-0"><i class="bi bi-list-task me-1"></i> تاریخچه پرداخت‌های این معامله</h5>
-            <?php 
-            $db = \Core\Database::getInstance();
-            $payments = $db->fetchAll("SELECT * FROM payments WHERE deal_id = :id ORDER BY created_at DESC", [':id' => $deal->id]);
-            ?>
-            <?php if (empty($payments)): ?>
-            <div style="text-align:center;padding:40px 20px;color:var(--gray-400);">
-                <div style="font-size:48px;margin-bottom:12px;"><i class="bi bi-credit-card me-1"></i></div>
-                <p>هیچ پرداختی برای این معامله ثبت نشده است.</p>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>تاریخچه پرداخت‌ها</h6>
             </div>
-            <?php else: ?>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-                <?php foreach ($payments as $p): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--gray-50);border-radius:10px;">
-                    <div>
-                        <strong style="font-size:14px;"><?php echo number_format($p->amount); ?> تومان</strong>
-                        <br><small style="color:var(--gray-400);font-size:11px;"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
-                        <?php if ($p->track_id): ?><br><small style="color:var(--gray-400);font-size:11px;">کد: <?php echo $p->track_id; ?></small><?php endif; ?>
-                    </div>
-                    <div style="text-align:left;">
-                        <span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:bold;display:inline-block;
-                            <?php echo $p->status == 'success' ? 'background:#d4edda;color:#155724;' : ($p->status == 'pending' ? 'background:#fff3cd;color:#856404;' : 'background:#f8d7da;color:#721c24;'); ?>">
-                            <?php echo $p->status == 'success' ? '<i class="bi bi-check-circle text-success me-1"></i> موفق' : ($p->status == 'pending' ? '<i class="bi bi-clock text-warning me-1"></i> در انتظار' : '<i class="bi bi-x-circle text-danger me-1"></i> ناموفق'); ?>
-                        </span>
-                    </div>
+            <div class="card-body">
+                <?php 
+                $db = \Core\Database::getInstance();
+                $payments = $db->fetchAll("SELECT * FROM payments WHERE deal_id = :id ORDER BY created_at DESC", [':id' => $deal->id]);
+                ?>
+                <?php if (empty($payments)): ?>
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-credit-card fs-1 d-block mb-2 opacity-25"></i>
+                    <p>هیچ پرداختی ثبت نشده است.</p>
                 </div>
-                <?php endforeach; ?>
+                <?php else: ?>
+                <div class="d-flex flex-column gap-2">
+                    <?php foreach ($payments as $p): ?>
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded-3">
+                        <div>
+                            <strong class="small"><?php echo number_format($p->amount); ?> تومان</strong>
+                            <br><small class="text-muted"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
+                            <?php if ($p->track_id): ?><br><small class="text-muted">کد: <?php echo $p->track_id; ?></small><?php endif; ?>
+                        </div>
+                        <div>
+                            <?php if ($p->status == 'success'): ?>
+                            <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle me-1"></i>موفق</span>
+                            <?php elseif ($p->status == 'pending'): ?>
+                            <span class="badge bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock me-1"></i>در انتظار</span>
+                            <?php else: ?>
+                            <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle me-1"></i>ناموفق</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
