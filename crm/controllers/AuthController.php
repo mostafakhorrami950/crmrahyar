@@ -5,6 +5,7 @@ use Core\Auth;
 use Core\Database;
 use Core\Session;
 use Core\View;
+use Core\ActivityLog;
 
 class AuthController
 {
