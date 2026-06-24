@@ -291,6 +291,7 @@ Router::post('/bulk/delete', [BulkController::class, 'delete'], 'deals.view');
 
 // AI Analysis
 Router::post('/ai/analyze', [AIController::class, 'analyze']);
+Router::get('/ai/history', [AIController::class, 'history']);
 
 // Logger viewer (admin)
 Router::get('/system/logs', function() {

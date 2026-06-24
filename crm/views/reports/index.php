@@ -2,6 +2,8 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Marked.js for Markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <?php $chartColors = ['#4361ee','#7209b7','#06d6a0','#ffd166','#ef476f','#118ab2','#8338ec','#ff6b6b','#48bfe3','#56cfe1']; ?>
 
 <!-- Page Header -->
@@ -11,6 +13,7 @@
         <a href="<?php echo $config['url']; ?>/reports/sales" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash me-1"></i>فروش</a>
         <a href="<?php echo $config['url']; ?>/reports/pipeline" class="btn btn-outline-primary btn-sm"><i class="bi bi-kanban me-1"></i>پایپ لاین</a>
         <a href="<?php echo $config['url']; ?>/reports/contacts" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>مخاطبان</a>
+        <a href="<?php echo $config['url']; ?>/ai/history" class="btn btn-outline-info btn-sm"><i class="bi bi-clock-history me-1"></i>تاریخچه AI</a>
         <button type="button" class="btn btn-warning btn-sm fw-bold" id="aiAnalyzeBtn" onclick="runAIAnalysis()">
             <i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی
         </button>
@@ -32,7 +35,7 @@
             <p class="text-muted fw-medium">در حال تحلیل اطلاعات با هوش مصنوعی...<br><small>این فرآیند ممکن است ۳۰ تا ۶۰ ثانیه طول بکشد</small></p>
         </div>
         <div id="aiError" class="alert alert-danger" style="display:none;"></div>
-        <div id="aiContent" style="display:none;direction:rtl;white-space:pre-wrap;line-height:2;font-size:14px;"></div>
+        <div id="aiContent" class="ai-markdown-content" style="display:none;direction:rtl;line-height:2;font-size:14px;"></div>
     </div>
 </div>
 
@@ -442,7 +445,11 @@ function runAIAnalysis() {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-robot me-1"></i>تحلیل با هوش مصنوعی';
         if (data.success) {
-            content.textContent = data.analysis;
+            try {
+                content.innerHTML = marked.parse(data.analysis);
+            } catch(e) {
+                content.textContent = data.analysis;
+            }
             content.style.display = 'block';
             document.getElementById('aiModelBadge').textContent = 'مدل: ' + (data.model || '');
             document.getElementById('aiTimeBadge').textContent = data.timestamp || '';
@@ -460,4 +467,11 @@ function runAIAnalysis() {
         error.style.display = 'block';
     });
 }
+
+// Markdown CSS styles for AI content
+(function() {
+    var style = document.createElement('style');
+    style.textContent = '.ai-markdown-content h1,.ai-markdown-content h2,.ai-markdown-content h3{color:#1e293b;margin-top:1.2rem;margin-bottom:.6rem;font-weight:700}.ai-markdown-content h1{font-size:1.4rem;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem}.ai-markdown-content h2{font-size:1.2rem;border-bottom:1px solid #e2e8f0;padding-bottom:.3rem}.ai-markdown-content h3{font-size:1.05rem}.ai-markdown-content ul,.ai-markdown-content ol{padding-right:1.5rem;padding-left:0}.ai-markdown-content li{margin-bottom:.4rem}.ai-markdown-content strong{color:#0f172a}.ai-markdown-content code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:13px;direction:ltr;display:inline-block}.ai-markdown-content pre{background:#1e293b;color:#e2e8f0;padding:1rem;border-radius:8px;overflow-x:auto;direction:ltr}.ai-markdown-content pre code{background:0 0;color:inherit}.ai-markdown-content blockquote{border-right:4px solid #667eea;padding:0.8rem 1rem;margin:1rem 0;color:#64748b;background:#f8fafc;border-radius:0 8px 8px 0}.ai-markdown-content table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:13px}.ai-markdown-content th,.ai-markdown-content td{border:1px solid #e2e8f0;padding:8px 12px;text-align:right}.ai-markdown-content th{background:#f1f5f9;font-weight:600}.ai-markdown-content hr{border:none;border-top:2px solid #e2e8f0;margin:1.5rem 0}.ai-markdown-content p{margin-bottom:.6rem}';
+    document.head.appendChild(style);
+})();
 </script>
