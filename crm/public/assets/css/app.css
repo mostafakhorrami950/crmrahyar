@@ -835,6 +835,16 @@ textarea.form-control {
     }
 }
 
+/* ========== JALALI DATE PICKER ========== */
+.jalali-date-input {
+    cursor: pointer;
+    background: #fff url("data:image/svg+xml,...") no-repeat right 8px center;
+    font-family: 'Vazirmatn', Tahoma', sans-serif;
+}
+.persian-datepicker-rtl {
+    direction: rtl;
+}
+
 /* ========== PIPELINE PROGRESS ========== */
 .pipeline-stages-mini {
     display: flex;

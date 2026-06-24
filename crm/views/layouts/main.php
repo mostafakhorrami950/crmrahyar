@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Vazir Font -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <!-- Persian Datepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=3.0.0">
     <script>var CRM_BASE_URL = '<?php echo $config['url']; ?>';</script>
@@ -208,6 +210,10 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery + Persian Datepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="<?php echo $config['url']; ?>/assets/js/app.js?v=2.0.0" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -290,6 +296,69 @@
                 if (!searchInput.contains(e.target) && !suggestions.contains(e.target)) {
                     suggestions.style.display = 'none';
                 }
+            });
+        }
+
+        // ===== JALALI DATE PICKER - Global =====
+        // Convert all type="date" inputs to Persian datepicker
+        if (typeof jQuery !== 'undefined' && typeof $.fn.pDatepicker !== 'undefined') {
+            jQuery('input[type="date"]').each(function() {
+                var $input = jQuery(this);
+                var name = $input.attr('name');
+                var id = $input.attr('id') || '';
+                var gregorianValue = $input.val(); // Current Gregorian value
+                
+                // Create hidden field to store Gregorian value
+                var $hidden = jQuery('<input>', {
+                    type: 'hidden',
+                    name: name,
+                    id: id + '_gregorian',
+                    value: gregorianValue
+                });
+                
+                // Convert visible input to text
+                $input.attr('type', 'text');
+                $input.removeAttr('name'); // Remove name to avoid duplicate submission
+                $input.attr('autocomplete', 'off');
+                $input.attr('placeholder', 'تاریخ را انتخاب کنید');
+                $input.addClass('jalali-date-input');
+                
+                // Insert hidden field after visible input
+                $input.after($hidden);
+                
+                // If there's a Gregorian value, convert to Jalali for display
+                if (gregorianValue) {
+                    try {
+                        var parts = gregorianValue.split('-');
+                        if (parts.length === 3) {
+                            var pd = new persianDate();
+                            pd.toCalendar('persian');
+                            var jalali = pd.convert(new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])));
+                            var jStr = jalali.year() + '/' + String(jalali.month()).padStart(2,'0') + '/' + String(jalali.date()).padStart(2,'0');
+                            $input.val(jStr);
+                        }
+                    } catch(e) {}
+                }
+                
+                // Initialize persian-datepicker
+                $input.pDatepicker({
+                    format: 'YYYY/MM/DD',
+                    initialValue: false,
+                    autoClose: true,
+                    calendar: {
+                        persian: {
+                            locale: 'fa'
+                        }
+                    },
+                    onSelect: function(unix) {
+                        // Convert unix timestamp to Gregorian YYYY-MM-DD
+                        var d = new Date(unix);
+                        var gy = d.getFullYear();
+                        var gm = String(d.getMonth() + 1).padStart(2, '0');
+                        var gd = String(d.getDate()).padStart(2, '0');
+                        $hidden.val(gy + '-' + gm + '-' + gd);
+                    }
+                });
             });
         }
     });
