@@ -238,6 +238,7 @@ Router::group('/teams', function() {
 Router::group('/targets', function() {
     Router::get('', [TargetController::class, 'index'], 'reports.view');
     Router::post('/store', [TargetController::class, 'store'], 'reports.view');
+    Router::post('/update/{id}', [TargetController::class, 'update'], 'reports.view');
     Router::post('/delete/{id}', [TargetController::class, 'delete'], 'reports.view');
 });
 

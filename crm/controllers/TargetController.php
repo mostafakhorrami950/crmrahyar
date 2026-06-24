@@ -66,7 +66,7 @@ class TargetController
         $targetId = (int)($_POST['target_id'] ?? 0);
         $year = (int)($_POST['year'] ?? date('Y'));
         $month = (int)($_POST['month'] ?? date('n'));
-        $amount = (int)($_POST['target_amount'] ?? 0);
+        $amount = (int)($_POST['target_amount'] ?? 0); // Amount in Toman (same as deals)
         $deals = (int)($_POST['target_deals'] ?? 0);
         $dateFrom = !empty($_POST['date_from']) ? $_POST['date_from'] : null;
         $dateTo = !empty($_POST['date_to']) ? $_POST['date_to'] : null;
@@ -96,6 +96,24 @@ class TargetController
         
         Session::setFlash('success', 'هدف فروش ذخیره شد.');
         View::redirect("/targets?year={$year}&month={$month}");
+    }
+
+    public function update(array $params): void
+    {
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+        $amount = (int)($_POST['target_amount'] ?? 0); // Amount in Toman (same as deals)
+        $deals = (int)($_POST['target_deals'] ?? 0);
+        $dateFrom = !empty($_POST['date_from']) ? $_POST['date_from'] : null;
+        $dateTo = !empty($_POST['date_to']) ? $_POST['date_to'] : null;
+        
+        $data = ['target_amount'=>$amount, 'target_deals'=>$deals];
+        if ($dateFrom !== null) $data['date_from'] = $dateFrom;
+        if ($dateTo !== null) $data['date_to'] = $dateTo;
+        
+        $db->update('sales_targets', $data, 'id=:id', [':id'=>$id]);
+        Session::setFlash('success', 'هدف فروش ویرایش شد.');
+        View::redirect('/targets');
     }
 
     public function delete(array $params): void
