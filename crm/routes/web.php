@@ -31,9 +31,14 @@ use Controllers\ImportController;
 use Controllers\BulkController;
 use Controllers\BackupController;
 
-// Landing page (public - no auth required)
+// Landing page - redirect to main site URL
 Router::get('/', function() {
     $config = $GLOBALS['app_config'];
+    $siteUrl = $_ENV['SITE_URL'] ?? $config['url'];
+    if ($siteUrl && $siteUrl !== $config['url']) {
+        header('Location: ' . $siteUrl);
+        exit;
+    }
     require __DIR__ . '/../views/landing.php';
     exit;
 });
@@ -47,7 +52,11 @@ Router::get('/logout', [AuthController::class, 'logout']);
 Router::group('/dashboard', function() {
     Router::get('', [DashboardController::class, 'index']);
     Router::post('/add-note', [DashboardController::class, 'addNote']);
+    Router::post('/add-note-all', [DashboardController::class, 'addNoteToAll']);
+    Router::post('/edit-note', [DashboardController::class, 'editNote']);
     Router::post('/delete-note', [DashboardController::class, 'deleteNote']);
+    Router::post('/archive-note', [DashboardController::class, 'archiveNote']);
+    Router::get('/notes', [DashboardController::class, 'notes']);
     Router::get('/notifications', [DashboardController::class, 'notifications']);
     Router::post('/notification/read', [DashboardController::class, 'markNotificationRead']);
     Router::post('/notification/read-all', [DashboardController::class, 'markAllRead']);

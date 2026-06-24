@@ -3,10 +3,12 @@ CREATE TABLE IF NOT EXISTS dashboard_notes (
     target_user_id INT NOT NULL,
     note TEXT NOT NULL,
     is_pinned TINYINT(1) DEFAULT 0,
+    is_archived TINYINT(1) DEFAULT 0,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_target_user (target_user_id),
-    INDEX idx_created_by (created_by)
+    INDEX idx_created_by (created_by),
+    INDEX idx_archived (is_archived)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS notifications (

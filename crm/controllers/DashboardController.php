@@ -3,6 +3,7 @@ namespace Controllers;
 
 use Core\Auth;
 use Core\Database;
+use Core\Session;
 use Core\View;
 
 class DashboardController
@@ -96,8 +97,8 @@ class DashboardController
             "SELECT dn.*, u.full_name as author_name 
              FROM dashboard_notes dn 
              LEFT JOIN users u ON dn.created_by = u.id 
-             WHERE dn.target_user_id = :uid 
-             ORDER BY dn.created_at DESC LIMIT 5",
+             WHERE dn.target_user_id = :uid AND (dn.is_archived IS NULL OR dn.is_archived = 0)
+             ORDER BY dn.is_pinned DESC, dn.created_at DESC LIMIT 5",
             [':uid' => $userId]
         );
 
@@ -174,6 +175,130 @@ class DashboardController
 
         echo json_encode(['success' => true, 'message' => 'یادداشت حذف شد']);
         exit;
+    }
+
+    // Admin: Edit note
+    public function editNote(): void
+    {
+        $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+            exit;
+        }
+
+        $noteId = (int)($_POST['note_id'] ?? 0);
+        $note = trim($_POST['note'] ?? '');
+        $isPinned = (int)($_POST['is_pinned'] ?? 0);
+
+        if (!$noteId || empty($note)) {
+            echo json_encode(['success' => false, 'message' => 'لطفا متن یادداشت را وارد کنید']);
+            exit;
+        }
+
+        $db = Database::getInstance();
+        $db->update('dashboard_notes', ['note' => $note, 'is_pinned' => $isPinned], 'id = :id', [':id' => $noteId]);
+
+        echo json_encode(['success' => true, 'message' => 'یادداشت ویرایش شد']);
+        exit;
+    }
+
+    // Admin: Archive note
+    public function archiveNote(): void
+    {
+        $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+            exit;
+        }
+
+        $noteId = (int)($_POST['note_id'] ?? 0);
+        if (!$noteId) {
+            echo json_encode(['success' => false, 'message' => 'شناسه نامعتبر']);
+            exit;
+        }
+
+        $db = Database::getInstance();
+        $db->update('dashboard_notes', ['is_archived' => 1], 'id = :id', [':id' => $noteId]);
+
+        echo json_encode(['success' => true, 'message' => 'یادداشت آرشیو شد']);
+        exit;
+    }
+
+    // Admin: Send note to all users
+    public function addNoteToAll(): void
+    {
+        $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'message' => 'دسترسی غیرمجاز']);
+            exit;
+        }
+
+        $note = trim($_POST['note'] ?? '');
+        $isPinned = (int)($_POST['is_pinned'] ?? 0);
+
+        if (empty($note)) {
+            echo json_encode(['success' => false, 'message' => 'لطفا متن یادداشت را وارد کنید']);
+            exit;
+        }
+
+        $db = Database::getInstance();
+        $users = $db->fetchAll("SELECT id FROM users WHERE is_active = 1");
+        $count = 0;
+        foreach ($users as $u) {
+            $db->insert('dashboard_notes', [
+                'target_user_id' => $u->id,
+                'note' => $note,
+                'is_pinned' => $isPinned,
+                'created_by' => Auth::id(),
+            ]);
+            $count++;
+        }
+
+        echo json_encode(['success' => true, 'message' => "یادداشت به {$count} کاربر ارسال شد"]);
+        exit;
+    }
+
+    // Admin: List all notes (manage page)
+    public function notes(): void
+    {
+        $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
+        if (!$isAdmin) {
+            Session::setFlash('danger', 'دسترسی غیرمجاز');
+            View::redirect('/dashboard');
+        }
+
+        $db = Database::getInstance();
+        $filterUser = (int)($_GET['user_id'] ?? 0);
+        $filterArchived = (int)($_GET['archived'] ?? 0);
+
+        $where = "WHERE 1=1";
+        $params = [];
+        if ($filterUser) {
+            $where .= " AND dn.target_user_id = :uid";
+            $params[':uid'] = $filterUser;
+        }
+        $where .= " AND dn.is_archived = :archived";
+        $params[':archived'] = $filterArchived;
+
+        $notes = $db->fetchAll(
+            "SELECT dn.*, u.full_name as author_name, t.full_name as target_name 
+             FROM dashboard_notes dn 
+             LEFT JOIN users u ON dn.created_by = u.id 
+             LEFT JOIN users t ON dn.target_user_id = t.id 
+             {$where} 
+             ORDER BY dn.created_at DESC",
+            $params
+        );
+
+        $users = $db->fetchAll("SELECT id, full_name FROM users WHERE is_active = 1 ORDER BY full_name");
+
+        View::render('dashboard/notes', [
+            'title' => 'مدیریت یادداشت‌ها',
+            'notes' => $notes,
+            'users' => $users,
+            'filterUser' => $filterUser,
+            'filterArchived' => $filterArchived,
+        ]);
     }
 
     // Get notifications (AJAX)
