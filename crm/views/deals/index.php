@@ -140,7 +140,7 @@
                         <div class="d-flex gap-1">
                             <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-sm btn-outline-primary" title="مشاهده"><i class="bi bi-eye"></i></a>
                             <?php if (\Core\Auth::hasPermission('deals.edit')): ?>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" title="ویرایش سریع" onclick="quickEdit(<?php echo $deal->id; ?>)"><i class="bi bi-pencil"></i></button>
+                            <a href="<?php echo $config['url']; ?>/deals/edit/<?php echo $deal->id; ?>" class="btn btn-sm btn-outline-secondary" title="ویرایش"><i class="bi bi-pencil"></i></a>
                             <?php endif; ?>
                             <?php if (\Core\Auth::hasPermission('deals.delete')): ?>
                             <form method="POST" action="<?php echo $config['url']; ?>/deals/delete/<?php echo $deal->id; ?>" class="d-inline" onsubmit="return confirm('آیا از حذف این معامله اطمینان دارید؟')">

@@ -1,4 +1,7 @@
-<?php $config = $GLOBALS['app_config']; ?>
+<?php $config = $GLOBALS['app_config']; 
+$typeIcons = ['call'=>'bi-telephone','meeting'=>'bi-people','sms'=>'bi-envelope','email'=>'bi-envelope-at','follow_up'=>'bi-pin','note'=>'bi-journal-text'];
+$typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','email'=>'ایمیل','follow_up'=>'پیگیری','note'=>'یادداشت'];
+?>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <h5 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2 text-primary"></i>مدیریت فعالیت‌ها</h5>
@@ -36,10 +39,7 @@
 <!-- Summary by type -->
 <?php if (!empty($activitySummary)): ?>
 <div class="d-flex gap-2 flex-wrap mb-3">
-    <?php foreach ($activitySummary as $sum): 
-        $typeIcons = ['call'=>'bi-telephone','meeting'=>'bi-people','sms'=>'bi-envelope','email'=>'bi-envelope-at','follow_up'=>'bi-pin','note'=>'bi-journal-text'];
-        $typeNames = ['call'=>'تماس','meeting'=>'جلسه','sms'=>'پیامک','email'=>'ایمیل','follow_up'=>'پیگیری','note'=>'یادداشت'];
-    ?>
+    <?php foreach ($activitySummary as $sum): ?>
     <span class="badge bg-light text-dark border px-3 py-2">
         <i class="bi <?php echo $typeIcons[$sum->type] ?? 'bi-circle'; ?> me-1"></i>
         <?php echo $typeNames[$sum->type] ?? $sum->type; ?>

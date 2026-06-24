@@ -25,7 +25,6 @@
 
                 <form method="POST" action="<?php echo $config['url']; ?>/payment/request" id="payForm">
                     <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
-                    
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-medium">مبلغ (تومان) <span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control form-control-lg" value="<?php echo $deal->amount ?: 0; ?>" required min="1000" step="1000" dir="ltr" style="text-align:left;font-weight:bold;">
@@ -38,9 +37,8 @@
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>توضیحات</label>
                         <textarea name="description" class="form-control" rows="2"><?php echo htmlspecialchars($deal->title); ?></textarea>
                     </div>
-
                     <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold" id="submitPayBtn">
-                        <i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال
+                        <i class="bi bi-credit-card me-1"></i>ساخت لینک پرداخت
                     </button>
                     <p class="text-center text-muted small mt-2"><i class="bi bi-shield-lock me-1"></i>پرداخت امن توسط درگاه زیبال</p>
                 </form>
@@ -51,7 +49,7 @@
                         <input type="text" id="publicPayLink" class="form-control form-control-sm" dir="ltr" style="text-align:left;" readonly>
                         <button type="button" class="btn btn-success btn-sm text-nowrap" onclick="copyLink(this)"><i class="bi bi-clipboard me-1"></i>کپی</button>
                     </div>
-                    <small class="text-muted mt-1 d-block">در حال انتقال به درگاه پرداخت...</small>
+                    <small class="text-muted mt-1 d-block">لینک را کپی کرده و برای مشتری ارسال کنید</small>
                 </div>
                 <div id="payError" class="alert alert-danger d-none mt-3"></div>
             </div>
@@ -73,21 +71,34 @@
                 <?php else: ?>
                 <div class="d-flex flex-column gap-2">
                     <?php foreach ($payments as $p): ?>
-                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded-3">
-                        <div>
-                            <strong class="small"><?php echo number_format($p->amount); ?> تومان</strong>
-                            <br><small class="text-muted"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
-                            <?php if ($p->track_id): ?><br><small class="text-muted">کد: <?php echo $p->track_id; ?></small><?php endif; ?>
+                    <div class="p-2 bg-light rounded-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="small"><?php echo number_format($p->amount); ?> تومان</strong>
+                                <br><small class="text-muted"><?php echo \Core\JDate::displayDateTime($p->created_at); ?></small>
+                            </div>
+                            <div>
+                                <?php if ($p->status == 'success'): ?>
+                                <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle me-1"></i>موفق</span>
+                                <?php elseif ($p->status == 'pending'): ?>
+                                <span class="badge bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock me-1"></i>در انتظار</span>
+                                <?php else: ?>
+                                <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle me-1"></i>ناموفق</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                        <div>
-                            <?php if ($p->status == 'success'): ?>
-                            <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle me-1"></i>موفق</span>
-                            <?php elseif ($p->status == 'pending'): ?>
-                            <span class="badge bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock me-1"></i>در انتظار</span>
-                            <?php else: ?>
-                            <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle me-1"></i>ناموفق</span>
-                            <?php endif; ?>
+                        <?php if ($p->short_code): ?>
+                        <div class="d-flex gap-1 align-items-center mt-1">
+                            <input type="text" class="form-control form-control-sm flex-grow-1" dir="ltr" style="text-align:left;font-size:11px;" value="<?php echo $config['url']; ?>/p/<?php echo $p->short_code; ?>" readonly id="plink_<?php echo $p->id; ?>">
+                            <button type="button" class="btn btn-outline-success btn-sm" style="padding:2px 8px;" onclick="copyPayLink(this, 'plink_<?php echo $p->id; ?>')"><i class="bi bi-clipboard"></i></button>
                         </div>
+                        <?php elseif ($p->public_token): ?>
+                        <div class="d-flex gap-1 align-items-center mt-1">
+                            <input type="text" class="form-control form-control-sm flex-grow-1" dir="ltr" style="text-align:left;font-size:11px;" value="<?php echo $config['url']; ?>/payment/pay/<?php echo $p->public_token; ?>" readonly id="plink_<?php echo $p->id; ?>">
+                            <button type="button" class="btn btn-outline-success btn-sm" style="padding:2px 8px;" onclick="copyPayLink(this, 'plink_<?php echo $p->id; ?>')"><i class="bi bi-clipboard"></i></button>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($p->track_id): ?><small class="text-muted d-block mt-1">کد پیگیری: <?php echo $p->track_id; ?></small><?php endif; ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -101,23 +112,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     var payForm = document.getElementById('payForm');
     if (!payForm) return;
-    
     payForm.addEventListener('submit', function(e) {
         e.preventDefault();
         var btn = document.getElementById('submitPayBtn');
         var payError = document.getElementById('payError');
         var payLinkSection = document.getElementById('payLinkSection');
-        
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>در حال اتصال...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>در حال ساخت لینک...';
         payError.classList.add('d-none');
         payLinkSection.classList.add('d-none');
-        
-        fetch(payForm.action, {
-            method: 'POST',
-            body: new FormData(payForm),
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
+        fetch(payForm.action, { method: 'POST', body: new FormData(payForm), headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) {
@@ -125,34 +129,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('publicPayLink').value = data.public_link;
                     payLinkSection.classList.remove('d-none');
                 }
-                if (data.redirect) {
-                    setTimeout(function() { window.location.href = data.redirect; }, 1500);
-                }
+                btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>لینک ساخته شد';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-success');
+                setTimeout(function() { location.reload(); }, 2000);
             } else {
                 payError.classList.remove('d-none');
-                payError.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>' + (data.message || 'خطا در اتصال');
+                payError.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>' + (data.message || 'خطا');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال';
+                btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>ساخت لینک پرداخت';
             }
         })
         .catch(function() {
             payError.classList.remove('d-none');
-            payError.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>خطای شبکه';
+            payError.innerHTML = 'خطای شبکه';
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>اتصال به درگاه پرداخت زیبال';
+            btn.innerHTML = '<i class="bi bi-credit-card me-1"></i>ساخت لینک پرداخت';
         });
     });
 });
-
 function copyLink(btn) {
     var input = document.getElementById('publicPayLink');
-    if (input && input.value) {
-        navigator.clipboard.writeText(input.value);
-        var orig = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check me-1"></i>کپی شد!';
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-dark');
-        setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('btn-dark'); btn.classList.add('btn-success'); }, 2000);
-    }
+    if (input && input.value) { navigator.clipboard.writeText(input.value); btn.innerHTML = '<i class="bi bi-check me-1"></i>کپی شد!'; setTimeout(function() { btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>کپی'; }, 2000); }
+}
+function copyPayLink(btn, id) {
+    var input = document.getElementById(id);
+    if (input && input.value) { navigator.clipboard.writeText(input.value); var orig = btn.innerHTML; btn.innerHTML = '<i class="bi bi-check"></i>'; setTimeout(function() { btn.innerHTML = orig; }, 2000); }
 }
 </script>
