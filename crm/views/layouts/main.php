@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Vazir Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=2.0.0">
+    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=3.0.0">
     <script>var CRM_BASE_URL = '<?php echo $config['url']; ?>';</script>
 </head>
 <body>

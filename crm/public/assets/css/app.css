@@ -24,12 +24,15 @@
 /* ========== BASE ========== */
 html { scroll-behavior: smooth; }
 body {
-    font-family: 'Tahoma', 'Segoe UI', 'IRANSans', sans-serif;
+    font-family: 'Vazirmatn', 'Tahoma', 'Segoe UI', 'IRANSans', sans-serif;
     background: #f0f2f5;
     color: #333;
     line-height: 1.6;
     direction: rtl;
     min-height: 100vh;
+}
+h1, h2, h3, h4, h5, h6, .fw-bold, .fw-semibold {
+    font-family: 'Vazirmatn', 'Tahoma', 'Segoe UI', 'IRANSans', sans-serif;
 }
 
 /* ========== SCROLLBAR ========== */
