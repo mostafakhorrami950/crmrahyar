@@ -199,16 +199,30 @@ $actionConfig = json_decode($rule->action_config, true) ?: [];
                             </select>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-medium">تعداد روز بعد</label>
-                            <input type="number" name="action_config[days]" class="form-input" value="<?php echo $actionConfig['days'] ?? 1; ?>" min="0">
-                            <p class="form-hint">0 = همان لحظه، 1 = فردا، 7 = یک هفته بعد</p>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">زمان اجرا بعد از ماشه</label>
+                        <?php
+                            $savedHours = isset($actionConfig['delay_hours']) ? (int)$actionConfig['delay_hours'] : 0;
+                            $savedMinutes = isset($actionConfig['delay_minutes']) ? (int)$actionConfig['delay_minutes'] : 0;
+                            if (!isset($actionConfig['delay_hours']) && isset($actionConfig['days'])) {
+                                $savedHours = (int)$actionConfig['days'] * 24;
+                            }
+                        ?>
+                        <div style="display:flex;gap:12px;align-items:center;">
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" name="action_config[delay_hours]" class="form-input" value="<?php echo $savedHours; ?>" min="0" max="720" style="width:100px;">
+                                <span class="text-muted small">ساعت</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <input type="number" name="action_config[delay_minutes]" class="form-input" value="<?php echo $savedMinutes; ?>" min="0" max="59" style="width:100px;">
+                                <span class="text-muted small">دقیقه</span>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted small fw-medium">توضیحات فعالیت</label>
-                            <input type="text" name="action_config[description]" class="form-input" value="<?php echo htmlspecialchars($actionConfig['description'] ?? ''); ?>">
-                        </div>
+                        <p class="form-hint">مثال: ۲ ساعت و ۳۰ دقیقه بعد از وقوع ماشه | ۰ و ۰ = همان لحظه</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">توضیحات فعالیت</label>
+                        <input type="text" name="action_config[description]" class="form-input" value="<?php echo htmlspecialchars($actionConfig['description'] ?? ''); ?>">
                     </div>
                 </div>
             </div>

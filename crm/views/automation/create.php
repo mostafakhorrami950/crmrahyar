@@ -262,10 +262,23 @@ $actionTypesJson = json_encode($actionTypes);
                             </div>
                         </div>
                         <div class="row g-3 mt-0">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted small fw-medium">تعداد روز بعد از ماشه</label>
-                                <input type="number" name="action_config[days]" class="form-control" value="1" min="0">
-                                <div class="form-text">0 = همان لحظه | 1 = فردا | 7 = یک هفته بعد</div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small fw-medium">زمان اجرا بعد از ماشه</label>
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-auto">
+                                        <div class="input-group" style="width:140px;">
+                                            <input type="number" name="action_config[delay_hours]" class="form-control" value="0" min="0" max="720" id="delayHours">
+                                            <span class="input-group-text">ساعت</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="input-group" style="width:150px;">
+                                            <input type="number" name="action_config[delay_minutes]" class="form-control" value="0" min="0" max="59" id="delayMinutes">
+                                            <span class="input-group-text">دقیقه</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">مثال: ۲ ساعت و ۳۰ دقیقه بعد از وقوع ماشه | ۰ و ۰ = همان لحظه</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label text-muted small fw-medium">توضیحات فعالیت</label>

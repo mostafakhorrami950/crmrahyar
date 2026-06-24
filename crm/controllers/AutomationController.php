@@ -563,15 +563,26 @@ class AutomationController
                     }
                 }
 
-                $days = isset($config['days']) && $config['days'] !== '' ? (int)$config['days'] : 1;
+                // Support new hours/minutes format, with backward compatibility for old 'days' format
+                $delayHours = 0;
+                $delayMinutes = 0;
+                if (isset($config['delay_hours']) || isset($config['delay_minutes'])) {
+                    $delayHours = isset($config['delay_hours']) && $config['delay_hours'] !== '' ? (int)$config['delay_hours'] : 0;
+                    $delayMinutes = isset($config['delay_minutes']) && $config['delay_minutes'] !== '' ? (int)$config['delay_minutes'] : 0;
+                } elseif (isset($config['days']) && $config['days'] !== '') {
+                    // Backward compatibility: convert old days to hours
+                    $delayHours = (int)$config['days'] * 24;
+                }
+
                 $rawType = $config['activity_type'] ?? 'follow_up';
                 $validType = self::mapActivityType($rawType);
                 $subject = trim($config['subject'] ?? 'فعالیت خودکار');
                 $subject = self::replacePlaceholders($subject, $extra);
                 $description = self::replacePlaceholders($config['description'] ?? '', $extra);
 
-                $activityDate = $days > 0
-                    ? date('Y-m-d H:i:s', strtotime("+{$days} days"))
+                $totalMinutes = ($delayHours * 60) + $delayMinutes;
+                $activityDate = $totalMinutes > 0
+                    ? date('Y-m-d H:i:s', strtotime("+{$totalMinutes} minutes"))
                     : date('Y-m-d H:i:s');
 
                 $db->insert('deal_activities', [
