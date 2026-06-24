@@ -20,6 +20,7 @@ use Controllers\CustomFieldController;
 use Controllers\CategoryController;
 use Controllers\SourceController;
 use Controllers\LossReasonController;
+use Controllers\WinReasonController;
 use Controllers\NotificationController;
 use Controllers\SearchController;
 use Controllers\CalendarController;
@@ -220,6 +221,15 @@ Router::group('/settings/loss-reasons', function() {
     Router::post('/update', [LossReasonController::class, 'update'], 'settings.manage');
     Router::post('/delete', [LossReasonController::class, 'delete'], 'settings.manage');
     Router::get('/active', [LossReasonController::class, 'getActive'], 'settings.manage');
+});
+
+// Deal Win Reasons Management
+Router::group('/settings/win-reasons', function() {
+    Router::get('', [WinReasonController::class, 'index'], 'settings.manage');
+    Router::post('/store', [WinReasonController::class, 'store'], 'settings.manage');
+    Router::post('/update', [WinReasonController::class, 'update'], 'settings.manage');
+    Router::post('/delete', [WinReasonController::class, 'delete'], 'settings.manage');
+    Router::get('/active', [WinReasonController::class, 'getActive'], 'settings.manage');
 });
 
 // Notifications

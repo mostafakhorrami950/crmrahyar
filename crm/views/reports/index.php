@@ -23,8 +23,17 @@
 <!-- AI Data Selection -->
 <div class="card border-0 shadow-sm mb-4" id="aiDataSelector">
     <div class="card-body py-3">
+        <!-- Date Range Row -->
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="fw-bold small text-muted"><i class="bi bi-calendar3 me-1"></i>بازه زمانی:</span>
+            <input type="date" class="form-control form-control-sm" id="aiDateFrom" style="width:150px;" placeholder="از تاریخ">
+            <span class="text-muted">تا</span>
+            <input type="date" class="form-control form-control-sm" id="aiDateTo" style="width:150px;" placeholder="تا تاریخ">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('aiDateFrom').value='';document.getElementById('aiDateTo').value='';"><i class="bi bi-x-circle me-1"></i>پاک کردن</button>
+        </div>
+        <!-- Categories Row -->
         <div class="d-flex flex-wrap align-items-center gap-3">
-            <span class="fw-bold small text-muted"><i class="bi bi-funnel me-1"></i>اطلاعات ارسالی به AI:</span>
+            <span class="fw-bold small text-muted"><i class="bi bi-funnel me-1"></i>اطلاعات ارسالی:</span>
             <div class="form-check form-check-inline">
                 <input class="form-check-input ai-cat" type="checkbox" id="catDeals" value="deals" checked disabled>
                 <label class="form-check-label small" for="catDeals">📊 معاملات</label>
@@ -52,6 +61,14 @@
             <div class="form-check form-check-inline">
                 <input class="form-check-input ai-cat" type="checkbox" id="catActivities" value="activities" checked>
                 <label class="form-check-label small" for="catActivities">📅 فعالیت‌ها</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catTargets" value="targets">
+                <label class="form-check-label small" for="catTargets">🎯 اهداف</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catWinReasons" value="win_reasons">
+                <label class="form-check-label small" for="catWinReasons">🏆 دلایل موفقیت</label>
             </div>
             <div class="form-check form-check-inline">
                 <input class="form-check-input ai-cat" type="checkbox" id="catLoss" value="loss_reasons">
@@ -480,6 +497,12 @@ function runAIAnalysis() {
     
     var formData = new FormData();
     formData.append('categories', cats.join(','));
+    
+    // Date range
+    var dateFrom = document.getElementById('aiDateFrom').value;
+    var dateTo = document.getElementById('aiDateTo').value;
+    if (dateFrom) formData.append('date_from', dateFrom);
+    if (dateTo) formData.append('date_to', dateTo);
     
     fetch('<?php echo $config['url']; ?>/ai/analyze', {
         method: 'POST',

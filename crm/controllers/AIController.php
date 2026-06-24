@@ -56,16 +56,37 @@ class AIController
         $categories = $_POST['categories'] ?? 'deals,stages,activities,users';
         $selectedCats = is_array($categories) ? $categories : explode(',', $categories);
         
+        // Date range filter
+        $dateFrom = trim($_POST['date_from'] ?? '');
+        $dateTo = trim($_POST['date_to'] ?? '');
+        $dateFilter = '';
+        $dateFilterPlain = '';
+        if ($dateFrom && $dateTo) {
+            $dateFilter = " AND d.created_at >= :date_from AND d.created_at <= :date_to ";
+            $dateFilterPlain = " AND created_at >= :date_from AND created_at <= :date_to ";
+        } elseif ($dateFrom) {
+            $dateFilter = " AND d.created_at >= :date_from ";
+            $dateFilterPlain = " AND created_at >= :date_from ";
+        } elseif ($dateTo) {
+            $dateFilter = " AND d.created_at <= :date_to ";
+            $dateFilterPlain = " AND created_at <= :date_to ";
+        }
+        $dateParams = [];
+        if ($dateFrom) $dateParams[':date_from'] = $dateFrom . ' 00:00:00';
+        if ($dateTo) $dateParams[':date_to'] = $dateTo . ' 23:59:59';
+        
         try {
             $userId = Auth::id();
             $isAdmin = Auth::hasPermission('settings.manage') || Auth::hasPermission('users.manage');
-            $sw = $isAdmin ? '' : " AND (d.assigned_to = :uid OR d.created_by = :uid2)";
-            $sp = $isAdmin ? [] : [':uid' => $userId, ':uid2' => $userId];
+            $sw = $isAdmin ? $dateFilter : " AND (d.assigned_to = :uid OR d.created_by = :uid2)" . $dateFilter;
+            $sp = $isAdmin ? $dateParams : array_merge([':uid' => $userId, ':uid2' => $userId], $dateParams);
+            $swPlain = $dateFilterPlain;
+            $spPlain = $dateParams;
 
-            $dealsTotal = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_lost=0" . $sw, $sp);
-            $dealsWon = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_won=1" . $sw, $sp);
-            $dealsLost = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_lost=1" . $sw, $sp);
-            $dealsActive = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals WHERE is_lost=0 AND is_won=0" . $sw, $sp);
+            $dealsTotal = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals d WHERE d.is_lost=0" . $sw, $sp);
+            $dealsWon = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals d WHERE d.is_won=1" . $sw, $sp);
+            $dealsLost = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals d WHERE d.is_lost=1" . $sw, $sp);
+            $dealsActive = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals d WHERE d.is_lost=0 AND d.is_won=0" . $sw, $sp);
 
             // Build prompt based on selected categories
             $p = "تو یک تحلیلگر حرفه‌ای CRM و فروش هستی. اطلاعات زیر از سیستم CRM آژانس مسافرتی را تحلیل کن و گزارش جامعی به فارسی ارائه بده.\n\n";
@@ -186,10 +207,44 @@ class AIController
 
             // Contacts
             if (in_array('contacts', $selectedCats)) {
-                $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts");
+                $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts" . ($dateFrom ? " WHERE created_at>=:date_from" : "") . ($dateTo ? ($dateFrom ? " AND" : " WHERE") . " created_at<=:date_to" : ""), $dateParams);
                 $contactsWeek = $db->fetch("SELECT COUNT(*) as c FROM contacts WHERE created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY)");
                 $p .= "== مخاطبان ==\n";
                 $p .= "کل: {$contactsTotal->c} | جدید هفته: {$contactsWeek->c}\n\n";
+            }
+
+            // Win reasons
+            if (in_array('win_reasons', $selectedCats)) {
+                $winReasons = $db->fetchAll(
+                    "SELECT COALESCE(dwr.name, d.win_reason_note, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_win_reasons dwr ON d.win_reason_id=dwr.id WHERE d.is_won=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
+                );
+                $p .= "== دلایل موفقیت ==\n";
+                foreach ($winReasons as $r) $p .= "- {$r->r}: {$r->c}\n";
+                $p .= "\n";
+            }
+
+            // Targets
+            if (in_array('targets', $selectedCats)) {
+                $targets = $db->fetchAll(
+                    "SELECT t.year, t.month, u.full_name, t.target_amount, t.target_count,
+                            COALESCE(SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END),0) as ach_count,
+                            COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as ach_amount
+                     FROM targets t
+                     LEFT JOIN users u ON t.user_id=u.id
+                     LEFT JOIN deals d ON d.assigned_to=t.user_id AND YEAR(d.closed_at)=t.year AND MONTH(d.closed_at)=t.month AND d.is_won=1
+                     WHERE t.year>=YEAR(NOW())-1
+                     GROUP BY t.id, t.year, t.month, u.full_name, t.target_amount, t.target_count
+                     ORDER BY t.year DESC, t.month DESC, u.full_name
+                     LIMIT 20"
+                );
+                $monthNames = [1=>'ژانویه','فوریه','مارس','آوریل','مه','ژوئن','ژوئیه','آگوست','سپتامبر','اکتبر','نوامبر','دسامبر'];
+                $p .= "== اهداف فروش ==\n";
+                foreach ($targets as $t) {
+                    $mName = $monthNames[$t->month] ?? $t->month;
+                    $pct = $t->target_amount > 0 ? round(($t->ach_amount / $t->target_amount) * 100, 1) : 0;
+                    $p .= "- {$t->full_name} ({$mName} {$t->year}): هدف=" . number_format($t->target_amount) . " ت | عملکرد=" . number_format($t->ach_amount) . " ت ({$pct}%)\n";
+                }
+                $p .= "\n";
             }
 
             $p .= "\nلطفاً شامل:\n";
