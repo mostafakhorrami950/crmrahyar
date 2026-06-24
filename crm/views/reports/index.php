@@ -2,6 +2,7 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<?php $chartColors = ['#4361ee','#7209b7','#06d6a0','#ffd166','#ef476f','#118ab2','#8338ec','#ff6b6b','#48bfe3','#56cfe1']; ?>
 
 <!-- Page Header -->
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
@@ -323,7 +324,7 @@ new Chart(document.getElementById('stageChart'), {
 });
 
 // 3. Deal Sources Doughnut
-<?php $srcLabels = ''; $srcData = ''; $srcColors = ''; $si = 0; foreach ($dealSources as $src) { $srcLabels .= "'" . htmlspecialchars($src->source) . "',"; $srcData .= $src->count . ','; $srcColors .= "'" . colors[$si % count(colors)] . "',"; $si++; } ?>
+<?php $srcLabels = ''; $srcData = ''; $srcColors = ''; $si = 0; foreach ($dealSources as $src) { $srcLabels .= "'" . htmlspecialchars($src->source) . "',"; $srcData .= $src->count . ','; $srcColors .= "'" . $chartColors[$si % count($chartColors)] . "',"; $si++; } ?>
 new Chart(document.getElementById('sourceChart'), {
     type: 'doughnut',
     data: {
@@ -360,7 +361,7 @@ new Chart(document.getElementById('categoryChart'), {
 });
 
 // 6. Pipeline Sales Horizontal Bar
-<?php $pLabels = ''; $pData = ''; $pColors = ''; $pi = 0; foreach ($salesByPipeline as $p) { $pLabels .= "'" . htmlspecialchars($p->name) . "',"; $pData .= $p->total . ','; $pColors .= "'" . colors[$pi % count(colors)] . "',"; $pi++; } ?>
+<?php $pLabels = ''; $pData = ''; $pColors = ''; $pi = 0; foreach ($salesByPipeline as $p) { $pLabels .= "'" . htmlspecialchars($p->name) . "',"; $pData .= $p->total . ','; $pColors .= "'" . $chartColors[$pi % count($chartColors)] . "',"; $pi++; } ?>
 new Chart(document.getElementById('pipelineChart'), {
     type: 'bar',
     data: {
@@ -376,7 +377,7 @@ $activityTypeNames = ['note'=>'یادداشت','call'=>'تماس','meeting'=>'ج
 foreach ($activityStats as $a) { 
     $aLabels .= "'" . ($activityTypeNames[$a->type] ?? $a->type) . "',"; 
     $aData .= $a->count . ','; 
-    $aColors .= "'" . colors[$ai % count(colors)] . "',"; 
+    $aColors .= "'" . $chartColors[$ai % count($chartColors)] . "',"; 
     $ai++; 
 } ?>
 new Chart(document.getElementById('activityChart'), {
