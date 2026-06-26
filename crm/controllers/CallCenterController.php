@@ -25,9 +25,9 @@ class CallCenterController
              FROM phone_assignments pa
              JOIN phone_lines pl ON pa.phone_line_id = pl.id
              JOIN users u ON pa.user_id = u.id
-             WHERE pa.status = 'active' AND pa.shift_start <= :now AND pa.shift_end >= :now
+             WHERE pa.status = 'active' AND pa.shift_start <= :now1 AND pa.shift_end >= :now2
              ORDER BY pl.name",
-            [':now' => $now]
+            [':now1' => $now, ':now2' => $now]
         );
 
         // Get today's shifts

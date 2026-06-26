@@ -258,21 +258,11 @@ class PipelineController
         $stages = $db->fetchAll("SELECT * FROM stages WHERE pipeline_id = :id AND is_active = 1 ORDER BY order_index", [':id' => $params['id']]);
         
         $user = Auth::user();
+        $canViewAll = Auth::canAccessAll('deals.view');
+        $userId = Auth::id();
         $deals = [];
         foreach ($stages as $stage) {
-            if ($user->role_slug === 'operator') {
-                $deals[$stage->id] = $db->fetchAll(
-                    "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone, 
-                            u.full_name as assigned_name
-                     FROM deals d 
-                     LEFT JOIN contacts c ON d.contact_id = c.id 
-                     LEFT JOIN users u ON d.assigned_to = u.id 
-                     WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
-                     AND (d.assigned_to = :user_id OR d.created_by = :user_id2)
-                     ORDER BY d.updated_at DESC",
-                    [':stage_id' => $stage->id, ':user_id' => $user->id, ':user_id2' => $user->id]
-                );
-            } else {
+            if ($canViewAll) {
                 $deals[$stage->id] = $db->fetchAll(
                     "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone,
                             u.full_name as assigned_name
@@ -282,6 +272,18 @@ class PipelineController
                      WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
                      ORDER BY d.updated_at DESC",
                     [':stage_id' => $stage->id]
+                );
+            } else {
+                $deals[$stage->id] = $db->fetchAll(
+                    "SELECT d.*, c.full_name as contact_name, c.phone as contact_phone, 
+                            u.full_name as assigned_name
+                     FROM deals d 
+                     LEFT JOIN contacts c ON d.contact_id = c.id 
+                     LEFT JOIN users u ON d.assigned_to = u.id 
+                     WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
+                     AND (d.assigned_to = :user_id OR d.created_by = :user_id2)
+                     ORDER BY d.updated_at DESC",
+                    [':stage_id' => $stage->id, ':user_id' => $userId, ':user_id2' => $userId]
                 );
             }
         }
@@ -331,7 +333,13 @@ class PipelineController
             }
             
             $db = Database::getInstance();
+            $oldDeal = $db->fetch("SELECT * FROM deals WHERE id = :id", [':id' => $dealId]);
             $db->update('deals', ['stage_id' => $stageId], 'id = :id', [':id' => $dealId]);
+            
+            // Audit trail for kanban drag-drop
+            try {
+                \Core\AuditTrail::log('deal', $dealId, 'update', (array)$oldDeal, ['stage_id' => $stageId]);
+            } catch (\Exception $e) {}
             
             // Check if this stage is the "won" or "lost" stage for auto-update
             $stage = $db->fetch("SELECT s.name, p.name as pipeline_name FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE s.id = :id", [':id' => $stageId]);
@@ -372,19 +380,22 @@ class PipelineController
                 'deal_id' => $dealId,
             ];
             
-            // Use output buffering to capture any warnings/errors from automation
-            ob_start();
-            \Controllers\AutomationController::execute('stage_change', 'deal', $dealId, $extra);
-            if ($isWon) {
-                \Controllers\AutomationController::execute('deal_won', 'deal', $dealId, $extra);
-            } elseif ($isLost) {
-                \Controllers\AutomationController::execute('deal_lost', 'deal', $dealId, $extra);
-            }
-            $automationOutput = ob_get_clean();
-            
-            // Log any captured warnings/errors
-            if (!empty(trim($automationOutput))) {
-                \Core\Logger::error("Automation warnings for deal {$dealId}: " . $automationOutput);
+            // Trigger automation engine (wrapped in try/catch to protect JSON response)
+            try {
+                ob_start();
+                \Controllers\AutomationController::execute('stage_change', 'deal', $dealId, $extra);
+                if ($isWon) {
+                    \Controllers\AutomationController::execute('deal_won', 'deal', $dealId, $extra);
+                } elseif ($isLost) {
+                    \Controllers\AutomationController::execute('deal_lost', 'deal', $dealId, $extra);
+                }
+                $automationOutput = ob_get_clean();
+                if (!empty(trim($automationOutput))) {
+                    \Core\Logger::error("Automation warnings for deal {$dealId}: " . $automationOutput);
+                }
+            } catch (\Exception $e) {
+                ob_end_clean();
+                \Core\Logger::error("Automation error for deal {$dealId}: " . $e->getMessage());
             }
             
             echo json_encode(['success' => true]);
