@@ -27,6 +27,15 @@ class DealController
             echo json_encode(['success' => false]);
             exit;
         }
+        
+        // Ownership check: non-admin users can only see their own deals
+        if (!Auth::canAccessAll('deals.view')) {
+            $userId = Auth::id();
+            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+                echo json_encode(['success' => false, 'message' => 'شما به این معامله دسترسی ندارید.']);
+                exit;
+            }
+        }
         $stages = $db->fetchAll("SELECT s.* FROM stages s JOIN pipelines p ON s.pipeline_id = p.id WHERE p.id = :pid AND s.is_active = 1 ORDER BY s.order_index", [':pid' => $deal->pipeline_id]);
         
         $tags = [];
