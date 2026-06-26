@@ -154,11 +154,8 @@ class UserController
                     (SELECT COUNT(*) FROM deals WHERE assigned_to = u.id) as deals_count,
                     (SELECT COUNT(*) FROM deals WHERE created_by = u.id) as created_deals_count,
                     (SELECT COUNT(*) FROM contacts WHERE created_by = u.id) as contacts_count,
-                    (SELECT COUNT(*) FROM contacts WHERE assigned_to = u.id) as assigned_contacts_count,
                     (SELECT COUNT(*) FROM deal_activities WHERE user_id = u.id) as activities_count,
-                    (SELECT COUNT(*) FROM sms_history WHERE sent_by = u.id) as sms_count,
-                    (SELECT COUNT(*) FROM payments WHERE created_by = u.id) as payments_count,
-                    (SELECT COUNT(*) FROM deal_activities da JOIN deals d ON da.deal_id = d.id WHERE d.assigned_to = u.id) as deal_activities_count
+                    (SELECT COUNT(*) FROM sms_history WHERE sent_by = u.id) as sms_count
              FROM users u 
              JOIN roles r ON u.role_id = r.id 
              WHERE u.id = :id",

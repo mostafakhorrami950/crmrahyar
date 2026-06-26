@@ -55,12 +55,6 @@
                     <small class="text-muted">پیامک‌ها</small>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="bg-light rounded-3 p-3 text-center">
-                    <div class="fs-4 fw-bold text-dark"><?php echo $user->payments_count; ?></div>
-                    <small class="text-muted">پرداخت‌ها</small>
-                </div>
-            </div>
         </div>
     </div>
 </div>
