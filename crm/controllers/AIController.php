@@ -229,8 +229,8 @@ class AIController
                     "SELECT t.year, t.month, u.full_name, t.target_amount, t.target_count,
                             COALESCE(SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END),0) as ach_count,
                             COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as ach_amount
-                     FROM targets t
-                     LEFT JOIN users u ON t.user_id=u.id
+                     FROM sales_targets t
+                     LEFT JOIN users u ON t.target_type = 'user' AND t.target_id=u.id
                      LEFT JOIN deals d ON d.assigned_to=t.user_id AND YEAR(d.closed_at)=t.year AND MONTH(d.closed_at)=t.month AND d.is_won=1
                      WHERE t.year>=YEAR(NOW())-1
                      GROUP BY t.id, t.year, t.month, u.full_name, t.target_amount, t.target_count
