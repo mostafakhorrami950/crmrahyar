@@ -120,6 +120,13 @@ class AuditTrail
      */
     public static function rollback(string $entityType, int $logId): array
     {
+        Auth::requireAuth();
+        
+        // Security: Only admins can rollback
+        if (!Auth::isAdmin()) {
+            return ['success' => false, 'message' => 'فقط مدیر اصلی می‌تواند تغییرات را بازگردانی کند'];
+        }
+
         $db = Database::getInstance();
 
         // Get the log entry
@@ -137,10 +144,51 @@ class AuditTrail
             return ['success' => false, 'message' => 'نسخه قبلی موجود نیست'];
         }
 
-        $table = $entityType === 'contact' ? 'contacts' : 'deals';
+        $tableMap = [
+            'contact' => 'contacts',
+            'deal' => 'deals',
+            'pipeline' => 'pipelines',
+            'user' => 'users',
+        ];
+        $table = $tableMap[$entityType] ?? null;
+        if (!$table) {
+            return ['success' => false, 'message' => 'نوع موجودیت پشتیبانی نمی‌شود'];
+        }
         $entityId = $log->entity_id;
 
-        // Get current data before rollback (for logging)
+        // Handle DELETE rollback: re-insert the deleted record
+        if ($log->action === 'delete') {
+            // Check if record already exists (already restored)
+            $existing = $db->fetch("SELECT id FROM {$table} WHERE id = :id", [':id' => $entityId]);
+            if ($existing) {
+                return ['success' => false, 'message' => 'این رکورد قبلاً بازیابی شده است'];
+            }
+
+            // Remove auto-increment fields
+            unset($snapshot['updated_at']);
+            
+            // Re-insert the deleted record with original ID
+            $columns = array_keys($snapshot);
+            $placeholders = [];
+            $params = [];
+            foreach ($snapshot as $key => $val) {
+                $ph = ":{$key}";
+                $placeholders[] = $ph;
+                $params[$ph] = $val;
+            }
+
+            $db->query(
+                "INSERT INTO {$table} (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $placeholders) . ")",
+                $params
+            );
+
+            // Log the restore action
+            self::log($entityType, $entityId, 'restore', null, $snapshot);
+
+            return ['success' => true, 'message' => 'رکورد حذف شده با موفقیت بازیابی شد'];
+        }
+
+        // Handle UPDATE rollback: restore to previous version
         $currentData = $db->fetch("SELECT * FROM {$table} WHERE id = :id", [':id' => $entityId]);
         if (!$currentData) {
             return ['success' => false, 'message' => 'رکورد یافت نشد. احتمالاً حذف شده است.'];
@@ -220,6 +268,7 @@ class AuditTrail
             'create' => 'ایجاد',
             'update' => 'ویرایش',
             'delete' => 'حذف',
+            'restore' => 'بازیابی',
         ];
         return $labels[$action] ?? $action;
     }

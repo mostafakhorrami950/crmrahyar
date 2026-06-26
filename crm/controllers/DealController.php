@@ -587,6 +587,8 @@ class DealController
         }
 
         if ($deal) {
+            // Log full snapshot before deletion for audit/restore
+            AuditTrail::log('deal', $params['id'], 'delete', (array)$deal, null);
             $db->delete('deals', 'id = :id', [':id' => $params['id']]);
             ActivityLog::log('delete_deal', 'deal', $params['id'], "معامله {$deal->title} حذف شد");
             Session::setFlash('success', 'معامله با موفقیت حذف شد.');
