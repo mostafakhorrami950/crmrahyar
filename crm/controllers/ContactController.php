@@ -6,6 +6,7 @@ use Core\Database;
 use Core\Session;
 use Core\View;
 use Core\ActivityLog;
+use Core\AuditTrail;
 
 class ContactController
 {
@@ -249,7 +250,7 @@ class ContactController
             $categoryId = $defaultCat ? (int)$defaultCat->id : null;
         }
 
-        $contactId = $db->insert('contacts', [
+        $newData = [
             'full_name' => $fullName,
             'phone' => $phone,
             'company_phone' => $companyPhone,
@@ -263,9 +264,11 @@ class ContactController
             'tags' => $tags,
             'category_id' => $categoryId,
             'created_by' => Auth::id(),
-        ]);
+        ];
+        $contactId = $db->insert('contacts', $newData);
 
         ActivityLog::log('create_contact', 'contact', $contactId, "مخاطب {$fullName} ایجاد شد");
+        AuditTrail::log('contact', $contactId, 'create', null, $newData);
 
         // Fire automation trigger: new_contact
         ob_start();
@@ -317,7 +320,10 @@ class ContactController
         $categoryId = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
 
         $db = Database::getInstance();
-        
+
+        // Get old data before update for audit trail
+        $oldData = (array)$db->fetch("SELECT * FROM contacts WHERE id = :id", [':id' => $params['id']]);
+
         // Check duplicate phone but exclude current contact
         if (!empty($phone)) {
             $existing = $db->fetch("SELECT id, full_name FROM contacts WHERE phone = :phone AND id != :id", [':phone' => $phone, ':id' => $params['id']]);
@@ -327,7 +333,7 @@ class ContactController
             }
         }
 
-        $db->update('contacts', [
+        $newData = [
             'full_name' => $fullName,
             'phone' => $phone,
             'company_phone' => $companyPhone,
@@ -341,7 +347,9 @@ class ContactController
             'tags' => $tags,
             'category_id' => $categoryId,
             'updated_by' => Auth::id(),
-        ], 'id = :id', [':id' => $params['id']]);
+        ];
+        $db->update('contacts', $newData, 'id = :id', [':id' => $params['id']]);
+        AuditTrail::log('contact', $params['id'], 'update', $oldData, $newData);
 
         ActivityLog::log('update_contact', 'contact', $params['id'], "مخاطب {$fullName} ویرایش شد");
         Session::setFlash('success', 'مخاطب با موفقیت ویرایش شد.');
@@ -351,8 +359,9 @@ class ContactController
     public function delete(array $params): void
     {
         $db = Database::getInstance();
-        $contact = $db->fetch("SELECT full_name FROM contacts WHERE id = :id", [':id' => $params['id']]);
+        $contact = $db->fetch("SELECT * FROM contacts WHERE id = :id", [':id' => $params['id']]);
         if ($contact) {
+            AuditTrail::log('contact', $params['id'], 'delete', (array)$contact, null);
             $db->delete('contacts', 'id = :id', [':id' => $params['id']]);
             ActivityLog::log('delete_contact', 'contact', $params['id'], "مخاطب {$contact->full_name} حذف شد");
             Session::setFlash('success', 'مخاطب با موفقیت حذف شد.');

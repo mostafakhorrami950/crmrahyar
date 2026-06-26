@@ -479,11 +479,9 @@ class DealController
             $updateData['is_lost'] = 1;
             $updateData['closed_at'] = date('Y-m-d H:i:s');
         } else {
-            if (!$existing->is_won && !$existing->is_lost) {
-                $updateData['is_won'] = 0;
-                $updateData['is_lost'] = 0;
-                $updateData['closed_at'] = null;
-            }
+            $updateData['is_won'] = 0;
+            $updateData['is_lost'] = 0;
+            $updateData['closed_at'] = null;
         }
 
         $updateData['updated_by'] = Auth::id();
