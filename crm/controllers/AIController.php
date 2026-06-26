@@ -226,14 +226,14 @@ class AIController
             // Targets
             if (in_array('targets', $selectedCats)) {
                 $targets = $db->fetchAll(
-                    "SELECT t.year, t.month, u.full_name, t.target_amount, t.target_count,
+                    "SELECT t.year, t.month, u.full_name, t.target_amount, t.target_deals,
                             COALESCE(SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END),0) as ach_count,
                             COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as ach_amount
                      FROM sales_targets t
                      LEFT JOIN users u ON t.target_type = 'user' AND t.target_id=u.id
-                     LEFT JOIN deals d ON d.assigned_to=t.user_id AND YEAR(d.closed_at)=t.year AND MONTH(d.closed_at)=t.month AND d.is_won=1
+                     LEFT JOIN deals d ON d.assigned_to=t.target_id AND YEAR(d.closed_at)=t.year AND MONTH(d.closed_at)=t.month AND d.is_won=1
                      WHERE t.year>=YEAR(NOW())-1
-                     GROUP BY t.id, t.year, t.month, u.full_name, t.target_amount, t.target_count
+                     GROUP BY t.id, t.year, t.month, u.full_name, t.target_amount, t.target_deals
                      ORDER BY t.year DESC, t.month DESC, u.full_name
                      LIMIT 20"
                 );
