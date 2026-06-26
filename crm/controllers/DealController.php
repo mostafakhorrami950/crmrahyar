@@ -6,6 +6,7 @@ use Core\Database;
 use Core\Session;
 use Core\View;
 use Core\ActivityLog;
+use Core\AuditTrail;
 
 class DealController
 {
@@ -325,6 +326,15 @@ class DealController
 
         $logs = ActivityLog::getByEntity('deal', $params['id']);
 
+        // Audit trail (change_logs)
+        $changeLogs = [];
+        try {
+            $changeLogs = $db->fetchAll(
+                "SELECT cl.*, u.full_name as user_name FROM change_logs cl LEFT JOIN users u ON cl.user_id = u.id WHERE cl.entity_type = 'deal' AND cl.entity_id = :id ORDER BY cl.created_at DESC LIMIT 50",
+                [':id' => $params['id']]
+            );
+        } catch (\Exception $e) {}
+
         $allStages = $db->fetchAll(
             "SELECT * FROM stages WHERE pipeline_id = :pid AND is_active = 1 ORDER BY order_index",
             [':pid' => $deal->pipeline_id]
@@ -346,6 +356,7 @@ class DealController
             'payments' => $payments,
             'smsHistory' => $smsHistory,
             'logs' => $logs,
+            'changeLogs' => $changeLogs,
             'allStages' => $allStages,
             'currentOrder' => $currentOrder,
             'totalStages' => $totalStages,
@@ -487,7 +498,52 @@ class DealController
         $updateData['updated_by'] = Auth::id();
         $db->update('deals', $updateData, 'id = :id', [':id' => $params['id']]);
 
+        // Audit Trail Logging
+        AuditTrail::log('deal', $params['id'], 'update', (array)$existing, $updateData);
+
         ActivityLog::log('update_deal', 'deal', $params['id'], "معامله {$title} ویرایش شد");
+
+        // Fire automation triggers
+        $stageChanged = ((int)$stageId !== (int)$existing->stage_id);
+        $statusChangedToWon = ($dealStatus === 'won' && !$existing->is_won);
+        $statusChangedToLost = ($dealStatus === 'lost' && !$existing->is_lost);
+
+        // Get deal info for automation
+        $contact = $contactId ? $db->fetch("SELECT full_name as contact_name, phone as contact_phone, email as contact_email FROM contacts WHERE id = :id", [':id' => $contactId]) : null;
+        $stageInfo = $db->fetch("SELECT name as stage_name, pipeline_id FROM stages WHERE id = :id", [':id' => $stageId]);
+        $pipelineInfo = $stageInfo ? $db->fetch("SELECT name as pipeline_name FROM pipelines WHERE id = :id", [':id' => $stageInfo->pipeline_id]) : null;
+
+        $autoExtra = [
+            'deal_id' => (int)$params['id'],
+            'contact_id' => $contactId ?: 0,
+            'contact_name' => $contact->contact_name ?? '',
+            'contact_phone' => $contact->contact_phone ?? '',
+            'contact_email' => $contact->contact_email ?? '',
+            'title' => $title,
+            'amount' => $amount ?? 0,
+            'assigned_to' => $assignedTo ?: 0,
+            'pipeline_id' => $pipelineId,
+            'stage_id' => $stageId,
+            'stage_name' => $stageInfo->stage_name ?? '',
+            'pipeline_name' => $pipelineInfo->pipeline_name ?? '',
+            'source' => $source,
+        ];
+
+        if ($stageChanged) {
+            ob_start();
+            \Controllers\AutomationController::execute('stage_change', 'deal', (int)$params['id'], $autoExtra);
+            ob_end_clean();
+        }
+        if ($statusChangedToWon) {
+            ob_start();
+            \Controllers\AutomationController::execute('deal_won', 'deal', (int)$params['id'], $autoExtra);
+            ob_end_clean();
+        }
+        if ($statusChangedToLost) {
+            ob_start();
+            \Controllers\AutomationController::execute('deal_lost', 'deal', (int)$params['id'], $autoExtra);
+            ob_end_clean();
+        }
 
         if ($isAjax) {
             echo json_encode(['success' => true, 'message' => 'معامله با موفقیت ویرایش شد.', 'redirect' => '/deals/view/' . $params['id']]);

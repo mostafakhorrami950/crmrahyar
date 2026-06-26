@@ -192,6 +192,69 @@
 </div></div></div>
 
 <!-- Activity Modal -->
+<!-- Audit Trail Section -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>تاریخچه تغییرات</h6>
+        <?php if (!empty($changeLogs)): ?>
+        <div class="timeline">
+            <?php foreach ($changeLogs as $log): 
+                $changes = json_decode($log->changes ?? '{}', true);
+                $actionLabels = ['create' => 'ایجاد', 'update' => 'ویرایش', 'delete' => 'حذف'];
+                $actionColors = ['create' => 'success', 'update' => 'primary', 'delete' => 'danger'];
+            ?>
+            <div class="d-flex gap-2 mb-3">
+                <div class="flex-shrink-0">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:var(--bs-<?php echo $actionColors[$log->action] ?? 'secondary'; ?>-bg-subtle);">
+                        <i class="bi bi-<?php echo $log->action === 'create' ? 'plus' : ($log->action === 'delete' ? 'trash' : 'pencil'); ?>-small text-<?php echo $actionColors[$log->action] ?? 'secondary'; ?>" style="font-size:14px;"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-<?php echo $actionColors[$log->action] ?? 'secondary'; ?>" style="font-size:10px;"><?php echo $actionLabels[$log->action] ?? $log->action; ?></span>
+                            <small class="text-muted ms-1"><?php echo htmlspecialchars($log->user_name ?? 'سیستم'); ?></small>
+                        </div>
+                        <small class="text-muted"><?php echo \Core\JDate::displayDate($log->created_at); ?></small>
+                    </div>
+                    <?php if (!empty($changes['changed'])): ?>
+                    <div class="mt-1">
+                        <?php foreach ($changes['changed'] as $field => $change): 
+                            $fieldLabels = ['title'=>'عنوان','stage_id'=>'مرحله','is_won'=>'وضعیت','is_lost'=>'وضعیت','amount'=>'مبلغ','assigned_to'=>'مسئول','contact_id'=>'مخاطب','pipeline_id'=>'پایپ‌لاین','probability'=>'احتمال','lost_reason'=>'دلیل باخت','description'=>'توضیحات','source'=>'منبع','expected_close_date'=>'تاریخ پیش‌بینی','deal_status'=>'وضعیت'];
+                            $fieldLabel = $fieldLabels[$field] ?? $field;
+                        ?>
+                        <div class="small mb-1">
+                            <span class="text-muted"><?php echo $fieldLabel; ?>:</span>
+                            <span class="text-decoration-line-through text-danger" style="font-size:11px;"><?php echo htmlspecialchars(is_array($change) ? json_encode($change['old']) : ($change['old'] ?? '-')); ?></span>
+                            <i class="bi bi-arrow-left mx-1" style="font-size:10px;"></i>
+                            <span class="text-success" style="font-size:11px;"><?php echo htmlspecialchars(is_array($change) ? json_encode($change['new']) : ($change['new'] ?? '-')); ?></span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button class="btn btn-sm btn-outline-warning mt-1" style="font-size:10px;padding:1px 6px;" onclick="revertDeal(<?php echo $log->id; ?>)"><i class="bi bi-arrow-counterclockwise me-1"></i>بازگشت</button>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <p class="text-muted text-center small mb-0">هنوز تغییری ثبت نشده.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+function revertDeal(logId) {
+    if (!confirm('آیا مطمئن هستید که می‌خواهید به این نسخه بازگردید؟')) return;
+    fetch(CRM_BASE_URL + '/audit/revert/' + logId, {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(data.success) { location.reload(); }
+        else { alert(data.message || 'خطا در بازگشت'); }
+    }).catch(function(){alert('خطای شبکه');});
+}
+</script>
+
 <div class="modal fade" id="activityModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-calendar-plus me-2"></i>ثبت فعالیت</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="ajax-error alert alert-danger d-none mb-0 rounded-0"></div>
