@@ -124,9 +124,6 @@
                 <a href="<?php echo $config['url']; ?>/audit" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/audit') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-clock-history"></i> <span>لاگ تغییرات</span>
                 </a>
-                <a href="<?php echo $config['url']; ?>/callcenter" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/callcenter') !== false ? 'active' : ''; ?>">
-                    <i class="bi bi-headset"></i> <span>کال سنتر</span>
-                </a>
                 <a href="<?php echo $config['url']; ?>/dashboard/notes" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/notes') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-sticky"></i> <span>یادداشت‌ها</span>
                 </a>

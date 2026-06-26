@@ -136,22 +136,162 @@ class UserController
         View::redirect('/users');
     }
 
-    public function delete(array $params): void
+    /**
+     * Show transfer & delete confirmation page
+     */
+    public function transferAndDelete(array $params): void
     {
-        // Prevent admin from deleting themselves
+        Auth::requireAdmin();
+        
         if ((int)$params['id'] === Auth::id()) {
             Session::setFlash('danger', 'نمی‌توانید حساب خودتان را حذف کنید.');
             View::redirect('/users');
         }
-        
+
         $db = Database::getInstance();
-        $user = $db->fetch("SELECT full_name FROM users WHERE id = :id", [':id' => $params['id']]);
-        
-        if ($user) {
-            $db->delete('users', 'id = :id', [':id' => $params['id']]);
-            ActivityLog::log('delete_user', 'user', $params['id'], "کاربر {$user->full_name} حذف شد");
-            Session::setFlash('success', 'کاربر با موفقیت حذف شد.');
+        $user = $db->fetch(
+            "SELECT u.*, r.name as role_name,
+                    (SELECT COUNT(*) FROM deals WHERE assigned_to = u.id) as deals_count,
+                    (SELECT COUNT(*) FROM deals WHERE created_by = u.id) as created_deals_count,
+                    (SELECT COUNT(*) FROM contacts WHERE created_by = u.id) as contacts_count,
+                    (SELECT COUNT(*) FROM contacts WHERE assigned_to = u.id) as assigned_contacts_count,
+                    (SELECT COUNT(*) FROM deal_activities WHERE user_id = u.id) as activities_count,
+                    (SELECT COUNT(*) FROM sms_history WHERE sent_by = u.id) as sms_count,
+                    (SELECT COUNT(*) FROM payments WHERE created_by = u.id) as payments_count,
+                    (SELECT COUNT(*) FROM deal_activities da JOIN deals d ON da.deal_id = d.id WHERE d.assigned_to = u.id) as deal_activities_count
+             FROM users u 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE u.id = :id",
+            [':id' => $params['id']]
+        );
+
+        if (!$user) {
+            Session::setFlash('danger', 'کاربر مورد نظر یافت نشد.');
+            View::redirect('/users');
         }
+
+        // Get all other active users for transfer dropdown
+        $otherUsers = $db->fetchAll(
+            "SELECT u.id, u.full_name, u.username, r.name as role_name
+             FROM users u 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE u.id != :id AND u.is_active = 1
+             ORDER BY u.full_name",
+            [':id' => $params['id']]
+        );
+
+        View::render('users/transfer_delete', [
+            'title' => 'انتقال اطلاعات و حذف کاربر',
+            'user' => $user,
+            'otherUsers' => $otherUsers,
+        ]);
+    }
+
+    /**
+     * Execute data transfer and delete user
+     */
+    public function executeTransferAndDelete(array $params): void
+    {
+        Auth::requireAdmin();
+        
+        $userId = (int)$params['id'];
+        $transferTo = (int)($_POST['transfer_to'] ?? 0);
+        
+        if ($userId === Auth::id()) {
+            Session::setFlash('danger', 'نمی‌توانید حساب خودتان را حذف کنید.');
+            View::redirect('/users');
+        }
+
+        if (!$transferTo) {
+            Session::setFlash('danger', 'لطفاً کاربر مقصد برای انتقال اطلاعات را انتخاب کنید.');
+            View::redirect('/users/transfer-delete/' . $userId);
+        }
+
+        // Verify target user exists
+        $db = Database::getInstance();
+        $targetUser = $db->fetch("SELECT id, full_name FROM users WHERE id = :id AND is_active = 1", [':id' => $transferTo]);
+        if (!$targetUser) {
+            Session::setFlash('danger', 'کاربر مقصد معتبر نیست.');
+            View::redirect('/users/transfer-delete/' . $userId);
+        }
+
+        $sourceUser = $db->fetch("SELECT full_name FROM users WHERE id = :id", [':id' => $userId]);
+        if (!$sourceUser) {
+            Session::setFlash('danger', 'کاربر مورد نظر یافت نشد.');
+            View::redirect('/users');
+        }
+
+        $db->beginTransaction();
+
+        try {
+            // 1. Transfer assigned deals
+            $db->update('deals', ['assigned_to' => $transferTo], 'assigned_to = :old', [':old' => $userId]);
+
+            // 2. Transfer created deals
+            $db->update('deals', ['created_by' => $transferTo], 'created_by = :old', [':old' => $userId]);
+
+            // 3. Transfer created contacts
+            $db->update('contacts', ['created_by' => $transferTo], 'created_by = :old', [':old' => $userId]);
+
+            // 4. Transfer assigned contacts (if assigned_to column exists)
+            try {
+                $db->update('contacts', ['assigned_to' => $transferTo], 'assigned_to = :old', [':old' => $userId]);
+            } catch (\Exception $e) {
+                // assigned_to column might not exist on contacts, ignore
+            }
+
+            // 5. Transfer deal activities
+            $db->update('deal_activities', ['user_id' => $transferTo], 'user_id = :old', [':old' => $userId]);
+
+            // 6. Transfer SMS history
+            $db->update('sms_history', ['sent_by' => $transferTo], 'sent_by = :old', [':old' => $userId]);
+
+            // 7. Transfer payments
+            try {
+                $db->update('payments', ['created_by' => $transferTo], 'created_by = :old', [':old' => $userId]);
+            } catch (\Exception $e) {}
+
+            // 8. Transfer activity logs
+            $db->update('activity_logs', ['user_id' => $transferTo], 'user_id = :old', [':old' => $userId]);
+
+            // 9. Transfer change logs (audit trail)
+            try {
+                $db->update('change_logs', ['user_id' => $transferTo], 'user_id = :old', [':old' => $userId]);
+            } catch (\Exception $e) {}
+
+            // 10. Transfer notifications
+            try {
+                $db->update('notifications', ['user_id' => $transferTo], 'user_id = :old', [':old' => $userId]);
+            } catch (\Exception $e) {}
+
+            // 11. Transfer dashboard notes
+            try {
+                $db->update('dashboard_notes', ['user_id' => $transferTo], 'user_id = :old', [':old' => $userId]);
+            } catch (\Exception $e) {}
+
+            // 12. Finally, delete the user
+            $db->delete('users', 'id = :id', [':id' => $userId]);
+
+            $db->commit();
+
+            ActivityLog::log('transfer_delete_user', 'user', $userId,
+                "کاربر {$sourceUser->full_name} حذف شد و اطلاعات به {$targetUser->full_name} منتقل شد"
+            );
+
+            Session::setFlash('success',
+                "کاربر «{$sourceUser->full_name}» با موفقیت حذف شد و اطلاعات به «{$targetUser->full_name}» منتقل شد."
+            );
+        } catch (\Exception $e) {
+            $db->rollback();
+            Session::setFlash('danger', 'خطا در انتقال اطلاعات: ' . $e->getMessage());
+        }
+
         View::redirect('/users');
+    }
+
+    public function delete(array $params): void
+    {
+        // Redirect to transfer page instead of direct delete
+        View::redirect('/users/transfer-delete/' . $params['id']);
     }
 }

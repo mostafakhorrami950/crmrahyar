@@ -33,7 +33,6 @@ use Controllers\BulkController;
 use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
-use Controllers\CallCenterController;
 
 // Landing page - redirect to main site URL
 Router::get('/', function() {
@@ -73,6 +72,8 @@ Router::group('/users', function() {
     Router::post('/store', [UserController::class, 'store'], 'users.manage');
     Router::get('/edit/{id}', [UserController::class, 'edit'], 'users.manage');
     Router::post('/update/{id}', [UserController::class, 'update'], 'users.manage');
+    Router::get('/transfer-delete/{id}', [UserController::class, 'transferAndDelete'], 'users.manage');
+    Router::post('/transfer-delete/{id}', [UserController::class, 'executeTransferAndDelete'], 'users.manage');
     Router::post('/delete/{id}', [UserController::class, 'delete'], 'users.manage');
 });
 
@@ -309,14 +310,6 @@ Router::get('/ai/history', [AIController::class, 'history']);
 Router::get('/audit', [AuditController::class, 'index'], 'audit.view');
 Router::get('/audit/history/{type}/{id}', [AuditController::class, 'history'], 'audit.view');
 Router::post('/audit/rollback', [AuditController::class, 'rollback'], 'audit.rollback');
-
-// Call Center Management
-Router::get('/callcenter', [CallCenterController::class, 'index'], 'phonelines.manage');
-Router::get('/callcenter/lines', [CallCenterController::class, 'lines'], 'phonelines.manage');
-Router::post('/callcenter/lines/add', [CallCenterController::class, 'addLine'], 'phonelines.manage');
-Router::post('/callcenter/assign', [CallCenterController::class, 'assign'], 'phonelines.manage');
-Router::post('/callcenter/cancel/{id}', [CallCenterController::class, 'cancel'], 'phonelines.manage');
-Router::post('/callcenter/lines/delete/{id}', [CallCenterController::class, 'deleteLine'], 'phonelines.manage');
 
 // Logger viewer (admin)
 Router::get('/system/logs', function() {
