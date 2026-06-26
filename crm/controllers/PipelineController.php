@@ -12,10 +12,14 @@ class PipelineController
     public function index(): void
     {
         $db = Database::getInstance();
+        $pipeFilter = Auth::pipelineFilter('p.id');
         $pipelines = $db->fetchAll(
             "SELECT p.*, (SELECT COUNT(*) FROM stages WHERE pipeline_id = p.id) as stages_count,
                     (SELECT COUNT(*) FROM deals WHERE pipeline_id = p.id) as deals_count
-             FROM pipelines p ORDER BY p.created_at DESC"
+             FROM pipelines p 
+             WHERE {$pipeFilter['where']}
+             ORDER BY p.created_at DESC",
+            $pipeFilter['params']
         );
         View::render('pipelines/index', ['title' => 'مدیریت پایپ لاین‌ها', 'pipelines' => $pipelines]);
     }

@@ -207,15 +207,16 @@ class Auth
      */
     public static function getAllowedPipelineIds(): array
     {
+        $userId = self::id();
+        if (!$userId) return [];
         $user = self::user();
-        if (!$user) return [];
-        if ($user->role_slug === 'super_admin') return []; // Empty = all allowed
+        if ($user && $user->role_slug === 'super_admin') return []; // Empty = all allowed
 
         $db = Database::getInstance();
         try {
             $rows = $db->fetchAll(
-                "SELECT pipeline_id FROM role_pipelines WHERE role_id = :role_id",
-                [':role_id' => $user->role_id]
+                "SELECT pipeline_id FROM user_pipelines WHERE user_id = :user_id",
+                [':user_id' => $userId]
             );
             return array_map(fn($r) => (int)$r->pipeline_id, $rows);
         } catch (\Exception $e) {

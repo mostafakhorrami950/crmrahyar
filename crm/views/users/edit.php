@@ -170,9 +170,36 @@
                     <div class="form-text">حداقل ۶ کاراکتر • خالی بگذارید تا رمز تغییر نکند</div>
                 </div>
 
-                <!-- Is Active -->
-                <div class="col-12">
-                    <div class="bg-light rounded-3 p-3">
+            <!-- Pipeline Access -->
+            <div class="col-12">
+                <div class="bg-light rounded-3 p-3">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-kanban me-2 text-primary"></i>دسترسی به کانبان‌ها (پایپ لاین‌ها)</h6>
+                    <div class="form-text mb-2">🌐 <strong>خالی = دسترسی به همه</strong> | 📌 <strong>انتخاب کنید = فقط همان‌ها</strong></div>
+                    <div class="row g-2">
+                        <?php if (!empty($pipelines)): ?>
+                        <?php foreach ($pipelines as $pl): ?>
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="allowed_pipelines[]" 
+                                       value="<?php echo $pl->id; ?>" id="pipe_<?php echo $pl->id; ?>"
+                                       <?php echo in_array((int)$pl->id, $userPipelineIds) ? 'checked' : ''; ?>>
+                                <label class="form-check-label small" for="pipe_<?php echo $pl->id; ?>">
+                                    <i class="bi bi-kanban text-primary me-1"></i><?php echo htmlspecialchars($pl->name); ?>
+                                </label>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                        <?php else: ?>
+                        <div class="col-12 text-muted small">پایپ لاین فعالی یافت نشد</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="form-text mt-2">اگر هیچ کدام انتخاب نشود، کاربر به تمام کانبان‌ها دسترسی دارد.</div>
+                </div>
+            </div>
+
+            <!-- Is Active -->
+            <div class="col-12">
+                <div class="bg-light rounded-3 p-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="is_active" value="1" 
                                    id="isActiveSwitch" <?php echo $user->is_active ? 'checked' : ''; ?>

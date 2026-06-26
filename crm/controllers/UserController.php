@@ -91,7 +91,23 @@ class UserController
             View::redirect('/users');
         }
         $roles = $db->fetchAll("SELECT * FROM roles WHERE is_active = 1 ORDER BY name");
-        View::render('users/edit', ['title' => 'ویرایش کاربر', 'user' => $user, 'roles' => $roles]);
+        
+        // Get pipelines and user's allowed pipelines
+        $pipelines = [];
+        $userPipelineIds = [];
+        try {
+            $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1 ORDER BY name");
+            $userPipes = $db->fetchAll("SELECT pipeline_id FROM user_pipelines WHERE user_id = :id", [':id' => $params['id']]);
+            $userPipelineIds = array_map(fn($up) => (int)$up->pipeline_id, $userPipes);
+        } catch (\Exception $e) {}
+        
+        View::render('users/edit', [
+            'title' => 'ویرایش کاربر',
+            'user' => $user,
+            'roles' => $roles,
+            'pipelines' => $pipelines,
+            'userPipelineIds' => $userPipelineIds,
+        ]);
     }
 
     public function update(array $params): void
@@ -130,6 +146,20 @@ class UserController
         }
 
         $db->update('users', $data, 'id = :id', [':id' => $params['id']]);
+        
+        // Update pipeline access
+        try {
+            $allowedPipelines = $_POST['allowed_pipelines'] ?? [];
+            $db->delete('user_pipelines', 'user_id = :id', [':id' => $params['id']]);
+            if (!empty($allowedPipelines)) {
+                foreach ($allowedPipelines as $pipelineId) {
+                    $db->insert('user_pipelines', [
+                        'user_id' => (int)$params['id'],
+                        'pipeline_id' => (int)$pipelineId,
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {}
         
         ActivityLog::log('update_user', 'user', $params['id'], "کاربر {$fullName} ویرایش شد");
         Session::setFlash('success', 'کاربر با موفقیت ویرایش شد.');
