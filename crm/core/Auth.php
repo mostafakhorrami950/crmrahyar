@@ -200,6 +200,59 @@ class Auth
         return $deal && ((int)$deal->assigned_to === $userId);
     }
 
+    /**
+     * Get the list of pipeline IDs the current user's role has access to.
+     * Returns empty array if all pipelines are allowed (no restrictions).
+     * Returns array of pipeline IDs if specific pipelines are assigned.
+     */
+    public static function getAllowedPipelineIds(): array
+    {
+        $user = self::user();
+        if (!$user) return [];
+        if ($user->role_slug === 'super_admin') return []; // Empty = all allowed
+
+        $db = Database::getInstance();
+        try {
+            $rows = $db->fetchAll(
+                "SELECT pipeline_id FROM role_pipelines WHERE role_id = :role_id",
+                [':role_id' => $user->role_id]
+            );
+            return array_map(fn($r) => (int)$r->pipeline_id, $rows);
+        } catch (\Exception $e) {
+            return []; // Table doesn't exist = all allowed
+        }
+    }
+
+    /**
+     * Check if the current user has access to a specific pipeline.
+     */
+    public static function canAccessPipeline(int $pipelineId): bool
+    {
+        $allowed = self::getAllowedPipelineIds();
+        if (empty($allowed)) return true; // No restrictions = all allowed
+        return in_array($pipelineId, $allowed);
+    }
+
+    /**
+     * Build SQL WHERE clause for pipeline filtering.
+     * Returns ['where' => string, 'params' => array]
+     */
+    public static function pipelineFilter(string $column = 'pipeline_id'): array
+    {
+        $allowed = self::getAllowedPipelineIds();
+        if (empty($allowed)) {
+            return ['where' => '1=1', 'params' => []];
+        }
+        $placeholders = [];
+        $params = [];
+        foreach ($allowed as $i => $pid) {
+            $key = ':pipe_' . $i;
+            $placeholders[] = $key;
+            $params[$key] = $pid;
+        }
+        return ['where' => "{$column} IN (" . implode(',', $placeholders) . ")", 'params' => $params];
+    }
+
     public static function requirePermission(string $permission): void
     {
         self::requireAuth();

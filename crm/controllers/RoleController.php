@@ -46,6 +46,10 @@ class RoleController
                 ['slug' => 'sms.send', 'name' => 'ارسال پیامک', 'icon' => '📤', 'hasScope' => true],
                 ['slug' => 'sms.view', 'name' => 'تاریخچه پیامک', 'icon' => '📋', 'hasScope' => true],
             ],
+            'فعالیت‌ها و تقویم' => [
+                ['slug' => 'activities.view', 'name' => 'مشاهده فعالیت‌ها', 'icon' => '📅', 'hasScope' => true],
+                ['slug' => 'calendar.view', 'name' => 'مشاهده تقویم', 'icon' => '🗓️', 'hasScope' => true],
+            ],
             'گزارشات' => [
                 ['slug' => 'reports.view', 'name' => 'مشاهده گزارشات', 'icon' => '📈', 'hasScope' => false],
             ],
@@ -160,11 +164,22 @@ class RoleController
             $rolePermsMap[$p->permission] = $p->scope;
         }
 
+        // Get all pipelines for access control
+        $pipelines = [];
+        $rolePipelineIds = [];
+        try {
+            $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1 ORDER BY name");
+            $rolePipelines = $db->fetchAll("SELECT pipeline_id FROM role_pipelines WHERE role_id = :id", [':id' => $params['id']]);
+            $rolePipelineIds = array_map(fn($rp) => (int)$rp->pipeline_id, $rolePipelines);
+        } catch (\Exception $e) {}
+
         View::render('roles/edit', [
             'title' => 'ویرایش نقش: ' . $role->name,
             'role' => $role,
             'modules' => $modules,
             'rolePermsMap' => $rolePermsMap,
+            'pipelines' => $pipelines,
+            'rolePipelineIds' => $rolePipelineIds,
         ]);
     }
 
@@ -174,6 +189,7 @@ class RoleController
         $description = trim($_POST['description'] ?? '');
         $permissions = $_POST['permissions'] ?? [];
         $scopes = $_POST['scopes'] ?? [];
+        $allowedPipelines = $_POST['allowed_pipelines'] ?? [];
 
         $db = Database::getInstance();
         $role = $db->fetch("SELECT * FROM roles WHERE id = :id", [':id' => $params['id']]);
@@ -200,6 +216,19 @@ class RoleController
                 'scope' => $scope,
             ]);
         }
+
+        // Update pipeline access control
+        try {
+            $db->delete('role_pipelines', 'role_id = :id', [':id' => $params['id']]);
+            if (!empty($allowedPipelines) && !in_array('all', $allowedPipelines)) {
+                foreach ($allowedPipelines as $pipelineId) {
+                    $db->insert('role_pipelines', [
+                        'role_id' => $params['id'],
+                        'pipeline_id' => (int)$pipelineId,
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {}
 
         ActivityLog::log('update_role', 'role', $params['id'], "نقش {$name} ویرایش شد");
         Session::setFlash('success', 'نقش «' . $name . '» با موفقیت ویرایش شد.');

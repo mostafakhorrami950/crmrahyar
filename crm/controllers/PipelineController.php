@@ -249,6 +249,13 @@ class PipelineController
     public function kanban(array $params): void
     {
         $db = Database::getInstance();
+        
+        // Check pipeline access
+        if (!Auth::canAccessPipeline((int)$params['id'])) {
+            Session::setFlash('danger', 'شما به این پایپ لاین دسترسی ندارید.');
+            View::redirect('/pipelines');
+        }
+        
         $pipeline = $db->fetch("SELECT * FROM pipelines WHERE id = :id AND is_active = 1", [':id' => $params['id']]);
         if (!$pipeline) {
             Session::setFlash('danger', 'پایپ لاین مورد نظر یافت نشد.');
@@ -288,7 +295,9 @@ class PipelineController
             }
         }
 
-        $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1");
+        // Filter pipelines by access
+        $pipeFilter = Auth::pipelineFilter('id');
+        $pipelines = $db->fetchAll("SELECT id, name FROM pipelines WHERE is_active = 1 AND {$pipeFilter['where']}", $pipeFilter['params']);
 
         View::render('pipelines/kanban', [
             'title' => "کانبان - {$pipeline->name}",

@@ -25,6 +25,44 @@
         </div>
         <?php endif; ?>
 
+        <!-- Pipeline Access Control -->
+        <div style="margin-top:16px;">
+            <h5 class="fw-bold mb-0"><i class="bi bi-kanban me-1"></i> دسترسی به کانبان‌ها (پایپ لاین‌ها)</h5>
+            <div style="background:var(--gray-50);padding:12px 16px;border-radius:10px;margin-bottom:12px;">
+                <div style="font-size:13px;color:var(--gray-600);">
+                    <span>🌐 <strong>همه:</strong> دسترسی به تمام کانبان‌ها</span>
+                    <span style="margin:0 8px;">|</span>
+                    <span>📌 <strong>انتخابی:</strong> فقط کانبان‌های انتخاب شده (معاملات مرتبط نمایش داده می‌شود)</span>
+                </div>
+            </div>
+            <div style="padding:8px;">
+                <div class="perm-row">
+                    <label class="perm-label">
+                        <input type="checkbox" id="allPipelinesCheck" name="allowed_pipelines[]" value="all"
+                               <?php echo empty($rolePipelineIds) ? 'checked' : ''; ?>
+                               onchange="toggleAllPipelines(this)" style="cursor:pointer;">
+                        <span><strong>🌐 دسترسی به تمام کانبان‌ها</strong></span>
+                    </label>
+                </div>
+                <div id="pipelineCheckboxes" style="<?php echo empty($rolePipelineIds) ? 'opacity:0.3;pointer-events:none;' : ''; ?>padding-right:24px;">
+                    <?php if (!empty($pipelines)): ?>
+                    <?php foreach ($pipelines as $pl): ?>
+                    <div class="perm-row">
+                        <label class="perm-label">
+                            <input type="checkbox" name="allowed_pipelines[]" value="<?php echo $pl->id; ?>"
+                                   <?php echo in_array((int)$pl->id, $rolePipelineIds) ? 'checked' : ''; ?>
+                                   style="cursor:pointer;">
+                            <span><i class="bi bi-kanban me-1 text-primary"></i><?php echo htmlspecialchars($pl->name); ?></span>
+                        </label>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php else: ?>
+                    <div class="text-muted small py-2">پایپ لاین فعالی یافت نشد</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
         <div style="margin-top:8px;">
             <h5 class="fw-bold mb-0"><i class="bi bi-key me-1"></i> دسترسی‌ها</h5>
             <div style="background:var(--gray-50);padding:12px 16px;border-radius:10px;margin-bottom:16px;">
@@ -44,3 +82,19 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleAllPipelines(checkbox) {
+    var container = document.getElementById('pipelineCheckboxes');
+    if (checkbox.checked) {
+        container.style.opacity = '0.3';
+        container.style.pointerEvents = 'none';
+        container.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+            cb.checked = false;
+        });
+    } else {
+        container.style.opacity = '1';
+        container.style.pointerEvents = '';
+    }
+}
+</script>

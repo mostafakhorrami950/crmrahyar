@@ -74,6 +74,13 @@ class DealController
             $params = array_merge($params, $scope['params']);
         }
         
+        // Pipeline access filtering
+        $pipeScope = Auth::pipelineFilter('d.pipeline_id');
+        if ($pipeScope['where'] !== '1=1') {
+            $where .= " AND " . $pipeScope['where'];
+            $params = array_merge($params, $pipeScope['params']);
+        }
+        
         if ($search) {
             $where .= " AND (d.title LIKE :search OR c.full_name LIKE :search2 OR c.phone LIKE :search3)";
             $params[':search'] = "%{$search}%";
