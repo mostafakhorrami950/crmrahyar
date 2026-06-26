@@ -195,9 +195,9 @@ class Auth
     {
         if (self::canAccessAll('deals.view')) return true; // Users with full access can see all
         $db = Database::getInstance();
-        $deal = $db->fetch("SELECT assigned_to, created_by FROM deals WHERE id = :id", [':id' => $dealId]);
+        $deal = $db->fetch("SELECT assigned_to FROM deals WHERE id = :id", [':id' => $dealId]);
         $userId = self::id();
-        return $deal && ($deal->assigned_to == $userId || $deal->created_by == $userId);
+        return $deal && ((int)$deal->assigned_to === $userId);
     }
 
     public static function requirePermission(string $permission): void

@@ -281,9 +281,9 @@ class PipelineController
                      LEFT JOIN contacts c ON d.contact_id = c.id 
                      LEFT JOIN users u ON d.assigned_to = u.id 
                      WHERE d.stage_id = :stage_id AND d.is_lost = 0 AND d.is_won = 0
-                     AND (d.assigned_to = :user_id OR d.created_by = :user_id2)
+                     AND d.assigned_to = :user_id
                      ORDER BY d.updated_at DESC",
-                    [':stage_id' => $stage->id, ':user_id' => $userId, ':user_id2' => $userId]
+                    [':stage_id' => $stage->id, ':user_id' => $userId]
                 );
             }
         }

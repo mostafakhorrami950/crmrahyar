@@ -28,10 +28,10 @@ class DealController
             exit;
         }
         
-        // Ownership check: non-admin users can only see their own deals
+        // Ownership check: non-admin users can only see deals assigned to them
         if (!Auth::canAccessAll('deals.view')) {
             $userId = Auth::id();
-            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+            if ($deal->assigned_to != $userId) {
                 echo json_encode(['success' => false, 'message' => 'شما به این معامله دسترسی ندارید.']);
                 exit;
             }
@@ -67,8 +67,8 @@ class DealController
         $where = "WHERE 1=1";
         $params = [];
         
-        // Scope-based filtering using permission system
-        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
+        // Scope-based filtering: for viewing, "own" means only deals assigned to the user
+        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to']);
         if ($scope['where'] !== '1=1') {
             $where .= " AND " . $scope['where'];
             $params = array_merge($params, $scope['params']);
@@ -305,10 +305,10 @@ class DealController
             View::redirect('/deals');
         }
 
-        // Permission-based access check
+        // Permission-based access check: viewing deals requires being the assigned user
         if (!Auth::canAccessAll('deals.view')) {
             $userId = Auth::id();
-            if ($deal->assigned_to != $userId && $deal->created_by != $userId) {
+            if ((int)$deal->assigned_to !== $userId) {
                 Session::setFlash('danger', 'شما فقط به معاملات خودتان دسترسی دارید.');
                 View::redirect('/deals');
             }
@@ -620,7 +620,7 @@ class DealController
     public function allTags(): void
     {
         $db = Database::getInstance();
-        $scope = Auth::scopeFilter('deals.view', ['assigned_to', 'created_by']);
+        $scope = Auth::scopeFilter('deals.view', ['assigned_to']);
         $scopeWhere = $scope['where'] === '1=1' ? '' : "AND {$scope['where']}";
         $deals = $db->fetchAll("SELECT id, description FROM deals WHERE description IS NOT NULL AND description != '' {$scopeWhere}", $scope['params']);
         
@@ -656,7 +656,7 @@ class DealController
         $assignedTo = $_GET['assigned_to'] ?? '';
         $status = $_GET['status'] ?? '';
         
-        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to', 'd.created_by']);
+        $scope = Auth::scopeFilter('deals.view', ['d.assigned_to']);
         $scopeWhere = $scope['where'] === '1=1' ? '' : "AND {$scope['where']}";
         $where = "WHERE d.description LIKE :tag1 {$scopeWhere}";
         $queryParams = array_merge([':tag1' => "%#{$tag}%"], $scope['params']);
