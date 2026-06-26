@@ -35,10 +35,11 @@ function updateBulkBar() {
     if (!bar) return;
     
     if (checked.length > 0) {
+        bar.classList.remove('d-none');
         bar.style.display = 'flex';
         if (count) count.textContent = checked.length + ' مورد انتخاب شده';
     } else {
-        bar.style.display = 'none';
+        bar.classList.add('d-none');
     }
 }
 
