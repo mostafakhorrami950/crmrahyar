@@ -303,7 +303,8 @@ function handleDrop(e, stageId) {
     
     fetch('<?php echo $config['url']; ?>/pipelines/update-stage', {
         method: 'POST',
-        body: fd
+        body: fd,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
     })
     .then(function(r) { return r.json(); })
     .then(function(d) {

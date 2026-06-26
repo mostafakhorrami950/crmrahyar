@@ -193,7 +193,7 @@ class Auth
 
     public static function ownsDeal(int $dealId): bool
     {
-        if (!self::isOperator()) return true; // Non-operators can access all
+        if (self::canAccessAll('deals.view')) return true; // Users with full access can see all
         $db = Database::getInstance();
         $deal = $db->fetch("SELECT assigned_to, created_by FROM deals WHERE id = :id", [':id' => $dealId]);
         $userId = self::id();
