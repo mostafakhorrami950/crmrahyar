@@ -131,6 +131,7 @@ class ContactController
 
     public function view(array $params): void
     {
+        Auth::requireAuth();
         $db = Database::getInstance();
         $contact = $db->fetch(
             "SELECT c.*, u.full_name as created_by_name,
@@ -148,6 +149,15 @@ class ContactController
         if (!$contact) {
             Session::setFlash('danger', 'مخاطب مورد نظر یافت نشد.');
             View::redirect('/contacts');
+        }
+
+        // Ownership check: non-admin users can only see their own contacts
+        if (!Auth::canAccessAll('contacts.view')) {
+            $userId = Auth::id();
+            if ((int)$contact->created_by !== $userId) {
+                Session::setFlash('danger', 'شما فقط به مخاطبین خودتان دسترسی دارید.');
+                View::redirect('/contacts');
+            }
         }
 
         // Get all deals for this contact
@@ -295,17 +305,34 @@ class ContactController
 
     public function edit(array $params): void
     {
+        Auth::requireAuth();
         $db = Database::getInstance();
         $contact = $db->fetch("SELECT * FROM contacts WHERE id = :id", [':id' => $params['id']]);
         if (!$contact) {
             Session::setFlash('danger', 'مخاطب مورد نظر یافت نشد.');
             View::redirect('/contacts');
         }
+        // Ownership check
+        if (!Auth::canAccessAll('contacts.edit')) {
+            if ((int)$contact->created_by !== Auth::id()) {
+                Session::setFlash('danger', 'شما فقط می‌توانید مخاطبین خودتان را ویرایش کنید.');
+                View::redirect('/contacts');
+            }
+        }
         View::render('contacts/edit', ['title' => 'ویرایش مخاطب', 'contact' => $contact]);
     }
 
     public function update(array $params): void
     {
+        Auth::requireAuth();
+        $db2 = Database::getInstance();
+        $existingContact = $db2->fetch("SELECT created_by FROM contacts WHERE id = :id", [':id' => $params['id']]);
+        if ($existingContact && !Auth::canAccessAll('contacts.edit')) {
+            if ((int)$existingContact->created_by !== Auth::id()) {
+                Session::setFlash('danger', 'شما فقط می‌توانید مخاطبین خودتان را ویرایش کنید.');
+                View::redirect('/contacts');
+            }
+        }
         $fullName = trim($_POST['full_name'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
         $companyPhone = trim($_POST['company_phone'] ?? '');
@@ -358,8 +385,20 @@ class ContactController
 
     public function delete(array $params): void
     {
+        Auth::requireAuth();
         $db = Database::getInstance();
         $contact = $db->fetch("SELECT * FROM contacts WHERE id = :id", [':id' => $params['id']]);
+        if (!$contact) {
+            Session::setFlash('danger', 'مخاطب مورد نظر یافت نشد.');
+            View::redirect('/contacts');
+        }
+        // Ownership check: non-admin users can only delete their own contacts
+        if (!Auth::canAccessAll('contacts.delete')) {
+            if ((int)$contact->created_by !== Auth::id()) {
+                Session::setFlash('danger', 'شما فقط می‌توانید مخاطبین خودتان را حذف کنید.');
+                View::redirect('/contacts');
+            }
+        }
         if ($contact) {
             AuditTrail::log('contact', $params['id'], 'delete', (array)$contact, null);
             $db->delete('contacts', 'id = :id', [':id' => $params['id']]);
