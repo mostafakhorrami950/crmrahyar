@@ -263,12 +263,12 @@ Router::group('/teams', function() {
     Router::post('/delete/{id}', [TeamController::class, 'delete'], 'users.manage');
 });
 
-// Sales Targets - view for all, create/delete only for admins
+// Sales Targets - permission-based access
 Router::group('/targets', function() {
-    Router::get('', [TargetController::class, 'index'], 'reports.view');
-    Router::post('/store', [TargetController::class, 'store'], 'reports.view');
-    Router::post('/update/{id}', [TargetController::class, 'update'], 'reports.view');
-    Router::post('/delete/{id}', [TargetController::class, 'delete'], 'reports.view');
+    Router::get('', [TargetController::class, 'index'], 'targets.view');
+    Router::post('/store', [TargetController::class, 'store'], 'targets.manage');
+    Router::post('/update/{id}', [TargetController::class, 'update'], 'targets.manage');
+    Router::post('/delete/{id}', [TargetController::class, 'delete'], 'targets.manage');
 });
 
 // Automation

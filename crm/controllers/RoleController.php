@@ -50,6 +50,10 @@ class RoleController
                 ['slug' => 'activities.view', 'name' => 'مشاهده فعالیت‌ها', 'icon' => '📅', 'hasScope' => true],
                 ['slug' => 'calendar.view', 'name' => 'مشاهده تقویم', 'icon' => '🗓️', 'hasScope' => true],
             ],
+            'هدف‌گذاری' => [
+                ['slug' => 'targets.view', 'name' => 'مشاهده اهداف', 'icon' => '🎯', 'hasScope' => false],
+                ['slug' => 'targets.manage', 'name' => 'مدیریت اهداف', 'icon' => '⚙️', 'hasScope' => false],
+            ],
             'گزارشات' => [
                 ['slug' => 'reports.view', 'name' => 'مشاهده گزارشات', 'icon' => '📈', 'hasScope' => false],
             ],

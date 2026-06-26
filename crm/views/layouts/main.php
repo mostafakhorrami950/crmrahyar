@@ -84,10 +84,12 @@
                 </a>
                 <?php endif; ?>
                 
-                <?php if (\Core\Auth::hasPermission('reports.view')): ?>
+                <?php if (\Core\Auth::hasPermission('targets.view')): ?>
                 <a href="<?php echo $config['url']; ?>/targets" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/targets') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-bullseye"></i> <span>هدف‌گذاری</span>
                 </a>
+                <?php endif; ?>
+                <?php if (\Core\Auth::hasPermission('reports.view')): ?>
                 <div class="sidebar-section">گزارشات</div>
                 <a href="<?php echo $config['url']; ?>/reports" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/reports') !== false && strpos($_SERVER['REQUEST_URI'], '/reports/sales') === false && strpos($_SERVER['REQUEST_URI'], '/reports/pipeline') === false && strpos($_SERVER['REQUEST_URI'], '/reports/activities') === false && strpos($_SERVER['REQUEST_URI'], '/reports/contacts') === false) ? 'active' : ''; ?>">
                     <i class="bi bi-graph-up"></i> <span>داشبورد گزارشات</span>
