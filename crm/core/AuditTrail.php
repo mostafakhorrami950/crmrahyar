@@ -164,21 +164,27 @@ class AuditTrail
                 return ['success' => false, 'message' => 'این رکورد قبلاً بازیابی شده است'];
             }
 
-            // Remove auto-increment fields
-            unset($snapshot['updated_at']);
+            // Remove fields that shouldn't be re-inserted
+            unset($snapshot['updated_at'], $snapshot['password']);
             
             // Re-insert the deleted record with original ID
-            $columns = array_keys($snapshot);
+            $columns = [];
             $placeholders = [];
             $params = [];
             foreach ($snapshot as $key => $val) {
-                $ph = ":{$key}";
+                if ($key === 'password') continue; // Skip password
+                $columns[] = "`{$key}`";
+                $ph = ":r_{$key}";
                 $placeholders[] = $ph;
                 $params[$ph] = $val;
             }
 
+            if (empty($columns)) {
+                return ['success' => false, 'message' => 'داده‌ای برای بازیابی موجود نیست'];
+            }
+
             $db->query(
-                "INSERT INTO {$table} (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $placeholders) . ")",
+                "INSERT INTO {$table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")",
                 $params
             );
 

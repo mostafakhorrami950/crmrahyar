@@ -55,17 +55,21 @@
                     <td class="text-nowrap small"><?php echo \Core\JDate::displayDateTime($log->created_at); ?></td>
                     <td><span class="fw-semibold"><?php echo htmlspecialchars($log->user_name ?? 'سیستم'); ?></span></td>
                     <td>
-                        <?php if ($log->entity_type === 'contact'): ?>
-                        <span class="badge bg-info bg-opacity-10 text-info"><i class="bi bi-person me-1"></i>مخاطب #<?php echo $log->entity_id; ?></span>
-                        <?php else: ?>
-                        <span class="badge bg-primary bg-opacity-10 text-primary"><i class="bi bi-briefcase me-1"></i>معامله #<?php echo $log->entity_id; ?></span>
-                        <?php endif; ?>
+                        <?php
+                        $typeLabels = ['contact' => 'مخاطب', 'deal' => 'معامله', 'pipeline' => 'پایپ لاین', 'user' => 'کاربر'];
+                        $typeColors = ['contact' => 'info', 'deal' => 'primary', 'pipeline' => 'success', 'user' => 'warning'];
+                        $typeIcons = ['contact' => 'person', 'deal' => 'briefcase', 'pipeline' => 'kanban', 'user' => 'person-gear'];
+                        ?>
+                        <span class="badge bg-<?php echo $typeColors[$log->entity_type] ?? 'secondary'; ?> bg-opacity-10 text-<?php echo $typeColors[$log->entity_type] ?? 'secondary'; ?>">
+                            <i class="bi bi-<?php echo $typeIcons[$log->entity_type] ?? 'circle'; ?> me-1"></i>
+                            <?php echo $typeLabels[$log->entity_type] ?? $log->entity_type; ?> #<?php echo $log->entity_id; ?>
+                        </span>
                     </td>
                     <td>
                         <?php
-                        $actionLabels = ['create' => 'ایجاد', 'update' => 'ویرایش', 'delete' => 'حذف'];
-                        $actionColors = ['create' => 'success', 'update' => 'warning', 'delete' => 'danger'];
-                        $actionIcons = ['create' => 'plus-circle', 'update' => 'pencil', 'delete' => 'trash'];
+                        $actionLabels = ['create' => 'ایجاد', 'update' => 'ویرایش', 'delete' => 'حذف', 'restore' => 'بازیابی'];
+                        $actionColors = ['create' => 'success', 'update' => 'warning', 'delete' => 'danger', 'restore' => 'info'];
+                        $actionIcons = ['create' => 'plus-circle', 'update' => 'pencil', 'delete' => 'trash', 'restore' => 'recycle'];
                         ?>
                         <span class="badge bg-<?php echo $actionColors[$log->action] ?? 'secondary'; ?>">
                             <i class="bi bi-<?php echo $actionIcons[$log->action] ?? 'circle'; ?> me-1"></i>
@@ -90,18 +94,24 @@
                         <?php elseif ($log->action === 'create'): ?>
                         <small class="text-muted">رکورد جدید ایجاد شد</small>
                         <?php elseif ($log->action === 'delete'): ?>
-                        <small class="text-danger">رکورد حذف شد</small>
+                        <small class="text-danger"><i class="bi bi-trash me-1"></i>رکورد حذف شد</small>
+                        <?php if ($log->snapshot): ?>
+                        <br><small class="text-success fw-bold"><i class="bi bi-recycle me-1"></i>قابل بازیابی</small>
+                        <?php endif; ?>
+                        <?php elseif ($log->action === 'restore'): ?>
+                        <small class="text-info"><i class="bi bi-recycle me-1"></i>رکورد بازیابی شد</small>
                         <?php else: ?>
                         <small class="text-muted">—</small>
                         <?php endif; ?>
                     </td>
                     <td class="text-center">
-                        <?php if ($log->snapshot && $log->action !== 'delete'): ?>
-                        <form method="POST" action="<?php echo $config['url']; ?>/audit/rollback" style="display:inline;" onsubmit="return confirm('آیا مطمئن هستید؟ این عملیات داده‌ها را به نسخه قبلی بازمی‌گرداند.')">
+                        <?php if ($log->snapshot && in_array($log->action, ['delete', 'update'])): ?>
+                        <form method="POST" action="<?php echo $config['url']; ?>/audit/rollback" style="display:inline;" onsubmit="return confirm('<?php echo $log->action === 'delete' ? 'آیا مطمئن هستید؟ این رکورد حذف شده بازیابی خواهد شد.' : 'آیا مطمئن هستید؟ داده‌ها به این نسخه بازمی‌گردند.'; ?>')">
                             <input type="hidden" name="log_id" value="<?php echo $log->id; ?>">
                             <input type="hidden" name="entity_type" value="<?php echo $log->entity_type; ?>">
-                            <button type="submit" class="btn btn-sm btn-outline-warning" title="بازگردانی به این نسخه">
-                                <i class="bi bi-arrow-counterclockwise"></i>
+                            <button type="submit" class="btn btn-sm <?php echo $log->action === 'delete' ? 'btn-success' : 'btn-outline-warning'; ?>" title="<?php echo $log->action === 'delete' ? 'بازیابی رکورد حذف شده' : 'بازگردانی به این نسخه'; ?>">
+                                <i class="bi bi-<?php echo $log->action === 'delete' ? 'recycle' : 'arrow-counterclockwise'; ?>"></i>
+                                <?php if ($log->action === 'delete'): ?> بازیابی<?php endif; ?>
                             </button>
                         </form>
                         <?php else: ?>
