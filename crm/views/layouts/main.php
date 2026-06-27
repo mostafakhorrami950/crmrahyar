@@ -13,7 +13,7 @@
     <!-- Persian Datepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=3.0.0">
+    <link rel="stylesheet" href="<?php echo $config['url']; ?>/assets/css/app.css?v=4.0.0">
     <script>var CRM_BASE_URL = '<?php echo $config['url']; ?>';</script>
 </head>
 <body>
