@@ -980,3 +980,102 @@ textarea.form-control {
     overflow: auto !important;
     padding-right: 0 !important;
 }
+
+/* ========== MODAL STACKING FIX ========== */
+/* When a second modal opens from within a first modal, stack on top */
+.modal.show + .modal-backdrop,
+.modal-backdrop + .modal {
+    z-index: 1056;
+}
+.modal-backdrop.show {
+    z-index: 1050;
+}
+.modal.show .modal-content {
+    z-index: 1057;
+}
+/* Fix quick deal modal and quick contact modal stacking */
+#quickDealModal {
+    z-index: 1051;
+}
+#quickDealModal.show {
+    z-index: 1051;
+}
+#quickContactModal {
+    z-index: 1056;
+}
+#quickContactModal.show {
+    z-index: 1056;
+}
+#quickContactModal .modal-content {
+    z-index: 1057;
+}
+/* Fix modal backdrop when contact modal opens over deal modal */
+#quickContactModal ~ .modal-backdrop {
+    z-index: 1055 !important;
+}
+
+/* ========== 14" & 17" MONITOR RESPONSIVE ========== */
+@media (min-width: 1400px) {
+    .page-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ========== MOBILE TABLE HORIZONTAL SCROLL ========== */
+@media (max-width: 767.98px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    /* Stack form fields on mobile */
+    .form-label {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    /* Fix FAB position to not block modal */
+    .fab-container {
+        z-index: 1045;
+    }
+    /* Fix quick deal modal on mobile */
+    .modal-fullscreen-md-down {
+        margin: 0;
+    }
+    .modal-fullscreen-md-down .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+}
+
+/* ========== SMALL SCREEN FIXES ========== */
+@media (max-width: 575.98px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .stat-card {
+        padding: 12px;
+    }
+    .stat-card .stat-value {
+        font-size: 18px;
+    }
+    .login-box {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+    .login-logo .logo-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+    }
+    /* Fix modals on small screens */
+    .modal-dialog {
+        margin: 5px;
+    }
+    .modal-dialog-scrollable .modal-body {
+        max-height: calc(100vh - 160px);
+    }
+}

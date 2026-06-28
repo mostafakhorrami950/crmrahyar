@@ -33,45 +33,6 @@ use Controllers\BulkController;
 use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
-use Controllers\PWAController;
-
-// ========== PWA ROUTES ==========
-// Public PWA routes (no auth)
-Router::get('/sw.js', [PWAController::class, 'serviceWorker']);
-Router::get('/manifest.json', [PWAController::class, 'manifest']);
-Router::get('/offline.html', [PWAController::class, 'offline']);
-Router::get('/pwa/icon/{filename}', [PWAController::class, 'icon']);
-Router::get('/pwa', [PWAController::class, 'index']);
-Router::get('/pwa/login', [PWAController::class, 'loginForm']);
-Router::post('/pwa/login', [PWAController::class, 'login']);
-Router::get('/pwa/logout', [PWAController::class, 'logout']);
-
-// Authenticated PWA routes
-Router::get('/pwa/app', [PWAController::class, 'app']);
-Router::get('/pwa/deals', [PWAController::class, 'deals']);
-Router::get('/pwa/deals/create', [PWAController::class, 'dealCreate']);
-Router::post('/pwa/deals/store', [PWAController::class, 'dealStore']);
-Router::get('/pwa/deals/view/{id}', [PWAController::class, 'dealView']);
-Router::get('/pwa/deals/edit/{id}', [PWAController::class, 'dealEdit']);
-Router::post('/pwa/deals/update/{id}', [PWAController::class, 'dealUpdate']);
-Router::get('/pwa/contacts', [PWAController::class, 'contacts']);
-Router::get('/pwa/contacts/create', [PWAController::class, 'contactCreate']);
-Router::post('/pwa/contacts/store', [PWAController::class, 'contactStore']);
-Router::get('/pwa/contacts/view/{id}', [PWAController::class, 'contactView']);
-Router::get('/pwa/contacts/edit/{id}', [PWAController::class, 'contactEdit']);
-Router::post('/pwa/contacts/update/{id}', [PWAController::class, 'contactUpdate']);
-Router::get('/pwa/activities', [PWAController::class, 'activities']);
-Router::post('/pwa/activities/toggle/{id}', [PWAController::class, 'activityToggle']);
-Router::get('/pwa/calendar', [PWAController::class, 'calendar']);
-Router::get('/pwa/calendar/events', [PWAController::class, 'calendarEvents']);
-Router::get('/pwa/pipelines', [PWAController::class, 'pipelines']);
-Router::get('/pwa/pipeline/kanban/{id}', [PWAController::class, 'pipelineKanban']);
-Router::post('/pwa/deals/add-activity/{id}', [PWAController::class, 'addActivity']);
-Router::get('/pwa/more', [PWAController::class, 'more']);
-Router::get('/pwa/notifications', [PWAController::class, 'notifications']);
-Router::post('/pwa/subscribe', [PWAController::class, 'subscribe']);
-Router::post('/pwa/unsubscribe', [PWAController::class, 'unsubscribe']);
-
 // Landing page - redirect to main site URL
 Router::get('/', function() {
     $config = $GLOBALS['app_config'];

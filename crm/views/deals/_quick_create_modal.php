@@ -54,7 +54,7 @@ $defaultPipeline = $db->fetch("SELECT id FROM pipelines WHERE is_default = 1");
                         <div class="col-12 col-md-6">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>مخاطب
                                 <?php if (\Core\Auth::hasPermission('contacts.create')): ?>
-                                <button type="button" class="btn btn-link text-decoration-none p-0 ms-1" onclick="new bootstrap.Modal(document.getElementById('quickContactModal')).show()" title="افزودن مخاطب جدید"><i class="bi bi-plus-circle text-primary"></i></button>
+<button type="button" class="btn btn-link text-decoration-none p-0 ms-1" onclick="openContactFromDeal()" title="افزودن مخاطب جدید"><i class="bi bi-plus-circle text-primary"></i></button>
                                 <?php endif; ?>
                             </label>
                             <input type="text" class="form-control mb-1" id="qdcContactSearch" placeholder="🔍 جستجوی مخاطب..." autocomplete="off" oninput="qdcFilterContacts(this.value)">
@@ -159,4 +159,22 @@ document.getElementById('quickDealModal')?.addEventListener('shown.bs.modal', fu
     var pSel = document.getElementById('qdcPipeline');
     if (pSel.value) qdcLoadStages(pSel.value);
 });
+
+// Open contact modal from within deal modal (proper stacking)
+function openContactFromDeal() {
+    var dealModal = bootstrap.Modal.getInstance(document.getElementById('quickDealModal'));
+    if (dealModal) dealModal.hide();
+    setTimeout(function() {
+        var contactModal = new bootstrap.Modal(document.getElementById('quickContactModal'));
+        contactModal.show();
+        // When contact modal closes, reopen deal modal
+        document.getElementById('quickContactModal').addEventListener('hidden.bs.modal', function handler() {
+            document.getElementById('quickContactModal').removeEventListener('hidden.bs.modal', handler);
+            setTimeout(function() {
+                var dealModal2 = new bootstrap.Modal(document.getElementById('quickDealModal'));
+                dealModal2.show();
+            }, 300);
+        });
+    }, 400);
+}
 </script>
