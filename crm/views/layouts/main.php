@@ -27,7 +27,7 @@
                 <div class="d-flex align-items-center justify-content-center gap-2">
                     <span class="brand-icon">✈️</span>
                     <div>
-                        <h5 class="mb-0 fw-bold text-white">علائدین سفیر آسمان</h5>
+<h5 class="mb-0 fw-bold text-white">علاءالدین سفیر اسمان</h5>
                         <small class="text-white-50">آژانس مسافرتی</small>
                     </div>
                 </div>

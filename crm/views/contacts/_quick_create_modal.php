@@ -38,6 +38,19 @@
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-card-text me-1"></i>یادداشت</label>
                         <textarea name="notes" class="form-control" rows="2" placeholder="توضیحات مختصر..."></textarea>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-crosshair me-1"></i>منبع آشنایی</label>
+                        <select name="source" class="form-select" id="qcSource">
+                            <option value="">انتخاب کنید</option>
+                            <?php 
+                            $sourcesList = \Core\Database::getInstance()->fetchAll("SELECT name, icon FROM deal_sources WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
+                            foreach ($sourcesList as $src): 
+                            ?>
+                            <option value="<?php echo htmlspecialchars($src->name); ?>"><?php echo htmlspecialchars($src->icon . ' ' . $src->name); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">انصراف</button>
