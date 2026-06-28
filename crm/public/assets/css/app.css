@@ -982,36 +982,12 @@ textarea.form-control {
 }
 
 /* ========== MODAL STACKING FIX ========== */
-/* When a second modal opens from within a first modal, stack on top */
-.modal.show + .modal-backdrop,
-.modal-backdrop + .modal {
-    z-index: 1056;
-}
-.modal-backdrop.show {
-    z-index: 1050;
-}
-.modal.show .modal-content {
-    z-index: 1057;
-}
 /* Fix quick deal modal and quick contact modal stacking */
-#quickDealModal {
+#quickDealModal .modal-content {
     z-index: 1051;
-}
-#quickDealModal.show {
-    z-index: 1051;
-}
-#quickContactModal {
-    z-index: 1056;
-}
-#quickContactModal.show {
-    z-index: 1056;
 }
 #quickContactModal .modal-content {
-    z-index: 1057;
-}
-/* Fix modal backdrop when contact modal opens over deal modal */
-#quickContactModal ~ .modal-backdrop {
-    z-index: 1055 !important;
+    z-index: 1056;
 }
 
 /* ========== 14" & 17" MONITOR RESPONSIVE ========== */
