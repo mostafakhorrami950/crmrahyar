@@ -975,20 +975,6 @@ textarea.form-control {
         max-height: calc(100vh - 20px);
     }
 }
-/* Override Bootstrap's modal scroll lock that prevents body scroll */
-.modal-open {
-    overflow: auto !important;
-    padding-right: 0 !important;
-}
-
-/* ========== MODAL STACKING FIX ========== */
-/* Fix quick deal modal and quick contact modal stacking */
-#quickDealModal .modal-content {
-    z-index: 1051;
-}
-#quickContactModal .modal-content {
-    z-index: 1056;
-}
 
 /* ========== 14" & 17" MONITOR RESPONSIVE ========== */
 @media (min-width: 1400px) {
@@ -1022,7 +1008,6 @@ textarea.form-control {
     }
     .modal-fullscreen-md-down .modal-content {
         border-radius: 0;
-        min-height: 100vh;
     }
 }
 

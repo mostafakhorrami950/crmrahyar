@@ -7,6 +7,7 @@
     <div class="d-flex flex-wrap gap-2">
         <button class="btn btn-outline-success btn-sm" onclick="new bootstrap.Modal(document.getElementById('smsModal')).show()"><i class="bi bi-envelope me-1"></i>پیامک</button>
         <a href="<?php echo $config['url']; ?>/payment/create/<?php echo $deal->id; ?>" class="btn btn-outline-primary btn-sm"><i class="bi bi-credit-card me-1"></i>لینک پرداخت</a>
+        <a href="<?php echo $config['url']; ?>/hotel-invoice/create/<?php echo $deal->id; ?>" class="btn btn-outline-warning btn-sm"><i class="bi bi-building me-1"></i>فاکتور هتل</a>
         <a href="<?php echo $config['url']; ?>/deals/edit/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>ویرایش</a>
     </div>
 </div>
@@ -145,6 +146,40 @@
                 <div class="ajax-error alert alert-danger d-none mt-2 small p-2"></div>
                 <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check-circle me-1"></i>ذخیره</button>
             </form>
+        </div></div>
+
+        <!-- Hotel Invoices -->
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-building me-2"></i>فاکتورهای هتل</h6>
+                <a href="<?php echo $config['url']; ?>/hotel-invoice/create/<?php echo $deal->id; ?>" class="btn btn-sm btn-outline-warning"><i class="bi bi-plus"></i></a>
+            </div>
+            <?php
+            $hotelInvoices = [];
+            try {
+                $hotelDb = \Core\Database::getInstance();
+                $hotelInvoices = $hotelDb->fetchAll("SELECT * FROM hotel_invoices WHERE deal_id = :id ORDER BY created_at DESC", [':id' => $deal->id]);
+            } catch (\Exception $e) {}
+            ?>
+            <?php if(empty($hotelInvoices)): ?>
+            <p class="text-muted text-center small py-3 mb-0">فاکتور هتلی ثبت نشده.</p>
+            <?php else: ?>
+            <div class="d-flex flex-column gap-2">
+                <?php foreach($hotelInvoices as $hi): ?>
+                <div class="bg-light rounded p-2 d-flex justify-content-between align-items-center flex-wrap gap-1">
+                    <div>
+                        <strong class="small"><?php echo htmlspecialchars($hi->hotel_name); ?></strong>
+                        <br><small class="text-muted"><?php echo \Core\JDate::displayDate($hi->check_in_date); ?> تا <?php echo \Core\JDate::displayDate($hi->check_out_date); ?></small>
+                        <br><small class="text-muted"><?php echo $hi->persons_count; ?> نفر | <?php echo $hi->nights; ?> شب | <?php echo $hi->person_night_count; ?> نفر-شب</small>
+                    </div>
+                    <div class="text-end">
+                        <strong class="text-success"><?php echo number_format($hi->final_amount); ?> تومان</strong>
+                        <br><span class="badge <?php echo $hi->invoice_status=='final'?'bg-success':($hi->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>" style="font-size:10px;"><?php echo $hi->invoice_status=='final'?'نهایی':($hi->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?></span>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
         </div></div>
 
         <!-- Payments -->

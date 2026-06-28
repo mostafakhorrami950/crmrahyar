@@ -33,6 +33,7 @@ use Controllers\BulkController;
 use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
+use Controllers\HotelInvoiceController;
 // Landing page - redirect to main site URL
 Router::get('/', function() {
     $config = $GLOBALS['app_config'];
@@ -304,6 +305,17 @@ Router::post('/bulk/delete', [BulkController::class, 'delete'], 'deals.view');
 // AI Analysis
 Router::post('/ai/analyze', [AIController::class, 'analyze']);
 Router::get('/ai/history', [AIController::class, 'history']);
+
+// Hotel Invoices
+Router::group('/hotel-invoice', function() {
+    Router::get('/create/{deal_id}', [HotelInvoiceController::class, 'create'], 'deals.edit');
+    Router::post('/store', [HotelInvoiceController::class, 'store'], 'deals.edit');
+    Router::get('/view/{id}', [HotelInvoiceController::class, 'view'], 'deals.view');
+    Router::get('/print/{id}', [HotelInvoiceController::class, 'print'], 'deals.view');
+    Router::post('/delete/{id}', [HotelInvoiceController::class, 'delete'], 'deals.edit');
+    Router::post('/status/{id}', [HotelInvoiceController::class, 'updateStatus'], 'deals.edit');
+    Router::post('/calculate', [HotelInvoiceController::class, 'calculate'], 'deals.view');
+});
 
 // Audit Trail
 Router::get('/audit', [AuditController::class, 'index'], 'audit.view');
