@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آفلاین | علاءالدین سفیر اسمان</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #f0f2f5, #e8eaf6);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            color: #333;
+        }
+        .offline-container {
+            text-align: center;
+            padding: 40px 30px;
+            max-width: 420px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        h1 {
+            font-size: 24px;
+            color: #4361ee;
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 15px;
+            color: #6c757d;
+            line-height: 1.8;
+            margin-bottom: 24px;
+        }
+        .retry-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #4361ee, #7209b7);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(67,97,238,0.4);
+        }
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67,97,238,0.5);
+        }
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+        .brand {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #adb5bd;
+        }
+        .brand strong {
+            color: #4361ee;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <span class="offline-icon">✈️</span>
+        <h1>اتصال اینترنت قطع است</h1>
+        <p>
+            به نظر می‌رسد اتصال اینترنت شما قطع شده است.
+            لطفاً اتصال خود را بررسی کنید و دوباره تلاش کنید.
+        </p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            تلاش مجدد
+        </button>
+        <div class="brand">
+            <strong>علاءالدین سفیر اسمان</strong><br>
+            سیستم مدیریت آژانس مسافرتی
+        </div>
+    </div>
+</body>
+</html>

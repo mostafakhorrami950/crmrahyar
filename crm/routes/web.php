@@ -33,6 +33,17 @@ use Controllers\BulkController;
 use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
+use Controllers\PWAController;
+
+// ========== PWA ROUTES (Public - No Auth Required) ==========
+Router::get('/sw.js', [PWAController::class, 'serviceWorker']);
+Router::get('/manifest.json', [PWAController::class, 'manifest']);
+Router::get('/offline.html', [PWAController::class, 'offline']);
+Router::get('/pwa/icon/{filename}', [PWAController::class, 'icon']);
+
+// PWA Push Notification Routes (Auth Required)
+Router::post('/pwa/subscribe', [PWAController::class, 'subscribe']);
+Router::post('/pwa/unsubscribe', [PWAController::class, 'unsubscribe']);
 
 // Landing page - redirect to main site URL
 Router::get('/', function() {
