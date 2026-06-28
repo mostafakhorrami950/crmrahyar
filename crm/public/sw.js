@@ -19,8 +19,8 @@ const STATIC_ASSETS = [
     'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
     'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css',
     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js',
-    '/crm/assets/icons/icon-192x192.svg',
-    '/crm/assets/icons/icon-512x512.svg'
+    '/crm/pwa/icon/icon-192x192.svg',
+    '/crm/pwa/icon/icon-512x512.svg'
 ];
 
 // URL patterns that should NOT be cached (API calls, POST requests, etc.)
@@ -156,7 +156,7 @@ function networkFirst(request) {
 
 // Push notification event
 self.addEventListener('push', function(event) {
-    var data = { title: 'اعلان جدید', body: 'شما یک اعلان جدید دارید', icon: '/crm/assets/icons/icon-192x192.svg' };
+    var data = { title: 'اعلان جدید', body: 'شما یک اعلان جدید دارید', icon: '/crm/pwa/icon/icon-192x192.svg' };
     
     if (event.data) {
         try {
@@ -169,8 +169,8 @@ self.addEventListener('push', function(event) {
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: data.icon || '/crm/assets/icons/icon-192x192.svg',
-            badge: '/crm/assets/icons/icon-192x192.svg',
+            icon: data.icon || '/crm/pwa/icon/icon-192x192.svg',
+            badge: '/crm/pwa/icon/icon-192x192.svg',
             vibrate: [200, 100, 200],
             data: data.url || '/crm/dashboard',
             actions: [

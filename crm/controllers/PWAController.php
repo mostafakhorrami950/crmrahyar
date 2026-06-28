@@ -10,8 +10,9 @@ class PWAController
 {
     /**
      * Serve Service Worker with correct headers
+     * @param array $params Route parameters (unused)
      */
-    public function serviceWorker(): void
+    public function serviceWorker(array $params = []): void
     {
         $swPath = __DIR__ . '/../public/sw.js';
         
@@ -32,8 +33,9 @@ class PWAController
 
     /**
      * Serve Manifest with correct headers
+     * @param array $params Route parameters (unused)
      */
-    public function manifest(): void
+    public function manifest(array $params = []): void
     {
         $manifestPath = __DIR__ . '/../public/manifest.json';
         
@@ -52,8 +54,9 @@ class PWAController
 
     /**
      * Serve Offline page
+     * @param array $params Route parameters (unused)
      */
-    public function offline(): void
+    public function offline(array $params = []): void
     {
         $offlinePath = __DIR__ . '/../public/offline.html';
         
@@ -72,9 +75,11 @@ class PWAController
 
     /**
      * Serve PWA icons
+     * @param array $params Route parameters ['filename' => '...']
      */
-    public function icon(string $filename): void
+    public function icon(array $params = []): void
     {
+        $filename = $params['filename'] ?? '';
         $iconPath = __DIR__ . '/../public/assets/icons/' . basename($filename);
         
         if (!file_exists($iconPath)) {
@@ -102,9 +107,9 @@ class PWAController
 
     /**
      * Push notification subscription endpoint
-     * Stores push subscription for the authenticated user
+     * @param array $params Route parameters (unused)
      */
-    public function subscribe(): void
+    public function subscribe(array $params = []): void
     {
         header('Content-Type: application/json');
         
@@ -163,8 +168,9 @@ class PWAController
 
     /**
      * Unsubscribe from push notifications
+     * @param array $params Route parameters (unused)
      */
-    public function unsubscribe(): void
+    public function unsubscribe(array $params = []): void
     {
         header('Content-Type: application/json');
         
