@@ -35,13 +35,23 @@ use Controllers\AIController;
 use Controllers\AuditController;
 use Controllers\PWAController;
 
-// ========== PWA ROUTES (Public - No Auth Required) ==========
+// ========== PWA ROUTES ==========
+// Public PWA routes (no auth)
 Router::get('/sw.js', [PWAController::class, 'serviceWorker']);
 Router::get('/manifest.json', [PWAController::class, 'manifest']);
 Router::get('/offline.html', [PWAController::class, 'offline']);
 Router::get('/pwa/icon/{filename}', [PWAController::class, 'icon']);
+Router::get('/pwa', [PWAController::class, 'index']);
+Router::get('/pwa/login', [PWAController::class, 'loginForm']);
+Router::post('/pwa/login', [PWAController::class, 'login']);
+Router::get('/pwa/logout', [PWAController::class, 'logout']);
 
-// PWA Push Notification Routes (Auth Required)
+// Authenticated PWA routes
+Router::get('/pwa/app', [PWAController::class, 'app']);
+Router::get('/pwa/deals', [PWAController::class, 'deals']);
+Router::get('/pwa/contacts', [PWAController::class, 'contacts']);
+Router::get('/pwa/activities', [PWAController::class, 'activities']);
+Router::get('/pwa/more', [PWAController::class, 'more']);
 Router::post('/pwa/subscribe', [PWAController::class, 'subscribe']);
 Router::post('/pwa/unsubscribe', [PWAController::class, 'unsubscribe']);
 

@@ -2,8 +2,8 @@
     "name": "علاءالدین سفیر اسمان - سیستم مدیریت",
     "short_name": "سفیر اسمان",
     "description": "سیستم مدیریت ارتباط با مشتری آژانس مسافرتی علاءالدین سفیر اسمان",
-    "start_url": "/crm/dashboard",
-    "scope": "/crm/",
+    "start_url": "/crm/pwa",
+    "scope": "/crm/pwa/",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#f0f2f5",
@@ -42,19 +42,19 @@
         {
             "name": "داشبورد",
             "short_name": "داشبورد",
-            "url": "/crm/dashboard",
+            "url": "/crm/pwa/app",
             "icons": [{"src": "/crm/pwa/icon/icon-192x192.svg", "sizes": "192x192"}]
         },
         {
             "name": "معاملات",
             "short_name": "معاملات",
-            "url": "/crm/deals",
+            "url": "/crm/pwa/deals",
             "icons": [{"src": "/crm/pwa/icon/icon-192x192.svg", "sizes": "192x192"}]
         },
         {
             "name": "مخاطبان",
             "short_name": "مخاطبان",
-            "url": "/crm/contacts",
+            "url": "/crm/pwa/contacts",
             "icons": [{"src": "/crm/pwa/icon/icon-192x192.svg", "sizes": "192x192"}]
         }
     ]
