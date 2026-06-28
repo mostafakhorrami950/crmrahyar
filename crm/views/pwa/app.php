@@ -6,15 +6,15 @@ $db = \Core\Database::getInstance();
 // Fetch dashboard data
 $myDealsCount = $db->fetch("SELECT COUNT(*) as c FROM deals WHERE assigned_to = ? AND (is_won IS NULL OR is_won = 0) AND (is_lost IS NULL OR is_lost = 0)", [\Core\Auth::id()])->c ?? 0;
 $myDealsValue = $db->fetch("SELECT COALESCE(SUM(amount),0) as t FROM deals WHERE assigned_to = ? AND (is_won IS NULL OR is_won = 0) AND (is_lost IS NULL OR is_lost = 0)", [\Core\Auth::id()])->t ?? 0;
-$todayActivities = $db->fetch("SELECT COUNT(*) as c FROM activity_logs WHERE user_id = ? AND DATE(activity_date) = CURDATE() AND is_done = 0", [\Core\Auth::id()])->c ?? 0;
-$overdueActivities = $db->fetch("SELECT COUNT(*) as c FROM activity_logs WHERE user_id = ? AND activity_date < NOW() AND is_done = 0", [\Core\Auth::id()])->c ?? 0;
+$todayActivities = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE user_id = ? AND DATE(activity_date) = CURDATE() AND is_done = 0", [\Core\Auth::id()])->c ?? 0;
+$overdueActivities = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE user_id = ? AND activity_date < NOW() AND is_done = 0", [\Core\Auth::id()])->c ?? 0;
 $wonDeals = $db->fetch("SELECT COUNT(*) as c FROM deals WHERE assigned_to = ? AND is_won = 1", [\Core\Auth::id()])->c ?? 0;
 
 // Recent deals
-$recentDeals = $db->fetchAll("SELECT d.id, d.title, d.amount, d.created_at, s.name as stage_name, s.color as stage_color FROM deals d LEFT JOIN pipeline_stages s ON d.stage_id = s.id WHERE d.assigned_to = ? ORDER BY d.created_at DESC LIMIT 5", [\Core\Auth::id()]);
+$recentDeals = $db->fetchAll("SELECT d.id, d.title, d.amount, d.created_at, s.name as stage_name, s.color as stage_color FROM deals d LEFT JOIN stages s ON d.stage_id = s.id WHERE d.assigned_to = ? ORDER BY d.created_at DESC LIMIT 5", [\Core\Auth::id()]);
 
 // Today activities
-$myActivities = $db->fetchAll("SELECT al.*, d.title as deal_title FROM activity_logs al LEFT JOIN deals d ON al.deal_id = d.id WHERE al.user_id = ? AND al.is_done = 0 ORDER BY al.activity_date ASC LIMIT 5", [\Core\Auth::id()]);
+$myActivities = $db->fetchAll("SELECT al.*, d.title as deal_title FROM deal_activities al LEFT JOIN deals d ON al.deal_id = d.id WHERE al.user_id = ? AND al.is_done = 0 ORDER BY al.activity_date ASC LIMIT 5", [\Core\Auth::id()]);
 
 ob_start();
 ?>

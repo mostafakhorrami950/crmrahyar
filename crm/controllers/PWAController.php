@@ -108,7 +108,7 @@ class PWAController
         $deals = $db->fetchAll(
             "SELECT d.*, s.name as stage_name, s.color as stage_color, c.full_name as contact_name 
              FROM deals d 
-             LEFT JOIN pipeline_stages s ON d.stage_id = s.id 
+             LEFT JOIN stages s ON d.stage_id = s.id 
              LEFT JOIN contacts c ON d.contact_id = c.id 
              {$where} ORDER BY d.created_at DESC LIMIT 50",
             $queryParams
@@ -261,7 +261,7 @@ class PWAController
         $userId = \Core\Auth::id();
 
         $activities = $db->fetchAll(
-            "SELECT al.*, d.title as deal_title FROM activity_logs al LEFT JOIN deals d ON al.deal_id = d.id WHERE al.user_id = ? ORDER BY al.activity_date DESC LIMIT 50",
+            "SELECT al.*, d.title as deal_title FROM deal_activities al LEFT JOIN deals d ON al.deal_id = d.id WHERE al.user_id = ? ORDER BY al.activity_date DESC LIMIT 50",
             [$userId]
         );
 
