@@ -89,38 +89,77 @@ class AIController
             $dealsActive = $db->fetch("SELECT COUNT(*) as c, COALESCE(SUM(amount),0) as t FROM deals d WHERE d.is_lost=0 AND d.is_won=0" . $sw, $sp);
 
             // Build prompt based on selected categories
-            $p = "تو یک تحلیلگر حرفه‌ای CRM و فروش هستی. اطلاعات زیر از سیستم CRM آژانس مسافرتی را تحلیل کن و گزارش جامعی به فارسی ارائه بده.\n\n";
-            $p .= "تاریخ: " . \Core\JDate::displayDate(date('Y-m-d')) . "\n\n";
+            $p = "تو یک تحلیلگر ارشد CRM و فروش با بیش از ۱۵ سال تجربه در صنعت گردشگری و آژانس‌های مسافرتی هستی. اطلاعات دقیق زیر از سیستم CRM یک آژانس مسافرتی فعال استخراج شده. وظیفه تو تحلیل عمیق، حرفه‌ای و عملیاتی این اطلاعات و ارائه گزارش مدیریتی جامع به فارسی است.\n\n";
+            $p .= "تاریخ گزارش: " . \Core\JDate::displayDate(date('Y-m-d')) . "\n";
+            $p .= "نوع کسب‌وکار: آژانس مسافرتی (فروش تور، رزرو هتل، بلیط هواپیما)\n\n";
             
             // Always include basic deal stats
             $winRate = $dealsTotal->c > 0 ? round(($dealsWon->c / $dealsTotal->c) * 100, 1) : 0;
-            $p .= "== آمار کلی معاملات ==\n";
-            $p .= "کل: {$dealsTotal->c} (مبلغ: " . number_format($dealsTotal->t) . " تومان)\n";
-            $p .= "موفق: {$dealsWon->c} (" . number_format($dealsWon->t) . " ت)\n";
-            $p .= "ناموفق: {$dealsLost->c} (" . number_format($dealsLost->t) . " ت)\n";
-            $p .= "درجریان: {$dealsActive->c} (" . number_format($dealsActive->t) . " ت)\n";
-            $p .= "نرخ برد: {$winRate}%\n\n";
+            $avgDeal = $dealsTotal->c > 0 ? round($dealsTotal->t / $dealsTotal->c) : 0;
+            $avgWonDeal = $dealsWon->c > 0 ? round($dealsWon->t / $dealsWon->c) : 0;
+            $conversionRate = $dealsTotal->c > 0 ? round(($dealsActive->c / $dealsTotal->c) * 100, 1) : 0;
+            $p .= "═══════════════════════════════════════\n";
+            $p .= "📊 بخش ۱: آمار کلی معاملات\n";
+            $p .= "═══════════════════════════════════════\n";
+            $p .= "▸ کل معاملات ثبت شده: {$dealsTotal->c}\n";
+            $p .= "▸ مجموع ارزش معاملات: " . number_format($dealsTotal->t) . " تومان\n";
+            $p .= "▸ میانگین ارزش هر معامله: " . number_format($avgDeal) . " تومان\n";
+            $p .= "▸ معاملات موفق: {$dealsWon->c} (" . number_format($dealsWon->t) . " تومان)\n";
+            $p .= "  └─ میانگین ارزش معامله موفق: " . number_format($avgWonDeal) . " تومان\n";
+            $p .= "▸ معاملات ناموفق: {$dealsLost->c} (" . number_format($dealsLost->t) . " تومان)\n";
+            $p .= "▸ معاملات در جریان: {$dealsActive->c} (" . number_format($dealsActive->t) . " تومان)\n";
+            $p .= "▸ نرخ برد (Win Rate): {$winRate}%\n";
+            $p .= "▸ نرخ تبدیل (موفق+ناموفق به کل): {$conversionRate}%\n\n";
 
             // Stages
             if (in_array('stages', $selectedCats)) {
                 $dealsByStage = $db->fetchAll(
-                    "SELECT s.name, COUNT(d.id) as cnt, COALESCE(SUM(d.amount),0) as tot
-                     FROM stages s LEFT JOIN deals d ON d.stage_id=s.id AND d.is_lost=0" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
+                    "SELECT s.name, COUNT(d.id) as cnt, COALESCE(SUM(d.amount),0) as tot,
+                            SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as won_in_stage,
+                            SUM(CASE WHEN d.is_lost=1 THEN 1 ELSE 0 END) as lost_in_stage
+                     FROM stages s LEFT JOIN deals d ON d.stage_id=s.id" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
                      WHERE s.is_active=1 GROUP BY s.id,s.name ORDER BY s.order_index", $sp
                 );
-                $p .= "== بر اساس مرحله ==\n";
-                foreach ($dealsByStage as $s) $p .= "- {$s->name}: {$s->cnt} معامله (" . number_format($s->tot) . " ت)\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "📋 بخش ۲: تحلیل مراحل فروش\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($dealsByStage as $s) {
+                    $stageConvRate = $s->cnt > 0 ? round(($s->won_in_stage / $s->cnt) * 100, 1) : 0;
+                    $p .= "▸ {$s->name}:\n";
+                    $p .= "  تعداد: {$s->cnt} | مبلغ: " . number_format($s->tot) . " ت\n";
+                    $p .= "  موفق: {$s->won_in_stage} | ناموفق: {$s->lost_in_stage} | نرخ تبدیل: {$stageConvRate}%\n";
+                }
+                $p .= "\n";
+                // Funnel analysis
+                $totalStageDeals = array_sum(array_column($dealsByStage, 'cnt'));
+                if ($totalStageDeals > 0) {
+                    $p .= "🔹 تحلیل قیف فروش:\n";
+                    foreach ($dealsByStage as $i => $s) {
+                        $pctOfTotal = $totalStageDeals > 0 ? round(($s->cnt / $totalStageDeals) * 100, 1) : 0;
+                        $p .= "  {$s->name}: {$pctOfTotal}% از کل\n";
+                    }
+                }
                 $p .= "\n";
             }
 
             // Sources
             if (in_array('sources', $selectedCats)) {
                 $dealsBySource = $db->fetchAll(
-                    "SELECT COALESCE(source,'نامشخص') as src, COUNT(*) as cnt, COALESCE(SUM(amount),0) as tot
+                    "SELECT COALESCE(source,'نامشخص') as src, COUNT(*) as cnt, COALESCE(SUM(amount),0) as tot,
+                            SUM(CASE WHEN is_won=1 THEN 1 ELSE 0 END) as won_cnt,
+                            SUM(CASE WHEN is_won=1 THEN amount ELSE 0 END) as won_tot
                      FROM deals WHERE 1=1" . $sw . " GROUP BY source ORDER BY cnt DESC", $sp
                 );
-                $p .= "== بر اساس منبع ==\n";
-                foreach ($dealsBySource as $s) $p .= "- {$s->src}: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "🔗 بخش ۳: تحلیل منابع ورودی\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($dealsBySource as $s) {
+                    $srcConvRate = $s->cnt > 0 ? round(($s->won_cnt / $s->cnt) * 100, 1) : 0;
+                    $p .= "▸ {$s->src}:\n";
+                    $p .= "  کل: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
+                    $p .= "  موفق: {$s->won_cnt} (" . number_format($s->won_tot) . " ت)\n";
+                    $p .= "  نرخ تبدیل: {$srcConvRate}%\n";
+                }
                 $p .= "\n";
             }
 
@@ -134,8 +173,18 @@ class AIController
                         array_merge([':s' => $ws.' 00:00:00', ':e' => $we.' 23:59:59'], $sp));
                     $weeklyTrend[] = ['week' => $ws.' to '.$we, 'count' => (int)$wd->c, 'total' => (int)$wd->t];
                 }
-                $p .= "== روند هفتگی ==\n";
-                foreach ($weeklyTrend as $w) $p .= "- {$w['week']}: {$w['count']} (" . number_format($w['total']) . " ت)\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "📈 بخش ۴: تحلیل روندها\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "▸ روند هفتگی (۴ هفته اخیر):\n";
+                foreach ($weeklyTrend as $w) $p .= "  {$w['week']}: {$w['count']} معامله (" . number_format($w['total']) . " ت)\n";
+                // Calculate weekly growth
+                if (count($weeklyTrend) >= 2) {
+                    $prevWeek = $weeklyTrend[count($weeklyTrend)-2]['count'];
+                    $currWeek = $weeklyTrend[count($weeklyTrend)-1]['count'];
+                    $weekGrowth = $prevWeek > 0 ? round((($currWeek - $prevWeek) / $prevWeek) * 100, 1) : 0;
+                    $p .= "  └─ رشد هفته جاری نسبت به هفته قبل: {$weekGrowth}%\n";
+                }
                 $p .= "\n";
 
                 $dailyTrend = [];
@@ -145,8 +194,8 @@ class AIController
                         array_merge([':d' => $day], $sp));
                     $dailyTrend[] = ['date' => $day, 'count' => (int)$dd->c, 'total' => (int)$dd->t];
                 }
-                $p .= "== روند روزانه ==\n";
-                foreach ($dailyTrend as $d) $p .= "- {$d['date']}: {$d['count']} (" . number_format($d['total']) . " ت)\n";
+                $p .= "▸ روند روزانه (۷ روز اخیر):\n";
+                foreach ($dailyTrend as $d) $p .= "  {$d['date']}: {$d['count']} معامله (" . number_format($d['total']) . " ت)\n";
                 $p .= "\n";
             }
 
@@ -156,12 +205,22 @@ class AIController
                     "SELECT p.name, COUNT(d.id) as td,
                             SUM(CASE WHEN d.is_won=1 THEN 1 ELSE 0 END) as w,
                             SUM(CASE WHEN d.is_lost=1 THEN 1 ELSE 0 END) as l,
-                            COALESCE(SUM(d.amount),0) as ta
+                            COALESCE(SUM(d.amount),0) as ta,
+                            COALESCE(SUM(CASE WHEN d.is_won=1 THEN d.amount ELSE 0 END),0) as wa
                      FROM pipelines p LEFT JOIN deals d ON d.pipeline_id=p.id" . ($isAdmin ? '' : " AND (d.assigned_to=:uid OR d.created_by=:uid2)") . "
                      WHERE p.is_active=1 GROUP BY p.id,p.name"
                 );
-                $p .= "== پایپ لاین‌ها ==\n";
-                foreach ($pipePerf as $pp) $p .= "- {$pp->name}: کل={$pp->td} موفق={$pp->w} ناموفق={$pp->l}\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "🔀 بخش ۵: تحلیل پایپ‌لاین‌ها\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($pipePerf as $pp) {
+                    $ppConvRate = $pp->td > 0 ? round(($pp->w / $pp->td) * 100, 1) : 0;
+                    $p .= "▸ {$pp->name}:\n";
+                    $p .= "  کل: {$pp->td} | موفق: {$pp->w} | ناموفق: {$pp->l}\n";
+                    $p .= "  مجموع ارزش: " . number_format($pp->ta) . " ت\n";
+                    $p .= "  ارزش موفق: " . number_format($pp->wa) . " ت\n";
+                    $p .= "  نرخ تبدیل: {$ppConvRate}%\n";
+                }
                 $p .= "\n";
             }
 
@@ -175,8 +234,18 @@ class AIController
                      FROM users u LEFT JOIN deals d ON d.assigned_to=u.id
                      WHERE u.is_active=1 GROUP BY u.id,u.full_name ORDER BY wa DESC"
                 );
-                $p .= "== کاربران ==\n";
-                foreach ($userPerf as $u) $p .= "- {$u->full_name}: کل={$u->td} موفق={$u->w} مبلغ=" . number_format($u->wa) . " هفته={$u->lw}\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "👥 بخش ۶: عملکرد تیم فروش\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($userPerf as $u) {
+                    $uConvRate = $u->td > 0 ? round(($u->w / $u->td) * 100, 1) : 0;
+                    $uAvgDeal = $u->td > 0 ? round($u->wa / max($u->w, 1)) : 0;
+                    $p .= "▸ {$u->full_name}:\n";
+                    $p .= "  کل معاملات: {$u->td} | موفق: {$u->w} | نرخ تبدیل: {$uConvRate}%\n";
+                    $p .= "  مبلغ فروش موفق: " . number_format($u->wa) . " ت\n";
+                    $p .= "  میانگین ارزش معامله موفق: " . number_format($uAvgDeal) . " ت\n";
+                    $p .= "  فعالیت هفته اخیر: {$u->lw} معامله جدید\n";
+                }
                 $p .= "\n";
             }
 
@@ -189,19 +258,42 @@ class AIController
                 );
                 $overdue = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE is_done=0 AND activity_date<NOW()" . ($isAdmin ? '' : " AND user_id=:uid"),
                     $isAdmin ? [] : [':uid' => $userId]);
-                $p .= "== فعالیت‌ها(30روز) ==\n";
-                foreach ($actSum as $a) $p .= "- {$a->type}: {$a->cnt} (done={$a->done})\n";
-                $p .= "سررسیدگذشته: {$overdue->c}\n";
+                $totalActs = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE created_at>=:s" . ($isAdmin ? '' : " AND user_id=:uid"),
+                    $isAdmin ? [':s' => date('Y-m-d', strtotime('-30 days'))] : [':s' => date('Y-m-d', strtotime('-30 days')), ':uid' => $userId]);
+                $totalDone = $db->fetch("SELECT COUNT(*) as c FROM deal_activities WHERE is_done=1 AND created_at>=:s" . ($isAdmin ? '' : " AND user_id=:uid"),
+                    $isAdmin ? [':s' => date('Y-m-d', strtotime('-30 days'))] : [':s' => date('Y-m-d', strtotime('-30 days')), ':uid' => $userId]);
+                $actDoneRate = $totalActs->c > 0 ? round(($totalDone->c / $totalActs->c) * 100, 1) : 0;
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "📅 بخش ۷: تحلیل فعالیت‌ها (۳۰ روز اخیر)\n";
+                $p .= "═══════════════════════════════════════\n";
+                $activityTypeNames = ['note'=>'یادداشت','call'=>'تماس تلفنی','meeting'=>'جلسه','email'=>'ایمیل','sms'=>'پیامک','follow_up'=>'پیگیری','other'=>'سایر'];
+                foreach ($actSum as $a) {
+                    $typeName = $activityTypeNames[$a->type] ?? $a->type;
+                    $doneRate = $a->cnt > 0 ? round(($a->done / $a->cnt) * 100, 1) : 0;
+                    $p .= "▸ {$typeName}: {$a->cnt} مورد (انجام شده: {$a->done} | نرخ انجام: {$doneRate}%)\n";
+                }
+                $p .= "▸ کل فعالیت‌ها: {$totalActs->c} | انجام شده: {$totalDone->c} | نرخ انجام: {$actDoneRate}%\n";
+                $p .= "▸ سررسید گذشته (عقب‌افتاده): {$overdue->c} مورد\n";
+                if ($overdue->c > 0) {
+                    $p .= "  ⚠️ توجه: {$overdue->c} فعالیت سررسید گذشته نیاز به پیگیری فوری دارد.\n";
+                }
                 $p .= "\n";
             }
 
             // Loss reasons
             if (in_array('loss_reasons', $selectedCats)) {
                 $lossReasons = $db->fetchAll(
-                    "SELECT COALESCE(dlr.name, d.lost_reason, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_loss_reasons dlr ON d.loss_reason_id=dlr.id WHERE d.is_lost=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
+                    "SELECT COALESCE(dlr.name, d.lost_reason, 'نامشخص') as r, COUNT(*) as c, COALESCE(SUM(d.amount),0) as t
+                     FROM deals d LEFT JOIN deal_loss_reasons dlr ON d.loss_reason_id=dlr.id WHERE d.is_lost=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 10", $sp
                 );
-                $p .= "== دلایل باخت ==\n";
-                foreach ($lossReasons as $r) $p .= "- {$r->r}: {$r->c}\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "❌ بخش ۸: تحلیل دلایل عدم موفقیت\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($lossReasons as $i => $r) {
+                    $lossPct = $dealsLost->c > 0 ? round(($r->c / $dealsLost->c) * 100, 1) : 0;
+                    $p .= "▸ " . ($i+1) . ". {$r->r}: {$r->c} مورد ({$lossPct}% از کل باخت‌ها)\n";
+                    $p .= "   مبلغ از دست رفته: " . number_format($r->t) . " تومان\n";
+                }
                 $p .= "\n";
             }
 
@@ -209,17 +301,34 @@ class AIController
             if (in_array('contacts', $selectedCats)) {
                 $contactsTotal = $db->fetch("SELECT COUNT(*) as c FROM contacts" . ($dateFrom ? " WHERE created_at>=:date_from" : "") . ($dateTo ? ($dateFrom ? " AND" : " WHERE") . " created_at<=:date_to" : ""), $dateParams);
                 $contactsWeek = $db->fetch("SELECT COUNT(*) as c FROM contacts WHERE created_at>=DATE_SUB(NOW(), INTERVAL 7 DAY)");
-                $p .= "== مخاطبان ==\n";
-                $p .= "کل: {$contactsTotal->c} | جدید هفته: {$contactsWeek->c}\n\n";
+                $contactsMonth = $db->fetch("SELECT COUNT(*) as c FROM contacts WHERE created_at>=DATE_SUB(NOW(), INTERVAL 30 DAY)");
+                $contactsWithDeals = $db->fetch("SELECT COUNT(DISTINCT contact_id) as c FROM deals WHERE contact_id IS NOT NULL");
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "👤 بخش ۹: تحلیل مخاطبان\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "▸ کل مخاطبان: {$contactsTotal->c}\n";
+                $p .= "▸ جدید در ۷ روز اخیر: {$contactsWeek->c}\n";
+                $p .= "▸ جدید در ۳۰ روز اخیر: {$contactsMonth->c}\n";
+                $p .= "▸ مخاطبان دارای معامله: {$contactsWithDeals->c}\n";
+                $contactConvRate = $contactsTotal->c > 0 ? round(($contactsWithDeals->c / $contactsTotal->c) * 100, 1) : 0;
+                $p .= "▸ نرخ تبدیل مخاطب به معامله: {$contactConvRate}%\n";
+                $p .= "\n";
             }
 
             // Win reasons
             if (in_array('win_reasons', $selectedCats)) {
                 $winReasons = $db->fetchAll(
-                    "SELECT COALESCE(dwr.name, d.win_reason_note, 'نامشخص') as r, COUNT(*) as c FROM deals d LEFT JOIN deal_win_reasons dwr ON d.win_reason_id=dwr.id WHERE d.is_won=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 5", $sp
+                    "SELECT COALESCE(dwr.name, d.win_reason_note, 'نامشخص') as r, COUNT(*) as c, COALESCE(SUM(d.amount),0) as t
+                     FROM deals d LEFT JOIN deal_win_reasons dwr ON d.win_reason_id=dwr.id WHERE d.is_won=1" . $sw . " GROUP BY r ORDER BY c DESC LIMIT 10", $sp
                 );
-                $p .= "== دلایل موفقیت ==\n";
-                foreach ($winReasons as $r) $p .= "- {$r->r}: {$r->c}\n";
+                $p .= "═══════════════════════════════════════\n";
+                $p .= "🏆 بخش ۱۰: تحلیل دلایل موفقیت\n";
+                $p .= "═══════════════════════════════════════\n";
+                foreach ($winReasons as $i => $r) {
+                    $winPct = $dealsWon->c > 0 ? round(($r->c / $dealsWon->c) * 100, 1) : 0;
+                    $p .= "▸ " . ($i+1) . ". {$r->r}: {$r->c} مورد ({$winPct}% از کل موفقیت‌ها)\n";
+                    $p .= "   مبلغ کسب شده: " . number_format($r->t) . " تومان\n";
+                }
                 $p .= "\n";
             }
 
@@ -309,16 +418,50 @@ class AIController
                 $p .= "\n";
             }
 
-            $p .= "\nلطفاً شامل:\n";
-            $p .= "1. 📊 خلاصه وضعیت\n2. 📈 پیش‌بینی فروش هفته آینده (عدد ریالی)\n";
-            $p .= "3. 💪 نقاط قوت\n4. ⚠️ نقاط ضعف\n5. 🔍 الگوهای مشکوک\n";
-            $p .= "6. 💡 پیشنهادات بهبود\n7. 🎯 اقدامات فوری هفته آینده\n";
+            $p .= "═══════════════════════════════════════\n";
+            $p .= "🎯 دستورالعمل تحلیل:\n";
+            $p .= "═══════════════════════════════════════\n";
+            $p .= "لطفاً گزارش خود را با ساختار زیر ارائه بده:\n\n";
+            $p .= "۱. 📊 خلاصه اجرایی (Executive Summary)\n";
+            $p .= "   - خلاصه‌ای کوتاه و مختصر از وضعیت کلی کسب‌وکار\n";
+            $p .= "   - مهم‌ترین عدد و شاخص کلیدی عملکرد (KPI)\n\n";
+            $p .= "۲. 📈 تحلیل روندها و الگوها\n";
+            $p .= "   - روند رشد یا افت فروش\n";
+            $p .= "   - الگوهای زمانی (روزانه/هفتگی)\n";
+            $p .= "   - مقایسه عملکرد جاری با دوره‌های قبل\n\n";
+            $p .= "۳. 💪 نقاط قوت شناسایی شده\n";
+            $p .= "   - منابع ورودی پربازده\n";
+            $p .= "   - کاربران برتر و دلیل موفقیت آن‌ها\n";
+            $p .= "   - مراحل فروش با نرخ تبدیل بالا\n\n";
+            $p .= "۴. ⚠️ نقاط ضعف و ریسک‌ها\n";
+            $p .= "   - مراحل فروش با نرخ تبدیل پایین\n";
+            $p .= "   - فعالیت‌های عقب‌افتاده\n";
+            $p .= "   - دلایل اصلی باخت معاملات\n\n";
+            $p .= "۵. 🔍 تحلیل فاکتورهای هتل\n";
+            $p .= "   - وضعیت پرداخت و وصول مطالبات\n";
+            $p .= "   - هتل‌های پرمعامله و عملکرد آن‌ها\n";
+            $p .= "   - تخفیف‌ها و تاثیر آن بر درآمد\n\n";
+            $p .= "۶. 💡 پیشنهادات عملیاتی (Actionable Insights)\n";
+            $p .= "   - حداقل ۵ پیشنهاد مشخص و قابل اجرا\n";
+            $p .= "   - اولویت‌بندی پیشنهادات بر اساس تاثیر\n\n";
+            $p .= "۷. 📊 پیش‌بینی مالی\n";
+            $p .= "   - پیش‌بینی درآمد هفته آینده (ریالی)\n";
+            $p .= "   - پیش‌بینی درآمد ماه آینده\n";
+            $p .= "   - سطح اطمینان پیش‌بینی (بالا/متوسط/پایین)\n\n";
+            $p .= "۸. 🎯 اقدامات فوری (Top 5 Action Items)\n";
+            $p .= "   - ۵ اقدام فوری با مسئول و مهلت زمانی\n\n";
+            $p .= "۹. 🔮 تحلیل ریسک‌ها\n";
+            $p .= "   - ریسک‌های پیش روی کسب‌وکار\n";
+            $p .= "   - پیشنهادات کاهش ریسک\n\n";
+            $p .= "لحن گزارش: حرفه‌ای، داده‌محور، عملیاتی\n";
+            $p .= "از جداول، لیست‌ها، عدد و ارقام مشخص و ایموجی استفاده کن.\n";
+            $p .= "هر بخش باید شامل تحلیل عددی دقیق و پیشنهاد عملیاتی باشد.\n";
 
             $apiUrl = $config['openrouter']['api_url'] ?? 'https://openrouter.ai/api/v1/chat/completions';
             $postData = json_encode([
                 'model' => $model,
                 'messages' => [
-                    ['role' => 'system', 'content' => 'تو تحلیلگر CRM و فروش هستی. پاسخ را با فرمت Markdown به فارسی بنویس. از هدینگ، لیست، bold و ایموجی استفاده کن.'],
+                    ['role' => 'system', 'content' => 'تو یک تحلیلگر ارشد CRM و فروش با بیش از ۱۵ سال تجربه در صنعت گردشگری و آژانس‌های مسافرتی هستی. وظیفه تو تحلیل عمیق، حرفه‌ای و عملیاتی اطلاعات CRM یک آژانس مسافرتی فعال است. پاسخ را با فرمت Markdown به فارسی بنویس. از هدینگ، لیست، bold، جداول و ایموجی استفاده کن. هر بخش باید شامل تحلیل عددی دقیق و پیشنهاد عملیاتی باشد. لحن گزارش حرفه‌ای، داده‌محور و عملیاتی باشد. از اعداد و ارقام مشخص استفاده کن و از اظهارنظرهای کلی و غیردقیق پرهیز کن.'],
                     ['role' => 'user', 'content' => $p],
                 ],
                 'max_tokens' => 4000,
