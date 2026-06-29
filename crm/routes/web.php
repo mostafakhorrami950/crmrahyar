@@ -322,10 +322,10 @@ Router::group('/hotel-invoice', function() {
 });
 
 // Public Hotel Invoice (no auth required)
+Router::get('/hotel-pay/result', [HotelInvoiceController::class, 'paymentResult']);
+Router::post('/hotel-pay/submit', [HotelInvoiceController::class, 'publicPay']);
 Router::get('/hotel-pay/{token}', [HotelInvoiceController::class, 'publicView']);
 Router::get('/hi/{code}', [HotelInvoiceController::class, 'publicViewByShortCode']);
-Router::post('/hotel-pay/submit', [HotelInvoiceController::class, 'publicPay']);
-Router::get('/hotel-pay/result', [HotelInvoiceController::class, 'paymentResult']);
 
 // Invoice Settings
 Router::get('/settings/invoice', [InvoiceSettingsController::class, 'index'], 'settings.manage');
