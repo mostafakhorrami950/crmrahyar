@@ -299,8 +299,16 @@ function revertDeal(logId) {
                 <div class="col-6"><label class="form-label text-muted small">نوع</label><select name="type" class="form-select"><option value="note">📝 یادداشت</option><option value="call">📞 تماس</option><option value="meeting">🤝 جلسه</option></select></div>
                 <div class="col-6"><label class="form-label text-muted small">موضوع</label><input type="text" name="subject" class="form-control" placeholder="موضوع"></div>
                 <div class="col-12"><label class="form-label text-muted small">توضیحات</label><textarea name="description" class="form-control" rows="2"></textarea></div>
-                <div class="col-6"><label class="form-label text-muted small">تاریخ</label><input type="datetime-local" name="activity_date" class="form-control" value="<?php echo date('Y-m-d\TH:i'); ?>"></div>
-                <div class="col-6"><label class="form-label text-muted small">یادآوری</label><input type="datetime-local" name="reminder_at" class="form-control"></div>
+                <div class="col-6">
+                    <label class="form-label text-muted small">تاریخ</label>
+                    <input type="text" class="form-control jalali-date-input" id="activityDate" autocomplete="off" placeholder="تاریخ را انتخاب کنید">
+                    <input type="hidden" name="activity_date" id="activityDateGregorian" value="<?php echo date('Y-m-d\TH:i'); ?>">
+                </div>
+                <div class="col-6">
+                    <label class="form-label text-muted small">یادآوری</label>
+                    <input type="text" class="form-control jalali-date-input" id="reminderAt" autocomplete="off" placeholder="تاریخ را انتخاب کنید">
+                    <input type="hidden" name="reminder_at" id="reminderAtGregorian">
+                </div>
                 <?php if (\Core\Auth::hasPermission('settings.manage') || \Core\Auth::hasPermission('users.manage')): ?>
                 <div class="col-6"><label class="form-label text-muted small"><i class="bi bi-person me-1"></i>تخصیص به کاربر</label><select name="activity_user_id" class="form-select"><option value="">خودم</option><?php foreach($users??[] as $u): ?><option value="<?php echo $u->id; ?>"><?php echo htmlspecialchars($u->full_name); ?></option><?php endforeach; ?></select></div>
                 <?php endif; ?>
@@ -315,4 +323,53 @@ function copyLink(btn){
     var inp=btn.previousElementSibling;inp.select();document.execCommand('copy');
     btn.innerHTML='<i class="bi bi-check"></i>';setTimeout(function(){btn.innerHTML='<i class="bi bi-clipboard"></i>';},1500);
 }
+
+// Initialize Jalali datetime pickers for activity modal
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.pDatepicker !== 'undefined') {
+        jQuery('#activityDate').pDatepicker({
+            format: 'YYYY/MM/DD HH:mm',
+            initialValue: false,
+            autoClose: true,
+            timePicker: {
+                enabled: true,
+                secondEnabled: false
+            },
+            calendar: {
+                persian: { locale: 'fa' }
+            },
+            onSelect: function(unix) {
+                var d = new Date(unix);
+                var gy = d.getFullYear();
+                var gm = String(d.getMonth() + 1).padStart(2, '0');
+                var gd = String(d.getDate()).padStart(2, '0');
+                var gh = String(d.getHours()).padStart(2, '0');
+                var gi = String(d.getMinutes()).padStart(2, '0');
+                jQuery('#activityDateGregorian').val(gy + '-' + gm + '-' + gd + 'T' + gh + ':' + gi);
+            }
+        });
+        
+        jQuery('#reminderAt').pDatepicker({
+            format: 'YYYY/MM/DD HH:mm',
+            initialValue: false,
+            autoClose: true,
+            timePicker: {
+                enabled: true,
+                secondEnabled: false
+            },
+            calendar: {
+                persian: { locale: 'fa' }
+            },
+            onSelect: function(unix) {
+                var d = new Date(unix);
+                var gy = d.getFullYear();
+                var gm = String(d.getMonth() + 1).padStart(2, '0');
+                var gd = String(d.getDate()).padStart(2, '0');
+                var gh = String(d.getHours()).padStart(2, '0');
+                var gi = String(d.getMinutes()).padStart(2, '0');
+                jQuery('#reminderAtGregorian').val(gy + '-' + gm + '-' + gd + 'T' + gh + ':' + gi);
+            }
+        });
+    }
+});
 </script>
