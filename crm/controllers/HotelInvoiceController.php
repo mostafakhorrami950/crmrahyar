@@ -450,8 +450,17 @@ class HotelInvoiceController
                     'created_by' => Auth::id(),
                 ]);
 
+                // Generate short code (6 chars)
+                $shortCode = strtolower(substr(md5($publicToken), 0, 6));
+                // Ensure uniqueness
+                $existing = $db->fetch("SELECT id FROM hotel_invoices WHERE short_code = :sc", [':sc' => $shortCode]);
+                if ($existing) {
+                    $shortCode = strtolower(substr(md5($publicToken . time()), 0, 6));
+                }
+
                 $db->update('hotel_invoices', [
                     'payment_token' => $publicToken,
+                    'short_code' => $shortCode,
                 ], 'id = :id', [':id' => $invoiceId]);
             }
         } catch (\Exception $e) {
@@ -877,6 +886,43 @@ class HotelInvoiceController
 
         $config = $GLOBALS['app_config'];
         require __DIR__ . '/../views/hotel_invoice/payment_result.php';
+        exit;
+    }
+
+    /**
+     * Public view of hotel invoice by short code
+     */
+    public function publicViewByShortCode(array $params): void
+    {
+        $shortCode = $params['code'] ?? '';
+        if (empty($shortCode)) {
+            $this->showPublicError('لینک نامعتبر است.');
+            return;
+        }
+
+        $db = Database::getInstance();
+        $invoice = $db->fetch(
+            "SELECT hi.*, d.title as deal_title,
+                    c.full_name as contact_name, c.phone as contact_phone
+             FROM hotel_invoices hi
+             JOIN deals d ON hi.deal_id = d.id
+             LEFT JOIN contacts c ON d.contact_id = c.id
+             WHERE hi.short_code = :code",
+            [':code' => $shortCode]
+        );
+
+        if (!$invoice) {
+            $this->showPublicError('فاکتور یافت نشد.');
+            return;
+        }
+
+        $invoiceSettings = $this->getSettings();
+        $payAmount = ($invoice->deposit_amount > 0) ? $invoice->deposit_amount : $invoice->final_amount;
+
+        $config = $GLOBALS['app_config'];
+        $viewPath = __DIR__ . '/../views/hotel_invoice/public.php';
+        extract(['invoice' => $invoice, 'config' => $config, 'invoiceSettings' => $invoiceSettings, 'payAmount' => $payAmount]);
+        require $viewPath;
         exit;
     }
 

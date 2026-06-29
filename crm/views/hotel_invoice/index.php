@@ -86,7 +86,10 @@
                         </td>
                         <td>
                             <?php if ($inv->invoice_status !== 'paid' && $inv->invoice_status !== 'cancelled'): ?>
-                                <?php if (!empty($inv->payment_token)): ?>
+                                <?php if (!empty($inv->short_code)): ?>
+                                <button class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 6px;" onclick="copyPaymentLink('<?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($inv->short_code); ?>')" title="کپی لینک کوتاه پرداخت"><i class="bi bi-link-45deg"></i></button>
+                                <small class="text-muted d-block" style="font-size:9px;direction:ltr;text-align:left;"><?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($inv->short_code); ?></small>
+                                <?php elseif (!empty($inv->payment_token)): ?>
                                 <button class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 6px;" onclick="copyPaymentLink('<?php echo $config['url']; ?>/hotel-pay/<?php echo htmlspecialchars($inv->payment_token); ?>')" title="کپی لینک پرداخت"><i class="bi bi-link-45deg"></i></button>
                                 <?php else: ?>
                                 <span class="text-muted" style="font-size:11px;">ندارد</span>

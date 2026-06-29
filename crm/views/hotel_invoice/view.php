@@ -91,8 +91,13 @@
                     <br><small class="text-warning">بیعانه: <?php echo number_format($invoice->deposit_amount); ?> تومان</small>
                     <?php endif; ?>
                 </div>
-                <?php if ($invoice->invoice_status !== 'paid' && $invoice->invoice_status !== 'cancelled' && !empty($invoice->payment_token)): ?>
-                <a href="<?php echo $config['url']; ?>/hotel-pay/<?php echo htmlspecialchars($invoice->payment_token); ?>" class="btn w-100 fw-bold mt-2" style="background:<?php echo $successColor; ?>;color:#fff;" target="_blank"><i class="bi bi-credit-card me-1"></i>لینک پرداخت</a>
+                <?php if ($invoice->invoice_status !== 'paid' && $invoice->invoice_status !== 'cancelled'): ?>
+                    <?php if (!empty($invoice->short_code)): ?>
+                    <a href="<?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($invoice->short_code); ?>" class="btn w-100 fw-bold mt-2" style="background:<?php echo $successColor; ?>;color:#fff;" target="_blank"><i class="bi bi-credit-card me-1"></i>لینک پرداخت کوتاه</a>
+                    <small class="text-muted d-block mt-1" style="font-size:10px;direction:ltr;text-align:center;"><?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($invoice->short_code); ?></small>
+                    <?php elseif (!empty($invoice->payment_token)): ?>
+                    <a href="<?php echo $config['url']; ?>/hotel-pay/<?php echo htmlspecialchars($invoice->payment_token); ?>" class="btn w-100 fw-bold mt-2" style="background:<?php echo $successColor; ?>;color:#fff;" target="_blank"><i class="bi bi-credit-card me-1"></i>لینک پرداخت</a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <a href="<?php echo $config['url']; ?>/hotel-invoice/print/<?php echo $invoice->id; ?>" class="btn w-100 fw-bold" style="background:<?php echo $primaryColor; ?>;color:#fff;" target="_blank"><i class="bi bi-printer me-1"></i>چاپ فاکتور</a>
             </div>
