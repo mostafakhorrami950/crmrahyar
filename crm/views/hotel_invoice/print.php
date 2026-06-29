@@ -56,7 +56,7 @@
             <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:10px;">معامله</small><strong class="small"><?php echo htmlspecialchars($invoice->deal_title); ?></strong></div></div>
             <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:10px;">مخاطب</small><strong class="small"><?php echo htmlspecialchars($invoice->contact_name ?? '-'); ?></strong><?php if ($invoice->contact_phone): ?><br><small class="text-muted" dir="ltr"><?php echo htmlspecialchars($invoice->contact_phone); ?></small><?php endif; ?></div></div>
             <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:10px;">هتل</small><strong class="small"><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div></div>
-            <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:10px;">وضعیت</small><strong class="small"><?php echo $invoice->invoice_status=='final'?'نهایی':($invoice->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?></strong></div></div>
+            <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:10px;">وضعیت</small><strong class="small"><?php echo $invoice->invoice_status=='final'?'نهایی':($invoice->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?></strong><?php if (!empty($invoice->invoice_type)): ?> | <strong class="small" style="color:<?php echo $invoice->invoice_type=='confirmed'?$primaryColor:$secondaryColor; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'فاکتور تایید شده':'پیش فاکتور'; ?></strong><?php endif; ?></div></div>
         </div>
 
         <!-- Dates -->

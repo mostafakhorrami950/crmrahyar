@@ -198,6 +198,37 @@ class DatabaseRepairController
             $result = $this->ensureColumn($db, 'sms_history', 'error_message', 'TEXT DEFAULT NULL');
             if ($result) $repairs[] = $result;
             
+            // Check hotel_invoices table columns
+            try {
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'adults_count', 'INT DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'children_3to5_count', 'INT DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'children_under3_count', 'INT DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'deposit_amount', 'DECIMAL(15,2) DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'payment_token', 'VARCHAR(100) NULL');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'invoice_type', "ENUM('proforma','confirmed') DEFAULT 'proforma'");
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'discount_percent', 'DECIMAL(5,2) DEFAULT 0');
+                if ($result) $repairs[] = $result;
+            } catch (\Exception $e) {
+                // hotel_invoices table might not exist yet
+            }
+            
+            // Check invoice_settings table
+            try {
+                $db->query("CREATE TABLE IF NOT EXISTS `invoice_settings` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `setting_key` VARCHAR(100) NOT NULL UNIQUE,
+                    `setting_value` TEXT,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            } catch (\Exception $e) {}
+            
             // Log repairs
             foreach ($repairs as $r) {
                 $db->insert('db_repair_log', [

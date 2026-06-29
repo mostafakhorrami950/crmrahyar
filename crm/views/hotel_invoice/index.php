@@ -49,6 +49,7 @@
                         <th>نفرات</th>
                         <th>مبلغ نهایی</th>
                         <th>وضعیت</th>
+                        <th>نوع فاکتور</th>
                         <th>عملیات</th>
                     </tr>
                 </thead>
@@ -68,6 +69,15 @@
                             <span class="badge <?php echo $inv->invoice_status=='final'?'bg-success':($inv->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>">
                                 <?php echo $inv->invoice_status=='final'?'نهایی':($inv->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?>
                             </span>
+                        </td>
+                        <td>
+                            <?php if (!empty($inv->invoice_type)): ?>
+                            <span class="badge <?php echo $inv->invoice_type=='confirmed'?'bg-primary':'bg-secondary'; ?>">
+                                <?php echo $inv->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?>
+                            </span>
+                            <?php else: ?>
+                            <span class="badge bg-secondary">پیش فاکتور</span>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <div class="d-flex gap-1">

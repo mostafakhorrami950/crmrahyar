@@ -22,6 +22,9 @@
                 <h4 class="fw-bold mb-1" style="color:<?php echo $primaryColor; ?>;"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور هتل'); ?></h4>
                 <small class="text-muted">شماره فاکتور: #<?php echo $invoice->id; ?></small>
                 <br><span class="badge <?php echo $invoice->invoice_status=='final'?'bg-success':($invoice->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>"><?php echo $invoice->invoice_status=='final'?'نهایی':($invoice->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?></span>
+                <?php if (!empty($invoice->invoice_type)): ?>
+                <span class="badge <?php echo $invoice->invoice_type=='confirmed'?'bg-primary':'bg-secondary'; ?>"><?php echo $invoice->invoice_type=='confirmed'?'فاکتور تایید شده':'پیش فاکتور'; ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="row g-2 mb-4">
@@ -74,6 +77,9 @@
                     <small class="text-muted d-block">مبلغ نهایی</small>
                     <strong style="color:<?php echo $successColor; ?>;font-size:28px;"><?php echo number_format($invoice->final_amount); ?></strong>
                     <br><small class="text-muted">تومان</small>
+                    <?php if (!empty($invoice->invoice_type)): ?>
+                    <br><small class="text-muted"><?php echo $invoice->invoice_type=='confirmed'?'<span class="text-primary">فاکتور تایید شده</span>':'<span class="text-secondary">پیش فاکتور</span>'; ?></small>
+                    <?php endif; ?>
                     <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
                     <br><small class="text-warning">بیعانه: <?php echo number_format($invoice->deposit_amount); ?> تومان</small>
                     <?php endif; ?>

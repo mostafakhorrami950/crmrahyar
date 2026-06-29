@@ -59,7 +59,13 @@
                                 <option value="confirmed">فاکتور تایید شده</option>
                             </select>
                         </div>
-                        <div class="col-6"></div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-tag me-1"></i>وضعیت فاکتور</label>
+                            <select name="invoice_status" class="form-select" id="invoiceStatus">
+                                <option value="draft">پیش‌نویس</option>
+                                <option value="final">نهایی</option>
+                            </select>
+                        </div>
                         <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">تعداد نفرات</small></div>
                         <div class="col-4">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>بزرگسال (کامل)</label>
@@ -120,6 +126,7 @@
                             <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف (<span id="calcDiscountPct">0</span>%)</small><strong class="text-danger" id="calcDiscountAmount">0 تومان</strong></div>
                             <hr class="my-2">
                             <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount">0 تومان</strong></div>
+                            <div class="d-flex justify-content-between mt-1"><small class="text-muted">نوع فاکتور</small><strong id="calcInvoiceType">پیش فاکتور</strong></div>
                         </div>
                     </div>
                 </div>
@@ -146,6 +153,11 @@
                                 <br><span class="badge <?php echo $inv->invoice_status=='final'?'bg-success':($inv->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>" style="font-size:10px;">
                                     <?php echo $inv->invoice_status=='final'?'نهایی':($inv->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?>
                                 </span>
+                                <?php if (!empty($inv->invoice_type)): ?>
+                                <span class="badge <?php echo $inv->invoice_type=='confirmed'?'bg-primary':'bg-secondary'; ?>" style="font-size:10px;">
+                                    <?php echo $inv->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?>
+                                </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="d-flex gap-1 mt-2">
@@ -212,6 +224,13 @@ function calculateInvoice() {
     document.getElementById('calcDiscountPct').textContent = discountPct;
     document.getElementById('calcDiscountAmount').textContent = formatNumber(discountAmount) + ' تومان';
     document.getElementById('calcFinalAmount').textContent = formatNumber(finalAmount) + ' تومان';
+    
+    // Update invoice type display
+    var invoiceType = document.getElementById('invoiceType');
+    var calcInvoiceType = document.getElementById('calcInvoiceType');
+    if (invoiceType && calcInvoiceType) {
+        calcInvoiceType.textContent = invoiceType.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
+    }
 }
 
 function formatNumber(num) {
@@ -229,5 +248,17 @@ function deleteInvoice(id) {
     .catch(function() { alert('خطای شبکه'); });
 }
 
-document.addEventListener('DOMContentLoaded', function() { calculateInvoice(); });
+document.addEventListener('DOMContentLoaded', function() { 
+    calculateInvoice();
+    // Listen for invoice type change
+    var invoiceType = document.getElementById('invoiceType');
+    if (invoiceType) {
+        invoiceType.addEventListener('change', function() {
+            var calcInvoiceType = document.getElementById('calcInvoiceType');
+            if (calcInvoiceType) {
+                calcInvoiceType.textContent = this.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
+            }
+        });
+    }
+});
 </script>
