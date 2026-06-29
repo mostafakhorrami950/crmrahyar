@@ -7,7 +7,7 @@ ALTER TABLE `hotel_invoices` ADD COLUMN `children_3to5_count` INT DEFAULT 0 COMM
 ALTER TABLE `hotel_invoices` ADD COLUMN `children_under3_count` INT DEFAULT 0 COMMENT 'تعداد زیر 3 سال (رایگان)' AFTER `children_3to5_count`;
 ALTER TABLE `hotel_invoices` ADD COLUMN `deposit_amount` DECIMAL(15,2) DEFAULT 0 COMMENT 'مبلغ بیعانه (تومان)' AFTER `final_amount`;
 ALTER TABLE `hotel_invoices` ADD COLUMN `payment_token` VARCHAR(100) NULL COMMENT 'توکن لینک پرداخت' AFTER `deposit_amount`;
-ALTER TABLE `hotel_invoices` ADD COLUMN `discount_percent` DECIMAL(5,2) DEFAULT 0 COMMENT 'درصد تخفیف خودکار' AFTER `new_price_per_person_night`;
+-- discount_percent already exists in migration 028, skip adding it again
 ALTER TABLE `hotel_invoices` ADD COLUMN `invoice_type` ENUM('proforma', 'confirmed') DEFAULT 'proforma' COMMENT 'نوع فاکتور' AFTER `invoice_status`;
 
 -- ============================================

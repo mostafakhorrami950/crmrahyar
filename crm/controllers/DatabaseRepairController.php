@@ -65,6 +65,27 @@ class DatabaseRepairController
         $results = [];
         
         try {
+            // Ensure migrations table exists
+            try {
+                $db->query("CREATE TABLE IF NOT EXISTS `migrations` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `migration` VARCHAR(255) NOT NULL UNIQUE,
+                    `executed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            } catch (\Exception $e) {}
+            
+            // Ensure db_repair_log table exists
+            try {
+                $db->query("CREATE TABLE IF NOT EXISTS `db_repair_log` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `table_name` VARCHAR(100),
+                    `action` VARCHAR(100),
+                    `description` TEXT,
+                    `status` VARCHAR(20) DEFAULT 'success',
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            } catch (\Exception $e) {}
+            
             // Get already executed migrations from migrations table
             $executedMigrations = [];
             try {
