@@ -312,12 +312,19 @@ Router::get('/hotel-invoice', [HotelInvoiceController::class, 'index'], 'deals.v
 Router::group('/hotel-invoice', function() {
     Router::get('/create/{deal_id}', [HotelInvoiceController::class, 'create'], 'deals.edit');
     Router::post('/store', [HotelInvoiceController::class, 'store'], 'deals.edit');
+    Router::get('/edit/{id}', [HotelInvoiceController::class, 'edit'], 'deals.edit');
+    Router::post('/update/{id}', [HotelInvoiceController::class, 'update'], 'deals.edit');
     Router::get('/view/{id}', [HotelInvoiceController::class, 'view'], 'deals.view');
     Router::get('/print/{id}', [HotelInvoiceController::class, 'print'], 'deals.view');
     Router::post('/delete/{id}', [HotelInvoiceController::class, 'delete'], 'deals.edit');
     Router::post('/status/{id}', [HotelInvoiceController::class, 'updateStatus'], 'deals.edit');
     Router::post('/calculate', [HotelInvoiceController::class, 'calculate'], 'deals.view');
 });
+
+// Public Hotel Invoice (no auth required)
+Router::get('/hotel-pay/{token}', [HotelInvoiceController::class, 'publicView']);
+Router::post('/hotel-pay/submit', [HotelInvoiceController::class, 'publicPay']);
+Router::get('/hotel-pay/result', [HotelInvoiceController::class, 'paymentResult']);
 
 // Invoice Settings
 Router::get('/settings/invoice', [InvoiceSettingsController::class, 'index'], 'settings.manage');

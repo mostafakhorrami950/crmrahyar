@@ -122,7 +122,7 @@
                         <div class="bg-light rounded p-3">
                             <div class="d-flex justify-content-between mb-1"><small class="text-muted">قیمت هر نفر هر شب</small><strong id="calcPricePerPersonNight">0</strong></div>
                             <div class="d-flex justify-content-between mb-1"><small class="text-muted">قیمت جدید هر نفر هر شب</small><strong id="calcNewPrice" class="text-warning">-</strong></div>
-                            <div class="d-flex justify-content-between mb-1"><small class="text-muted">مبلغ کل</small><strong id="calcTotalAmount" style="color:<?php echo $primaryColor; ?>;">0 تومان</strong></div>
+                            <div class="d-flex justify-content-between mb-1"><small class="text-muted">مبلغ کل</small><strong id="calcOriginalTotal" style="color:<?php echo $primaryColor; ?>;">0 تومان</strong></div>
                             <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف (<span id="calcDiscountPct">0</span>%)</small><strong class="text-danger" id="calcDiscountAmount">0 تومان</strong></div>
                             <hr class="my-2">
                             <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount">0 تومان</strong></div>
@@ -162,6 +162,7 @@
                         </div>
                         <div class="d-flex gap-1 mt-2">
                             <a href="<?php echo $config['url']; ?>/hotel-invoice/view/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-primary" style="font-size:11px;padding:2px 8px;"><i class="bi bi-eye me-1"></i>مشاهده</a>
+                            <a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-warning" style="font-size:11px;padding:2px 8px;"><i class="bi bi-pencil me-1"></i>ویرایش</a>
                             <a href="<?php echo $config['url']; ?>/hotel-invoice/print/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 8px;" target="_blank"><i class="bi bi-printer me-1"></i>چاپ</a>
                             <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:11px;padding:2px 8px;" onclick="deleteInvoice(<?php echo $inv->id; ?>)"><i class="bi bi-trash me-1"></i>حذف</button>
                         </div>
@@ -195,21 +196,21 @@ function calculateInvoice() {
     var totalPersons = adults + children3to5 + childrenUnder3;
     var personNights = totalPersons * nights;
 
-    var totalAmount = (adults * nights * price) + (children3to5 * nights * price * 0.5);
+    // Original total (before discount)
+    var originalTotal = (adults * nights * price) + (children3to5 * nights * price * 0.5);
     var discountAmount = 0;
     var discountPct = 0;
+    var finalAmount = originalTotal;
 
-    if (newPrice > 0 && totalAmount > 0) {
+    if (newPrice > 0 && originalTotal > 0) {
         var newTotal = (adults * nights * newPrice) + (children3to5 * nights * newPrice * 0.5);
-        discountAmount = totalAmount - newTotal;
+        discountAmount = originalTotal - newTotal;
         if (discountAmount < 0) discountAmount = 0;
-        discountPct = totalAmount > 0 ? Math.round((discountAmount / totalAmount) * 100 * 100) / 100 : 0;
-        totalAmount = newTotal;
+        discountPct = originalTotal > 0 ? Math.round((discountAmount / originalTotal) * 100 * 100) / 100 : 0;
+        finalAmount = newTotal;
     }
 
-    var finalAmount = totalAmount;
-
-    if (isNaN(totalAmount)) totalAmount = 0;
+    if (isNaN(originalTotal)) originalTotal = 0;
     if (isNaN(finalAmount)) finalAmount = 0;
     if (isNaN(discountAmount)) discountAmount = 0;
     if (isNaN(discountPct)) discountPct = 0;
@@ -220,7 +221,7 @@ function calculateInvoice() {
     document.getElementById('calcChildren3to5').textContent = children3to5;
     document.getElementById('calcPricePerPersonNight').textContent = formatNumber(price) + ' تومان';
     document.getElementById('calcNewPrice').textContent = newPrice > 0 ? formatNumber(newPrice) + ' تومان' : '-';
-    document.getElementById('calcTotalAmount').textContent = formatNumber(totalAmount) + ' تومان';
+    document.getElementById('calcOriginalTotal').textContent = formatNumber(originalTotal) + ' تومان';
     document.getElementById('calcDiscountPct').textContent = discountPct;
     document.getElementById('calcDiscountAmount').textContent = formatNumber(discountAmount) + ' تومان';
     document.getElementById('calcFinalAmount').textContent = formatNumber(finalAmount) + ' تومان';

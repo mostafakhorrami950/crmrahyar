@@ -21,7 +21,13 @@
                 <?php if (!empty($invSet['invoice_logo_url'])): ?><img src="<?php echo htmlspecialchars($invSet['invoice_logo_url']); ?>" alt="لوگو" style="max-height:60px;margin-bottom:10px;"><?php endif; ?>
                 <h4 class="fw-bold mb-1" style="color:<?php echo $primaryColor; ?>;"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور هتل'); ?></h4>
                 <small class="text-muted">شماره فاکتور: #<?php echo $invoice->id; ?></small>
-                <br><span class="badge <?php echo $invoice->invoice_status=='final'?'bg-success':($invoice->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>"><?php echo $invoice->invoice_status=='final'?'نهایی':($invoice->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?></span>
+                <br>
+                <?php
+                $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
+                $statusColors = ['draft'=>'bg-warning text-dark','final'=>'bg-success','paid'=>'bg-info','cancelled'=>'bg-danger'];
+                $st = $invoice->invoice_status;
+                ?>
+                <span class="badge <?php echo $statusColors[$st] ?? 'bg-secondary'; ?>"><?php echo $statusLabels[$st] ?? $st; ?></span>
                 <?php if (!empty($invoice->invoice_type)): ?>
                 <span class="badge <?php echo $invoice->invoice_type=='confirmed'?'bg-primary':'bg-secondary'; ?>"><?php echo $invoice->invoice_type=='confirmed'?'فاکتور تایید شده':'پیش فاکتور'; ?></span>
                 <?php endif; ?>
@@ -63,8 +69,9 @@
             <?php endif; ?>
 
             <div class="d-flex gap-2 flex-wrap">
-                <?php if ($invoice->invoice_status !== 'final'): ?><button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'final')"><i class="bi bi-check-circle me-1"></i>نهایی کردن</button><?php endif; ?>
-                <?php if ($invoice->invoice_status !== 'cancelled'): ?><button class="btn btn-sm btn-outline-danger" onclick="updateStatus(<?php echo $invoice->id; ?>, 'cancelled')"><i class="bi bi-x-circle me-1"></i>لغو</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'final' && $invoice->invoice_status !== 'paid'): ?><button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'final')"><i class="bi bi-check-circle me-1"></i>نهایی کردن</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'cancelled' && $invoice->invoice_status !== 'paid'): ?><button class="btn btn-sm btn-outline-danger" onclick="updateStatus(<?php echo $invoice->id; ?>, 'cancelled')"><i class="bi bi-x-circle me-1"></i>لغو</button><?php endif; ?>
+                <a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $invoice->id; ?>" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil me-1"></i>ویرایش</a>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(<?php echo $invoice->id; ?>)"><i class="bi bi-trash me-1"></i>حذف</button>
             </div>
         </div></div>
@@ -84,6 +91,9 @@
                     <br><small class="text-warning">بیعانه: <?php echo number_format($invoice->deposit_amount); ?> تومان</small>
                     <?php endif; ?>
                 </div>
+                <?php if ($invoice->invoice_status !== 'paid' && $invoice->invoice_status !== 'cancelled' && !empty($invoice->payment_token)): ?>
+                <a href="<?php echo $config['url']; ?>/hotel-pay/<?php echo htmlspecialchars($invoice->payment_token); ?>" class="btn w-100 fw-bold mt-2" style="background:<?php echo $successColor; ?>;color:#fff;" target="_blank"><i class="bi bi-credit-card me-1"></i>لینک پرداخت</a>
+                <?php endif; ?>
                 <a href="<?php echo $config['url']; ?>/hotel-invoice/print/<?php echo $invoice->id; ?>" class="btn w-100 fw-bold" style="background:<?php echo $primaryColor; ?>;color:#fff;" target="_blank"><i class="bi bi-printer me-1"></i>چاپ فاکتور</a>
             </div>
         </div>

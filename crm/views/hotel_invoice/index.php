@@ -16,6 +16,7 @@
                     <option value="">همه وضعیت‌ها</option>
                     <option value="draft" <?php echo $status==='draft'?'selected':''; ?>>پیش‌نویس</option>
                     <option value="final" <?php echo $status==='final'?'selected':''; ?>>نهایی</option>
+                    <option value="paid" <?php echo $status==='paid'?'selected':''; ?>>پرداخت شده</option>
                     <option value="cancelled" <?php echo $status==='cancelled'?'selected':''; ?>>لغو شده</option>
                 </select>
             </div>
@@ -50,6 +51,7 @@
                         <th>مبلغ نهایی</th>
                         <th>وضعیت</th>
                         <th>نوع فاکتور</th>
+                        <th>لینک پرداخت</th>
                         <th>عملیات</th>
                     </tr>
                 </thead>
@@ -66,9 +68,12 @@
                         <td><span class="badge bg-info"><?php echo $inv->persons_count; ?></span></td>
                         <td><strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong></td>
                         <td>
-                            <span class="badge <?php echo $inv->invoice_status=='final'?'bg-success':($inv->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>">
-                                <?php echo $inv->invoice_status=='final'?'نهایی':($inv->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?>
-                            </span>
+                            <?php
+                            $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
+                            $statusColors = ['draft'=>'bg-warning text-dark','final'=>'bg-success','paid'=>'bg-info','cancelled'=>'bg-danger'];
+                            $st = $inv->invoice_status;
+                            ?>
+                            <span class="badge <?php echo $statusColors[$st] ?? 'bg-secondary'; ?>"><?php echo $statusLabels[$st] ?? $st; ?></span>
                         </td>
                         <td>
                             <?php if (!empty($inv->invoice_type)): ?>
@@ -80,10 +85,22 @@
                             <?php endif; ?>
                         </td>
                         <td>
+                            <?php if ($inv->invoice_status !== 'paid' && $inv->invoice_status !== 'cancelled'): ?>
+                                <?php if (!empty($inv->payment_token)): ?>
+                                <button class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 6px;" onclick="copyPaymentLink('<?php echo $config['url']; ?>/hotel-pay/<?php echo htmlspecialchars($inv->payment_token); ?>')" title="کپی لینک پرداخت"><i class="bi bi-link-45deg"></i></button>
+                                <?php else: ?>
+                                <span class="text-muted" style="font-size:11px;">ندارد</span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-success" style="font-size:11px;"><i class="bi bi-check-circle"></i></span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                             <div class="d-flex gap-1">
                                 <a href="<?php echo $config['url']; ?>/hotel-invoice/view/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-primary" style="font-size:11px;padding:2px 6px;"><i class="bi bi-eye"></i></a>
+                                <a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-warning" style="font-size:11px;padding:2px 6px;"><i class="bi bi-pencil"></i></a>
                                 <a href="<?php echo $config['url']; ?>/hotel-invoice/print/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 6px;" target="_blank"><i class="bi bi-printer"></i></a>
-                                <a href="<?php echo $config['url']; ?>/hotel-invoice/create/<?php echo $inv->deal_id; ?>" class="btn btn-sm btn-outline-warning" style="font-size:11px;padding:2px 6px;"><i class="bi bi-building"></i></a>
+                                <a href="<?php echo $config['url']; ?>/hotel-invoice/create/<?php echo $inv->deal_id; ?>" class="btn btn-sm btn-outline-info" style="font-size:11px;padding:2px 6px;"><i class="bi bi-building"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -94,3 +111,13 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function copyPaymentLink(url) {
+    navigator.clipboard.writeText(url).then(function() {
+        alert('لینک پرداخت کپی شد!');
+    }).catch(function() {
+        prompt('لینک پرداخت:', url);
+    });
+}
+</script>
