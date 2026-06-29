@@ -169,18 +169,17 @@ function calculateInvoice() {
         var d1 = new Date(checkIn);
         var d2 = new Date(checkOut);
         nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-        if (nights < 0) nights = 0;
+        if (isNaN(nights) || nights < 0) nights = 0;
     }
 
     var totalPersons = adults + children3to5 + childrenUnder3;
     var personNights = totalPersons * nights;
 
-    // Adults: full price, 3-5: half, under 3: free
     var totalAmount = (adults * nights * price) + (children3to5 * nights * price * 0.5);
     var discountAmount = 0;
     var discountPct = 0;
 
-    if (newPrice > 0) {
+    if (newPrice > 0 && totalAmount > 0) {
         var newTotal = (adults * nights * newPrice) + (children3to5 * nights * newPrice * 0.5);
         discountAmount = totalAmount - newTotal;
         if (discountAmount < 0) discountAmount = 0;
@@ -189,6 +188,11 @@ function calculateInvoice() {
     }
 
     var finalAmount = totalAmount;
+
+    if (isNaN(totalAmount)) totalAmount = 0;
+    if (isNaN(finalAmount)) finalAmount = 0;
+    if (isNaN(discountAmount)) discountAmount = 0;
+    if (isNaN(discountPct)) discountPct = 0;
 
     document.getElementById('calcNights').textContent = nights;
     document.getElementById('calcPersonNights').textContent = personNights;

@@ -121,6 +121,15 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
+            <a href="<?php echo $config['url']; ?>/settings/invoice" style="text-decoration:none;">
+                <div class="card" style="padding:20px;text-align:center;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;" onmouseover="this.style.borderColor='#F59E0B';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent';this.style.transform='none'">
+                    <div style="font-size:32px;margin-bottom:8px;">🧾</div>
+                    <strong style="font-size:14px;color:var(--gray-800);">تنظیمات فاکتور</strong>
+                    <div style="font-size:11px;color:var(--gray-400);margin-top:4px;">سربرگ، لوگو و رنگ فاکتور</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
             <a href="<?php echo $config['url']; ?>/custom-fields" style="text-decoration:none;">
                 <div class="card" style="padding:20px;text-align:center;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;" onmouseover="this.style.borderColor='#EC4899';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent';this.style.transform='none'">
                     <div style="font-size:32px;margin-bottom:8px;"><i class="bi bi-tag me-1"></i></div>
