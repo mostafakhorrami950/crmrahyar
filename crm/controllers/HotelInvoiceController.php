@@ -137,6 +137,7 @@ class HotelInvoiceController
         $pricePerPersonNight = (float)str_replace(',', '', $_POST['price_per_person_night'] ?? '0');
         $newPricePerPersonNightRaw = $_POST['new_price_per_person_night'] ?? '';
         $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
+        $invoiceType = $_POST['invoice_type'] ?? 'proforma';
         $notes = trim($_POST['notes'] ?? '');
 
         if (!$dealId || empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
@@ -219,6 +220,7 @@ class HotelInvoiceController
                 'deposit_amount' => $depositAmount,
                 'notes' => $notes,
                 'invoice_status' => 'draft',
+                'invoice_type' => $invoiceType,
                 'created_by' => Auth::id(),
             ]);
 

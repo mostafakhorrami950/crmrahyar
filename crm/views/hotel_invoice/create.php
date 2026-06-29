@@ -52,6 +52,14 @@
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-minus me-1"></i>تاریخ خروج <span class="text-danger">*</span></label>
                             <input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="calculateInvoice()">
                         </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-file-earmark me-1"></i>نوع فاکتور</label>
+                            <select name="invoice_type" class="form-select" id="invoiceType">
+                                <option value="proforma">پیش فاکتور</option>
+                                <option value="confirmed">فاکتور تایید شده</option>
+                            </select>
+                        </div>
+                        <div class="col-6"></div>
                         <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">تعداد نفرات</small></div>
                         <div class="col-4">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>بزرگسال (کامل)</label>
