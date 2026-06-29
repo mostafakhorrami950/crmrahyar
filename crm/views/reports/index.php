@@ -78,6 +78,10 @@
                 <input class="form-check-input ai-cat" type="checkbox" id="catContacts" value="contacts">
                 <label class="form-check-label small" for="catContacts">👤 مخاطبان</label>
             </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input ai-cat" type="checkbox" id="catHotelInvoices" value="hotel_invoices" checked>
+                <label class="form-check-label small" for="catHotelInvoices">🏨 فاکتورهای هتل</label>
+            </div>
         </div>
     </div>
 </div>

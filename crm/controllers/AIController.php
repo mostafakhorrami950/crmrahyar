@@ -223,6 +223,68 @@ class AIController
                 $p .= "\n";
             }
 
+            // Hotel Invoices
+            if (in_array('hotel_invoices', $selectedCats)) {
+                try {
+                    $hotelInvoiceStats = $db->fetch(
+                        "SELECT COUNT(*) as total, 
+                                COALESCE(SUM(final_amount),0) as total_amount,
+                                COALESCE(SUM(discount_amount),0) as total_discount,
+                                COALESCE(SUM(deposit_amount),0) as total_deposit,
+                                SUM(CASE WHEN invoice_status='paid' THEN 1 ELSE 0 END) as paid_count,
+                                SUM(CASE WHEN invoice_status='paid' THEN final_amount ELSE 0 END) as paid_amount,
+                                SUM(CASE WHEN invoice_status='draft' THEN 1 ELSE 0 END) as draft_count,
+                                SUM(CASE WHEN invoice_status='final' THEN 1 ELSE 0 END) as final_count,
+                                SUM(CASE WHEN invoice_status='cancelled' THEN 1 ELSE 0 END) as cancelled_count
+                         FROM hotel_invoices"
+                    );
+                    $hotelInvoiceByHotel = $db->fetchAll(
+                        "SELECT hotel_name, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot,
+                                SUM(CASE WHEN invoice_status='paid' THEN 1 ELSE 0 END) as paid
+                         FROM hotel_invoices GROUP BY hotel_name ORDER BY tot DESC LIMIT 10"
+                    );
+                    $hotelInvoiceByType = $db->fetchAll(
+                        "SELECT invoice_type, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot
+                         FROM hotel_invoices GROUP BY invoice_type"
+                    );
+                    $hotelInvoiceByStatus = $db->fetchAll(
+                        "SELECT invoice_status, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot
+                         FROM hotel_invoices GROUP BY invoice_status"
+                    );
+                    $p .= "== فاکتورهای هتل ==\n";
+                    $p .= "کل فاکتورها: {$hotelInvoiceStats->total}\n";
+                    $p .= "مجموع مبلغ: " . number_format($hotelInvoiceStats->total_amount) . " تومان\n";
+                    $p .= "مجموع تخفیف: " . number_format($hotelInvoiceStats->total_discount) . " تومان\n";
+                    $p .= "پرداخت شده: {$hotelInvoiceStats->paid_count} (" . number_format($hotelInvoiceStats->paid_amount) . " ت)\n";
+                    $p .= "پیش‌نویس: {$hotelInvoiceStats->draft_count}\n";
+                    $p .= "نهایی: {$hotelInvoiceStats->final_count}\n";
+                    $p .= "لغو شده: {$hotelInvoiceStats->cancelled_count}\n\n";
+                    
+                    $p .= "بر اساس هتل:\n";
+                    foreach ($hotelInvoiceByHotel as $h) {
+                        $p .= "- {$h->hotel_name}: {$h->cnt} فاکتور (" . number_format($h->tot) . " ت) | پرداخت شده: {$h->paid}\n";
+                    }
+                    $p .= "\n";
+                    
+                    $p .= "بر اساس نوع:\n";
+                    foreach ($hotelInvoiceByType as $t) {
+                        $typeLabel = $t->invoice_type === 'confirmed' ? 'تایید شده' : 'پیش فاکتور';
+                        $p .= "- {$typeLabel}: {$t->cnt} (" . number_format($t->tot) . " ت)\n";
+                    }
+                    $p .= "\n";
+                    
+                    $p .= "بر اساس وضعیت:\n";
+                    foreach ($hotelInvoiceByStatus as $s) {
+                        $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
+                        $statusLabel = $statusLabels[$s->invoice_status] ?? $s->invoice_status;
+                        $p .= "- {$statusLabel}: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
+                    }
+                    $p .= "\n";
+                } catch (\Exception $e) {
+                    // hotel_invoices table might not exist
+                }
+            }
+
             // Targets
             if (in_array('targets', $selectedCats)) {
                 $targets = $db->fetchAll(
