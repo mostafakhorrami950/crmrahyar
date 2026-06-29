@@ -52,6 +52,9 @@
                 <a href="<?php echo $config['url']; ?>/deals/tags" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/deals/tag') !== false || strpos($_SERVER['REQUEST_URI'], '/deals/tags') !== false) ? 'active' : ''; ?>">
                     <i class="bi bi-tags"></i> <span>هشتگ‌ها</span>
                 </a>
+                <a href="<?php echo $config['url']; ?>/hotel-invoice" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/hotel-invoice') !== false ? 'active' : ''; ?>">
+                    <i class="bi bi-building"></i> <span>فاکتورهای هتل</span>
+                </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('contacts.view')): ?>

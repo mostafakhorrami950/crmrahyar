@@ -34,6 +34,7 @@ use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
 use Controllers\HotelInvoiceController;
+use Controllers\InvoiceSettingsController;
 // Landing page - redirect to main site URL
 Router::get('/', function() {
     $config = $GLOBALS['app_config'];
@@ -307,6 +308,7 @@ Router::post('/ai/analyze', [AIController::class, 'analyze']);
 Router::get('/ai/history', [AIController::class, 'history']);
 
 // Hotel Invoices
+Router::get('/hotel-invoice', [HotelInvoiceController::class, 'index'], 'deals.view');
 Router::group('/hotel-invoice', function() {
     Router::get('/create/{deal_id}', [HotelInvoiceController::class, 'create'], 'deals.edit');
     Router::post('/store', [HotelInvoiceController::class, 'store'], 'deals.edit');
@@ -316,6 +318,10 @@ Router::group('/hotel-invoice', function() {
     Router::post('/status/{id}', [HotelInvoiceController::class, 'updateStatus'], 'deals.edit');
     Router::post('/calculate', [HotelInvoiceController::class, 'calculate'], 'deals.view');
 });
+
+// Invoice Settings
+Router::get('/settings/invoice', [InvoiceSettingsController::class, 'index'], 'settings.manage');
+Router::post('/settings/invoice/update', [InvoiceSettingsController::class, 'update'], 'settings.manage');
 
 // Audit Trail
 Router::get('/audit', [AuditController::class, 'index'], 'audit.view');
