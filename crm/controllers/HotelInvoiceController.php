@@ -862,12 +862,22 @@ class HotelInvoiceController
                     }
 
                     // Update hotel invoice status to paid
-                    $invoice = $db->fetch(
-                        "SELECT * FROM hotel_invoices WHERE deal_id = :deal_id AND payment_token IS NOT NULL ORDER BY id DESC LIMIT 1",
-                        [':deal_id' => $payment->deal_id]
-                    );
-                    if ($invoice) {
-                        $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoice->id]);
+                    // Extract invoice ID from payment description
+                    $invoiceId = 0;
+                    if (preg_match('/فاکتور هتل #(\d+)/', $payment->description ?? '', $m)) {
+                        $invoiceId = (int)$m[1];
+                    }
+                    if ($invoiceId > 0) {
+                        $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoiceId]);
+                    } else {
+                        // Fallback: find by deal_id
+                        $invoice = $db->fetch(
+                            "SELECT * FROM hotel_invoices WHERE deal_id = :deal_id AND payment_token IS NOT NULL ORDER BY id DESC LIMIT 1",
+                            [':deal_id' => $payment->deal_id]
+                        );
+                        if ($invoice) {
+                            $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoice->id]);
+                        }
                     }
 
                     $success = true;
