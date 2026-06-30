@@ -54,11 +54,11 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
-                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" value="<?php echo $invoice->check_in_date; ?>" required onchange="calculateInvoice()">
+                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" value="<?php echo $invoice->check_in_date; ?>" required onchange="updateAllQuantitiesAndCalc()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-minus me-1"></i>تاریخ خروج <span class="text-danger">*</span></label>
-                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" value="<?php echo $invoice->check_out_date; ?>" required onchange="calculateInvoice()">
+                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" value="<?php echo $invoice->check_out_date; ?>" required onchange="updateAllQuantitiesAndCalc()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-file-earmark me-1"></i>نوع فاکتور</label>
@@ -97,6 +97,10 @@
                     <div class="col-12">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-list-check me-1"></i>خدمات اضافی</label>
                         <textarea name="extra_services" class="form-control" rows="2"><?php echo htmlspecialchars($invoice->extra_services ?? ''); ?></textarea>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-people me-1"></i>تعداد نفرات</label>
+                        <input type="number" name="persons_count" class="form-control" id="personsCount" value="<?php echo $invoice->persons_count ?? 1; ?>" min="1" onchange="updateAllQuantitiesAndCalc()">
                     </div>
                 </div>
             </div>
@@ -310,15 +314,16 @@ function onItemSelect(sel) {
         qtyInput.value = '1';
     } else {
         priceInput.value = selectedOption.getAttribute('data-price') || '0';
-        // Auto-set quantity to number of nights for hotel items
+        // Auto-set quantity to persons × nights for hotel items
         var checkIn = document.getElementById('checkInDate').value;
         var checkOut = document.getElementById('checkOutDate').value;
+        var persons = parseInt(document.getElementById('personsCount').value) || 1;
         if (checkIn && checkOut) {
             var d1 = new Date(checkIn);
             var d2 = new Date(checkOut);
             var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
             if (nights > 0) {
-                qtyInput.value = nights;
+                qtyInput.value = persons * nights;
             }
         }
     }
@@ -344,15 +349,35 @@ function removeItem(btn) {
     if (container.children.length > 1) { row.remove(); calculateInvoice(); }
 }
 
-function calculateInvoice() {
+function getNights() {
     var checkIn = document.getElementById('checkInDate').value;
     var checkOut = document.getElementById('checkOutDate').value;
-    var nights = 0;
     if (checkIn && checkOut) {
-        var d1 = new Date(checkIn); var d2 = new Date(checkOut);
-        nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-        if (isNaN(nights) || nights < 0) nights = 0;
+        var d1 = new Date(checkIn);
+        var d2 = new Date(checkOut);
+        var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+        if (!isNaN(nights) && nights > 0) return nights;
     }
+    return 0;
+}
+
+function updateAllQuantitiesAndCalc() {
+    var nights = getNights();
+    var persons = parseInt(document.getElementById('personsCount').value) || 1;
+    if (nights > 0) {
+        var selects = document.querySelectorAll('select[name="item_description[]"]');
+        var qtys = document.querySelectorAll('input[name="item_quantity[]"]');
+        for (var i = 0; i < selects.length; i++) {
+            if (selects[i].value) {
+                qtys[i].value = persons * nights;
+            }
+        }
+    }
+    calculateInvoice();
+}
+
+function calculateInvoice() {
+    var nights = getNights();
     var subtotal = 0, itemCount = 0;
     var selects = document.querySelectorAll('select[name="item_description[]"]');
     var qtys = document.querySelectorAll('input[name="item_quantity[]"]');

@@ -157,6 +157,7 @@ class HotelInvoiceController
         $footerText = trim($_POST['footer_text'] ?? '');
         $invoiceType = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
+        $personsCount = (int)($_POST['persons_count'] ?? 1);
 
         // Line items
         $itemDescriptions = $_POST['item_description'] ?? [];
@@ -230,7 +231,7 @@ class HotelInvoiceController
                 'check_in_date' => $checkInDate,
                 'check_out_date' => $checkOutDate,
                 'nights' => $nights,
-                'persons_count' => 0,
+                'persons_count' => $personsCount,
                 'subtotal' => $subtotal,
                 'tax_percent' => $taxPercent,
                 'tax_amount' => $taxAmount,
@@ -361,6 +362,7 @@ class HotelInvoiceController
         $footerText = trim($_POST['footer_text'] ?? '');
         $invoiceType = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
+        $personsCount = (int)($_POST['persons_count'] ?? 1);
 
         $itemDescriptions = $_POST['item_description'] ?? [];
         $itemQuantities = $_POST['item_quantity'] ?? [];
@@ -443,6 +445,7 @@ class HotelInvoiceController
                 'footer_text' => $footerText,
                 'invoice_status' => $invoiceStatus,
                 'invoice_type' => $invoiceType,
+                'persons_count' => $personsCount,
             ], 'id = :id', [':id' => $invoiceId]);
 
             // Delete old items and insert new ones
