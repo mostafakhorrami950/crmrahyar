@@ -119,7 +119,7 @@
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
-                            <input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="0" step="0.01" onchange="calculateInvoice()">
+                            <input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()">
                         </div>
                         <div class="col-3">
                             <label class="form-label text-muted small">قیمت واحد (تومان)</label>
@@ -322,14 +322,17 @@ fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
 function populateItemSelects() {
     var selects = document.querySelectorAll('.item-select');
     selects.forEach(function(sel) {
+        var currentVal = sel.value;
         sel.innerHTML = '<option value="">انتخاب آیتم...</option>';
         catalogItems.forEach(function(item) {
             var opt = document.createElement('option');
             opt.value = item.name;
             opt.textContent = item.name + (item.default_price > 0 ? ' (' + formatNumber(item.default_price) + ' ت)' : '');
             opt.setAttribute('data-price', item.default_price);
+            opt.setAttribute('data-search', (item.name + ' ' + (item.description || '') + ' ' + item.category).toLowerCase());
             sel.appendChild(opt);
         });
+        if (currentVal) sel.value = currentVal;
     });
 }
 
@@ -352,7 +355,7 @@ function addItem() {
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 align-items-end';
     row.innerHTML = '<div class="col-5"><select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select></div>' +
-        '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="0" step="0.01" onchange="calculateInvoice()"></div>' +
+        '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()"></div>' +
         '<div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;"></div>' +
         '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     container.appendChild(row);

@@ -72,10 +72,11 @@ class HotelInvoiceController
         }
 
         $invoices = $db->fetchAll(
-            "SELECT hi.*, d.title as deal_title, c.full_name as contact_name
+            "SELECT hi.*, d.title as deal_title, c.full_name as contact_name, u.full_name as creator_name
              FROM hotel_invoices hi
              JOIN deals d ON hi.deal_id = d.id
              LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN users u ON hi.created_by = u.id
              {$where}
              ORDER BY hi.created_at DESC",
             $params
@@ -546,10 +547,12 @@ class HotelInvoiceController
 
         $invoice = $db->fetch(
             "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
-                    c.full_name as contact_name, c.phone as contact_phone
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    u.full_name as creator_name
              FROM hotel_invoices hi
              JOIN deals d ON hi.deal_id = d.id
              LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN users u ON hi.created_by = u.id
              WHERE hi.id = :id",
             [':id' => $invoiceId]
         );
@@ -591,10 +594,12 @@ class HotelInvoiceController
 
         $invoice = $db->fetch(
             "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
-                    c.full_name as contact_name, c.phone as contact_phone
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    u.full_name as creator_name
              FROM hotel_invoices hi
              JOIN deals d ON hi.deal_id = d.id
              LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN users u ON hi.created_by = u.id
              WHERE hi.id = :id",
             [':id' => $invoiceId]
         );

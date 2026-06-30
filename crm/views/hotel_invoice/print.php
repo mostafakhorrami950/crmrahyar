@@ -3,100 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چاپ فاکتور هتل - <?php echo htmlspecialchars($invoice->hotel_name); ?></title>
+    <title>چاپ فاکتور - <?php echo htmlspecialchars($invoice->hotel_name); ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <?php
     $invSet = $invoiceSettings ?? [];
-    $primaryColor = $invSet['invoice_primary_color'] ?? '#0d6efd';
-    $secondaryColor = $invSet['invoice_secondary_color'] ?? '#6c757d';
-    $successColor = $invSet['invoice_success_color'] ?? '#198754';
-    $invoiceTitle = $invSet['invoice_title'] ?? 'فاکتور رزرو هتل';
-    $companyName = $invSet['invoice_company_name'] ?? 'علاءالدین سفیر اسمان';
-    $invoiceSubtitle = $invSet['invoice_subtitle'] ?? 'آژانس مسافرتی';
-    $logoUrl = $invSet['invoice_logo_url'] ?? '';
-    $footerText = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
-    $paymentTerms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
+    $pc = $invSet['invoice_primary_color'] ?? '#0d6efd';
+    $sc = $invSet['invoice_success_color'] ?? '#198754';
+    $company = $invSet['invoice_company_name'] ?? 'علاءالدین سفیر اسمان';
+    $sub = $invSet['invoice_subtitle'] ?? 'آژانس مسافرتی';
+    $logo = $invSet['invoice_logo_url'] ?? '';
+    $footer = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
+    $terms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
     ?>
     <style>
         @media print {
-            body { font-size: 9pt; margin: 0; padding: 0; }
-            .no-print { display: none !important; }
-            .print-container { margin: 0; padding: 10mm; border: none; box-shadow: none; max-width: 100%; }
-            @page { margin: 8mm; size: A4; }
-            .item-table td, .item-table th { padding: 3px 6px; font-size: 8pt; }
-            .info-box { padding: 4px 6px; }
-            .info-box small { font-size: 7pt; }
-            .info-box strong { font-size: 8pt; }
-            .summary-td { font-size: 8pt; padding: 2px 6px; }
+            body { margin:0; padding:0; font-size:9pt; }
+            .no-print { display:none!important; }
+            .inv-wrap { padding:8mm; max-width:100%; }
+            @page { margin:8mm; size:A4; }
         }
-        body { font-family: Vazirmatn, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
-        .print-container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border: 1px solid #ddd; }
-        .invoice-header { border-bottom: 3px solid <?php echo $primaryColor; ?>; padding-bottom: 8px; margin-bottom: 10px; }
-        .item-table th { background: #f8f9fa; font-size: 8pt; padding: 4px 6px; border: 1px solid #dee2e6; }
-        .item-table td { padding: 4px 6px; font-size: 8pt; border: 1px solid #dee2e6; }
-        .info-box { background: #f8f9fa; border-radius: 4px; padding: 5px 8px; }
-        .info-box small { font-size: 8pt; }
-        .info-box strong { font-size: 9pt; }
-        .summary-table td { padding: 3px 8px; font-size: 9pt; }
-        .footer-section { border-top: 1px solid #dee2e6; padding-top: 8px; margin-top: 10px; font-size: 8pt; color: #666; }
+        body { font-family:Vazirmatn,sans-serif; background:#f0f2f5; margin:0; }
+        .inv-wrap { max-width:780px; margin:15px auto; background:#fff; padding:20px; border:1px solid #e0e0e0; border-radius:8px; }
+        .inv-top { border-bottom:2px solid <?php echo $pc; ?>; padding-bottom:10px; margin-bottom:12px; }
+        .inv-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:8pt; font-weight:600; }
+        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
+        .info-item { background:#f8f9fa; border-radius:4px; padding:6px 8px; }
+        .info-item small { font-size:7.5pt; color:#666; display:block; }
+        .info-item strong { font-size:8.5pt; }
+        .item-tbl { width:100%; border-collapse:collapse; margin-bottom:12px; font-size:8.5pt; }
+        .item-tbl th { background:#f1f3f5; padding:6px 8px; border:1px solid #dee2e6; text-align:right; font-size:8pt; }
+        .item-tbl td { padding:5px 8px; border:1px solid #dee2e6; }
+        .sum-tbl { width:45%; margin-left:0; margin-right:auto; font-size:8.5pt; }
+        .sum-tbl td { padding:3px 8px; }
+        .footer-sec { border-top:1px dashed #dee2e6; padding-top:8px; margin-top:12px; font-size:7.5pt; color:#666; }
+        .stamp-area { margin-top:20px; display:flex; justify-content:space-between; }
+        .stamp-box { width:45%; text-align:center; border-top:1px solid #999; padding-top:5px; font-size:7.5pt; color:#666; }
     </style>
 </head>
 <body>
-    <div class="no-print" style="text-align:center;padding:8px;background:<?php echo $primaryColor; ?>;color:#fff;">
-        <button onclick="window.print();" style="padding:8px 20px;background:#fff;color:<?php echo $primaryColor; ?>;border:none;border-radius:4px;font-weight:bold;cursor:pointer;"><i class="bi bi-printer me-1"></i>چاپ فاکتور</button>
-        <button onclick="window.close();" style="padding:8px 20px;background:#6c757d;color:#fff;border:none;border-radius:4px;font-weight:bold;cursor:pointer;margin-right:10px;">بستن</button>
+    <div class="no-print" style="text-align:center;padding:8px;background:<?php echo $pc; ?>;color:#fff;border-radius:0 0 8px 8px;">
+        <button onclick="window.print()" style="padding:8px 24px;background:#fff;color:<?php echo $pc; ?>;border:none;border-radius:4px;font-weight:bold;cursor:pointer;margin:4px;"><i class="bi bi-printer me-1"></i>چاپ</button>
+        <button onclick="window.close()" style="padding:8px 24px;background:#666;color:#fff;border:none;border-radius:4px;font-weight:bold;cursor:pointer;margin:4px;">بستن</button>
     </div>
 
-    <div class="print-container">
+    <div class="inv-wrap">
         <!-- Header -->
-        <div class="invoice-header">
+        <div class="inv-top">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <?php if (!empty($logoUrl)): ?>
-                    <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="لوگو" style="max-height:40px;margin-bottom:4px;">
-                    <?php endif; ?>
-                    <h5 class="fw-bold mb-0" style="color:<?php echo $primaryColor; ?>;font-size:13pt;"><?php echo htmlspecialchars($invoiceTitle); ?></h5>
-                    <small class="text-muted">شماره: <?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?> | تاریخ صدور: <?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></small>
+                    <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" style="max-height:40px;margin-bottom:4px;" alt="لوگو"><?php endif; ?>
+                    <h5 style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;margin:0 0 2px 0;"><?php echo htmlspecialchars($invoiceTitle ?? 'فاکتور رزرو هتل'); ?></h5>
+                    <span style="font-size:8pt;color:#666;">شماره: <strong><?php echo $invoice->invoice_number ?? '#'.$invoice->id; ?></strong></span>
+                    &nbsp;|&nbsp;
+                    <span style="font-size:8pt;color:#666;">تاریخ صدور: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></span>
                 </div>
                 <div class="text-start">
-                    <div class="fw-bold" style="color:<?php echo $primaryColor; ?>;font-size:13pt;"><?php echo htmlspecialchars($companyName); ?></div>
-                    <small class="text-muted"><?php echo htmlspecialchars($invoiceSubtitle); ?></small>
+                    <div style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;"><?php echo htmlspecialchars($company); ?></div>
+                    <div style="font-size:8pt;color:#666;"><?php echo htmlspecialchars($sub); ?></div>
                 </div>
             </div>
         </div>
 
-        <!-- Info Grid -->
-        <div class="row g-1 mb-2">
-            <div class="col-3"><div class="info-box"><small class="text-muted d-block">هتل</small><strong><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div></div>
-            <div class="col-3"><div class="info-box"><small class="text-muted d-block">میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></strong></div></div>
-            <div class="col-3"><div class="info-box"><small class="text-muted d-block">تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></strong></div></div>
-            <div class="col-3"><div class="info-box"><small class="text-muted d-block">وضعیت</small><strong><?php
-                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
-                echo $statusLabels[$invoice->invoice_status] ?? $invoice->invoice_status;
-            ?></strong><?php if (!empty($invoice->invoice_type)): ?><br><small style="color:<?php echo $invoice->invoice_type=='confirmed'?$primaryColor:$secondaryColor; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?></small><?php endif; ?></div></div>
-        </div>
-        <div class="row g-1 mb-2">
-            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
-            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
-            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">شب</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?></strong></div></div>
-            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">خدمات</small><strong><?php
-                $services = [];
-                if ($invoice->transfer_included) $services[] = 'ترانسفر';
-                if ($invoice->visa_included) $services[] = 'ویزا';
-                if ($invoice->insurance_included) $services[] = 'بیمه';
-                echo !empty($services) ? implode(', ', $services) : '-';
-            ?></strong></div></div>
+        <!-- Status Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:8pt;">
+            <div>
+                <?php
+                $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
+                $stC = ['pending'=>'#ffc107','settled'=>'#198754','prepaid'=>'#0dcaf0'];
+                $st = $invoice->invoice_status;
+                ?>
+                <span class="inv-badge" style="background:<?php echo $stC[$st]??'#6c757d'; ?>20;color:<?php echo $stC[$st]??'#6c757d'; ?>;"><?php echo $stL[$st]??$st; ?></span>
+                <?php if ($invoice->invoice_type): ?>
+                <span class="inv-badge" style="background:<?php echo $pc; ?>15;color:<?php echo $pc; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?></span>
+                <?php endif; ?>
+            </div>
+            <div style="color:#999;">صدور شده توسط: <strong style="color:#333;"><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></div>
         </div>
 
-        <!-- Line Items Table -->
-        <?php if (!empty($items)): ?>
-        <table class="table table-bordered item-table mb-2">
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-item"><small>هتل</small><strong><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div>
+            <div class="info-item"><small>میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></strong></div>
+            <div class="info-item"><small>تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></strong></div>
+            <div class="info-item"><small>خدمات</small><strong><?php
+                $svcs = [];
+                if ($invoice->transfer_included) $svcs[] = 'ترانسفر';
+                if ($invoice->visa_included) $svcs[] = 'ویزا';
+                if ($invoice->insurance_included) $svcs[] = 'بیمه';
+                echo !empty($svcs) ? implode(' | ', $svcs) : '-';
+            ?></strong></div>
+        </div>
+        <div class="info-grid">
+            <div class="info-item"><small>تاریخ ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div>
+            <div class="info-item"><small>تاریخ خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div>
+            <div class="info-item"><small>تعداد شب‌ها</small><strong style="color:<?php echo $pc; ?>;"><?php echo $invoice->nights; ?></strong></div>
+            <?php if ($invoice->valid_until): ?>
+            <div class="info-item"><small>تاریخ اعتبار</small><strong><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></strong></div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Items Table -->
+        <table class="item-tbl">
             <thead>
                 <tr>
-                    <th style="width:5%">#</th>
-                    <th style="width:45%">شرح آیتم</th>
+                    <th style="width:4%">#</th>
+                    <th style="width:46%">شرح آیتم</th>
                     <th style="width:10%" class="text-center">تعداد</th>
                     <th style="width:20%" class="text-center">قیمت واحد</th>
                     <th style="width:20%" class="text-center">مبلغ کل</th>
@@ -107,59 +120,58 @@
                 <tr>
                     <td class="text-center"><?php echo $i + 1; ?></td>
                     <td><?php echo htmlspecialchars($item->description); ?></td>
-                    <td class="text-center"><?php echo number_format($item->quantity, 2); ?></td>
+                    <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
                     <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
-                    <td class="text-center" dir="ltr"><?php echo number_format($item->total_price); ?></td>
+                    <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <?php else: ?>
-        <div class="text-center text-muted py-2 mb-2" style="font-size:9pt;">آیتمی ثبت نشده</div>
-        <?php endif; ?>
 
         <!-- Financial Summary -->
-        <div class="d-flex justify-content-end">
-            <table class="summary-table" style="width:40%;">
-                <tr><td class="text-muted">جمع کل:</td><td class="text-start fw-bold" dir="ltr"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> تومان</td></tr>
-                <?php if (($invoice->tax_percent ?? 0) > 0): ?>
-                <tr><td class="text-muted">مالیات (<?php echo $invoice->tax_percent; ?>%):</td><td class="text-start fw-bold" dir="ltr"><?php echo number_format($invoice->tax_amount ?? 0); ?> تومان</td></tr>
-                <?php endif; ?>
-                <?php if (($invoice->service_fee ?? 0) > 0): ?>
-                <tr><td class="text-muted">هزینه خدمات:</td><td class="text-start fw-bold" dir="ltr"><?php echo number_format($invoice->service_fee); ?> تومان</td></tr>
-                <?php endif; ?>
-                <?php if (($invoice->discount_amount ?? 0) > 0): ?>
-                <tr><td class="text-muted text-danger">تخفیف:</td><td class="text-start fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->discount_amount); ?> تومان</td></tr>
-                <?php endif; ?>
-                <tr><td class="fw-bold fs-6 border-top border-2">مبلغ نهایی:</td><td class="text-start fw-bold border-top border-2" style="font-size:12pt;color:<?php echo $successColor; ?>;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
-                <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
-                <tr><td class="text-muted">بیعانه:</td><td class="text-start fw-bold" dir="ltr"><?php echo number_format($invoice->deposit_amount); ?> تومان</td></tr>
-                <?php endif; ?>
-            </table>
-        </div>
+        <table class="sum-tbl">
+            <tr><td style="color:#666;">جمع کل:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> <small>تومان</small></td></tr>
+            <?php if (($invoice->tax_percent ?? 0) > 0): ?>
+            <tr><td style="color:#666;">مالیات (<?php echo $invoice->tax_percent; ?>%):</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->tax_amount ?? 0); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
+            <?php if (($invoice->service_fee ?? 0) > 0): ?>
+            <tr><td style="color:#666;">هزینه خدمات:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->service_fee); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
+            <?php if (($invoice->discount_amount ?? 0) > 0): ?>
+            <tr><td style="color:#dc3545;">تخفیف:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->discount_amount); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
+            <tr><td style="font-weight:700;font-size:10pt;padding-top:6px;border-top:2px solid #333;">مبلغ نهایی:</td><td class="text-end fw-bold" style="font-size:11pt;color:<?php echo $sc; ?>;padding-top:6px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> <small>تومان</small></td></tr>
+            <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
+            <tr><td style="color:#666;"><i class="bi bi-wallet2"></i> بیعانه:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->deposit_amount); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
+        </table>
 
         <!-- Payment Terms -->
-        <?php if ($paymentTerms): ?>
-        <div class="mb-2 p-2" style="background:#f8f9fa;border-radius:4px;font-size:8pt;">
-            <strong class="text-muted"><i class="bi bi-shield-check me-1"></i>شرایط پرداخت:</strong>
-            <span class="text-muted"><?php echo nl2br(htmlspecialchars($paymentTerms)); ?></span>
+        <?php if ($terms): ?>
+        <div style="background:#f8f9fa;border-radius:4px;padding:8px;margin-top:10px;font-size:8pt;">
+            <strong style="color:#666;"><i class="bi bi-shield-check me-1"></i>شرایط پرداخت:</strong>
+            <span style="color:#555;"><?php echo nl2br(htmlspecialchars($terms)); ?></span>
         </div>
         <?php endif; ?>
 
         <!-- Notes -->
         <?php if ($invoice->notes): ?>
-        <div class="mb-2" style="font-size:8pt;">
-            <strong class="text-muted"><i class="bi bi-journal-text me-1"></i>توضیحات:</strong>
-            <span class="text-muted"><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></span>
+        <div style="margin-top:8px;font-size:8pt;">
+            <strong style="color:#666;"><i class="bi bi-journal-text me-1"></i>توضیحات:</strong>
+            <span style="color:#555;"><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></span>
         </div>
         <?php endif; ?>
 
+        <!-- Signature Area -->
+        <div class="stamp-area">
+            <div class="stamp-box">امضای صادرکننده</div>
+            <div class="stamp-box">امضای تاییدکننده</div>
+        </div>
+
         <!-- Footer -->
-        <div class="footer-section text-center">
-            <?php if ($footerText): ?>
-            <p class="mb-1"><?php echo nl2br(htmlspecialchars($footerText)); ?></p>
-            <?php endif; ?>
-            <small><?php echo htmlspecialchars($companyName); ?> | <?php echo htmlspecialchars($invoiceSubtitle); ?></small>
+        <div class="footer-sec text-center">
+            <?php if ($footer): ?><p style="margin:0 0 4px 0;"><?php echo nl2br(htmlspecialchars($footer)); ?></p><?php endif; ?>
+            <small><?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?> | صادر شده توسط: <?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></small>
         </div>
     </div>
 </body>
