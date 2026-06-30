@@ -9,9 +9,6 @@ use Core\ActivityLog;
 
 class HotelInvoiceController
 {
-    /**
-     * Get invoice settings
-     */
     private function getSettings(): array
     {
         try {
@@ -37,9 +34,6 @@ class HotelInvoiceController
         }
     }
 
-    /**
-     * Generate unique invoice number
-     */
     private function generateInvoiceNumber(): string
     {
         $prefix = 'INV';
@@ -48,9 +42,66 @@ class HotelInvoiceController
         return "{$prefix}-{$date}-{$random}";
     }
 
+    private function recalcNights(string $checkIn, string $checkOut): int
+    {
+        $d1 = new \DateTime($checkIn);
+        $d2 = new \DateTime($checkOut);
+        $nights = (int)$d2->diff($d1)->days;
+        return max($nights, 0);
+    }
+
     /**
-     * List all invoices
+     * Calculate line total based on category and nights
      */
+    private function calcLineTotal(float $qty, float $unitPrice, string $category, int $nights): float
+    {
+        if ($category === 'hotel' && $nights > 0) {
+            return $qty * $unitPrice * $nights;
+        }
+        return $qty * $unitPrice;
+    }
+
+    /**
+     * Extract submitted items from POST with calculations
+     */
+    private function extractItems(array $post, int $nights): array
+    {
+        $descriptions = $post['item_description'] ?? [];
+        $quantities   = $post['item_quantity'] ?? [];
+        $unitPrices   = $post['item_unit_price'] ?? [];
+        $categories   = $post['item_category'] ?? [];
+
+        $items = [];
+        $subtotal = 0;
+
+        if (!empty($descriptions) && is_array($descriptions)) {
+            foreach ($descriptions as $i => $desc) {
+                if (empty(trim($desc))) continue;
+
+                $qty     = (float)str_replace(',', '', $quantities[$i] ?? '1');
+                $price   = (float)str_replace(',', '', $unitPrices[$i] ?? '0');
+                $cat     = $categories[$i] ?? 'general';
+
+                $total   = $this->calcLineTotal($qty, $price, $cat, $nights);
+                $subtotal += $total;
+
+                $items[] = [
+                    'description' => trim($desc),
+                    'category'    => $cat,
+                    'quantity'    => $qty,
+                    'unit_price'  => $price,
+                    'total_price' => $total,
+                    'sort_order'  => $i,
+                ];
+            }
+        }
+
+        return ['items' => $items, 'subtotal' => $subtotal];
+    }
+
+    // ============================================================
+    // INDEX
+    // ============================================================
     public function index(): void
     {
         Auth::requireAuth();
@@ -90,9 +141,9 @@ class HotelInvoiceController
         ]);
     }
 
-    /**
-     * Show hotel invoice form for a deal
-     */
+    // ============================================================
+    // CREATE (show form)
+    // ============================================================
     public function create(array $params): void
     {
         Auth::requireAuth();
@@ -132,37 +183,35 @@ class HotelInvoiceController
         ]);
     }
 
-    /**
-     * Store a new hotel invoice
-     */
+    // ============================================================
+    // STORE (save new invoice)
+    // ============================================================
     public function store(): void
     {
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         Auth::requireAuth();
         $db = Database::getInstance();
 
-        $dealId = (int)($_POST['deal_id'] ?? 0);
-        $hotelName = trim($_POST['hotel_name'] ?? '');
-        $guestName = trim($_POST['guest_name'] ?? '');
-        $guestPhone = trim($_POST['guest_phone'] ?? '');
-        $checkInDate = $_POST['check_in_date'] ?? '';
+        $dealId       = (int)($_POST['deal_id'] ?? 0);
+        $hotelName    = trim($_POST['hotel_name'] ?? '');
+        $guestName    = trim($_POST['guest_name'] ?? '');
+        $guestPhone   = trim($_POST['guest_phone'] ?? '');
+        $checkInDate  = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
-        $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
-        $visaIncluded = isset($_POST['visa_included']) ? 1 : 0;
-        $insuranceIncluded = isset($_POST['insurance_included']) ? 1 : 0;
         $extraServices = trim($_POST['extra_services'] ?? '');
+        $notes        = trim($_POST['notes'] ?? '');
         $paymentTerms = trim($_POST['payment_terms'] ?? '');
-        $validUntil = $_POST['valid_until'] ?? null;
-        $notes = trim($_POST['notes'] ?? '');
-        $footerText = trim($_POST['footer_text'] ?? '');
-        $invoiceType = $_POST['invoice_type'] ?? 'proforma';
-        $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
-
-        // Line items
-        $itemDescriptions = $_POST['item_description'] ?? [];
-        $itemQuantities = $_POST['item_quantity'] ?? [];
-        $itemUnitPrices = $_POST['item_unit_price'] ?? [];
-        $itemTotals = $_POST['item_total'] ?? [];
+        $footerText   = trim($_POST['footer_text'] ?? '');
+        $validUntil   = $_POST['valid_until'] ?? null;
+        $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
+        $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
+        $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
+        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
+        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
+        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
+        $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
+        $visaIncluded     = isset($_POST['visa_included']) ? 1 : 0;
+        $insuranceIncluded= isset($_POST['insurance_included']) ? 1 : 0;
 
         if (!$dealId || empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
             $msg = 'لطفاً فیلدهای الزامی (نام هتل، تاریخ ورود، تاریخ خروج) را پر کنید.';
@@ -171,11 +220,7 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/create/' . $dealId);
         }
 
-        // Calculate nights
-        $checkIn = new \DateTime($checkInDate);
-        $checkOut = new \DateTime($checkOutDate);
-        $nights = $checkOut->diff($checkIn)->days;
-
+        $nights = $this->recalcNights($checkInDate, $checkOutDate);
         if ($nights <= 0) {
             $msg = 'تاریخ خروج باید بعد از تاریخ ورود باشد.';
             if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
@@ -183,84 +228,60 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/create/' . $dealId);
         }
 
-        // Calculate subtotal from line items (use pre-calculated totals from client)
-        $subtotal = 0;
-        $items = [];
-        if (!empty($itemDescriptions) && is_array($itemDescriptions)) {
-            foreach ($itemDescriptions as $i => $desc) {
-                if (empty($desc)) continue;
-                $qty = (float)($itemQuantities[$i] ?? 1);
-                $price = (float)str_replace(',', '', $itemUnitPrices[$i] ?? '0');
-                // Use pre-calculated total from client (includes nightly multiplication for hotel items)
-                $total = isset($itemTotals[$i]) ? (float)str_replace(',', '', $itemTotals[$i]) : ($qty * $price);
-                $subtotal += $total;
-                $items[] = [
-                    'description' => $desc,
-                    'quantity' => $qty,
-                    'unit_price' => $price,
-                    'total_price' => $total,
-                    'sort_order' => $i,
-                ];
-            }
-        }
+        // Extract and calculate line items
+        $extracted = $this->extractItems($_POST, $nights);
+        $items = $extracted['items'];
+        $subtotal = $extracted['subtotal'];
 
-        // Calculate tax and final amount
-        $taxPercent = (float)($_POST['tax_percent'] ?? 0);
-        $taxAmount = $subtotal * ($taxPercent / 100);
-        $serviceFee = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
-        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
+        // Final calculations
+        $taxAmount   = $subtotal * ($taxPercent / 100);
         $finalAmount = $subtotal + $taxAmount + $serviceFee - $discountAmount;
-        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
+        $finalAmount = max($finalAmount, 0);
 
-        // Generate invoice number
         $invoiceNumber = $this->generateInvoiceNumber();
-
-        // Get default footer from settings if not provided
-        if (empty($footerText)) {
-            $footerText = $invoiceSettings['invoice_footer_text'] ?? '';
-        }
-        if (empty($paymentTerms)) {
-            $paymentTerms = $invoiceSettings['invoice_terms'] ?? '';
-        }
+        $invoiceSettings = $this->getSettings();
+        if (empty($footerText))    $footerText = $invoiceSettings['invoice_footer_text'] ?? '';
+        if (empty($paymentTerms))  $paymentTerms = $invoiceSettings['invoice_terms'] ?? '';
 
         try {
             $invoiceId = $db->insert('hotel_invoices', [
-                'deal_id' => $dealId,
-                'hotel_name' => $hotelName,
-                'guest_name' => $guestName,
-                'guest_phone' => $guestPhone,
-                'check_in_date' => $checkInDate,
-                'check_out_date' => $checkOutDate,
-                'nights' => $nights,
-                'persons_count' => 0,
-                'subtotal' => $subtotal,
-                'tax_percent' => $taxPercent,
-                'tax_amount' => $taxAmount,
-                'service_fee' => $serviceFee,
-                'discount_amount' => $discountAmount,
-                'total_amount' => $subtotal,
-                'final_amount' => $finalAmount,
-                'deposit_amount' => $depositAmount,
+                'deal_id'          => $dealId,
+                'hotel_name'       => $hotelName,
+                'guest_name'       => $guestName,
+                'guest_phone'      => $guestPhone,
+                'check_in_date'    => $checkInDate,
+                'check_out_date'   => $checkOutDate,
+                'nights'           => $nights,
+                'persons_count'    => 0,
+                'subtotal'         => $subtotal,
+                'tax_percent'      => $taxPercent,
+                'tax_amount'       => $taxAmount,
+                'service_fee'      => $serviceFee,
+                'discount_amount'  => $discountAmount,
+                'total_amount'     => $subtotal,
+                'final_amount'     => $finalAmount,
+                'deposit_amount'   => $depositAmount,
                 'transfer_included' => $transferIncluded,
-                'visa_included' => $visaIncluded,
+                'visa_included'    => $visaIncluded,
                 'insurance_included' => $insuranceIncluded,
-                'extra_services' => $extraServices,
-                'payment_terms' => $paymentTerms,
-                'valid_until' => $validUntil,
-                'notes' => $notes,
-                'footer_text' => $footerText,
-                'invoice_status' => $invoiceStatus,
-                'invoice_type' => $invoiceType,
-                'invoice_number' => $invoiceNumber,
-                'created_by' => Auth::id(),
+                'extra_services'   => $extraServices,
+                'payment_terms'    => $paymentTerms,
+                'valid_until'      => $validUntil,
+                'notes'            => $notes,
+                'footer_text'      => $footerText,
+                'invoice_status'   => $invoiceStatus,
+                'invoice_type'     => $invoiceType,
+                'invoice_number'   => $invoiceNumber,
+                'created_by'       => Auth::id(),
             ]);
 
-            // Insert line items
+            // Insert line items with category
             foreach ($items as $item) {
                 $db->insert('hotel_invoice_items', array_merge($item, ['invoice_id' => $invoiceId]));
             }
 
-            ActivityLog::log('create_hotel_invoice', 'hotel_invoice', $invoiceId, "فاکتور هتل {$hotelName} ({$invoiceNumber}) برای معامله {$dealId} ایجاد شد");
+            ActivityLog::log('create_hotel_invoice', 'hotel_invoice', $invoiceId,
+                "فاکتور هتل {$hotelName} ({$invoiceNumber}) برای معامله {$dealId} ایجاد شد");
 
             // Auto-create payment link
             $this->createPaymentLink($invoiceId, $dealId, $finalAmount, $depositAmount);
@@ -275,6 +296,7 @@ class HotelInvoiceController
             }
             Session::setFlash('success', 'فاکتور هتل با موفقیت ایجاد شد.');
             View::redirect('/hotel-invoice/view/' . $invoiceId);
+
         } catch (\Exception $e) {
             if ($isAjax) {
                 echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
@@ -285,9 +307,9 @@ class HotelInvoiceController
         }
     }
 
-    /**
-     * Show edit form for a hotel invoice
-     */
+    // ============================================================
+    // EDIT (show edit form)
+    // ============================================================
     public function edit(array $params): void
     {
         Auth::requireAuth();
@@ -331,9 +353,9 @@ class HotelInvoiceController
         ]);
     }
 
-    /**
-     * Update an existing hotel invoice
-     */
+    // ============================================================
+    // UPDATE
+    // ============================================================
     public function update(array $params): void
     {
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
@@ -348,26 +370,25 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice');
         }
 
-        $hotelName = trim($_POST['hotel_name'] ?? '');
-        $guestName = trim($_POST['guest_name'] ?? '');
-        $guestPhone = trim($_POST['guest_phone'] ?? '');
-        $checkInDate = $_POST['check_in_date'] ?? '';
+        $hotelName    = trim($_POST['hotel_name'] ?? '');
+        $guestName    = trim($_POST['guest_name'] ?? '');
+        $guestPhone   = trim($_POST['guest_phone'] ?? '');
+        $checkInDate  = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
-        $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
-        $visaIncluded = isset($_POST['visa_included']) ? 1 : 0;
-        $insuranceIncluded = isset($_POST['insurance_included']) ? 1 : 0;
         $extraServices = trim($_POST['extra_services'] ?? '');
+        $notes        = trim($_POST['notes'] ?? '');
         $paymentTerms = trim($_POST['payment_terms'] ?? '');
-        $validUntil = $_POST['valid_until'] ?? null;
-        $notes = trim($_POST['notes'] ?? '');
-        $footerText = trim($_POST['footer_text'] ?? '');
-        $invoiceType = $_POST['invoice_type'] ?? 'proforma';
-        $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
-
-        $itemDescriptions = $_POST['item_description'] ?? [];
-        $itemQuantities = $_POST['item_quantity'] ?? [];
-        $itemUnitPrices = $_POST['item_unit_price'] ?? [];
-        $itemTotals = $_POST['item_total'] ?? [];
+        $footerText   = trim($_POST['footer_text'] ?? '');
+        $validUntil   = $_POST['valid_until'] ?? null;
+        $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
+        $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
+        $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
+        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
+        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
+        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
+        $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
+        $visaIncluded     = isset($_POST['visa_included']) ? 1 : 0;
+        $insuranceIncluded= isset($_POST['insurance_included']) ? 1 : 0;
 
         if (empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
             $msg = 'لطفاً فیلدهای الزامی را پر کنید.';
@@ -376,10 +397,7 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/edit/' . $invoiceId);
         }
 
-        $checkIn = new \DateTime($checkInDate);
-        $checkOut = new \DateTime($checkOutDate);
-        $nights = $checkOut->diff($checkIn)->days;
-
+        $nights = $this->recalcNights($checkInDate, $checkOutDate);
         if ($nights <= 0) {
             $msg = 'تاریخ خروج باید بعد از تاریخ ورود باشد.';
             if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
@@ -387,75 +405,54 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/edit/' . $invoiceId);
         }
 
-        $subtotal = 0;
-        $items = [];
-        if (!empty($itemDescriptions) && is_array($itemDescriptions)) {
-            foreach ($itemDescriptions as $i => $desc) {
-                if (empty($desc)) continue;
-                $qty = (float)($itemQuantities[$i] ?? 1);
-                $price = (float)str_replace(',', '', $itemUnitPrices[$i] ?? '0');
-                // Use pre-calculated total from client (includes nightly multiplication for hotel items)
-                $total = isset($itemTotals[$i]) ? (float)str_replace(',', '', $itemTotals[$i]) : ($qty * $price);
-                $subtotal += $total;
-                $items[] = [
-                    'description' => $desc,
-                    'quantity' => $qty,
-                    'unit_price' => $price,
-                    'total_price' => $total,
-                    'sort_order' => $i,
-                ];
-            }
-        }
+        // Extract and calculate line items
+        $extracted = $this->extractItems($_POST, $nights);
+        $items = $extracted['items'];
+        $subtotal = $extracted['subtotal'];
 
-        $taxPercent = (float)($_POST['tax_percent'] ?? 0);
-        $taxAmount = $subtotal * ($taxPercent / 100);
-        $serviceFee = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
-        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
+        $taxAmount   = $subtotal * ($taxPercent / 100);
         $finalAmount = $subtotal + $taxAmount + $serviceFee - $discountAmount;
-        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
+        $finalAmount = max($finalAmount, 0);
 
-        if (empty($footerText)) {
-            $footerText = $this->getSettings()['invoice_footer_text'] ?? '';
-        }
-        if (empty($paymentTerms)) {
-            $paymentTerms = $this->getSettings()['invoice_terms'] ?? '';
-        }
+        if (empty($footerText))   $footerText = $this->getSettings()['invoice_footer_text'] ?? '';
+        if (empty($paymentTerms)) $paymentTerms = $this->getSettings()['invoice_terms'] ?? '';
 
         try {
             $db->update('hotel_invoices', [
-                'hotel_name' => $hotelName,
-                'guest_name' => $guestName,
-                'guest_phone' => $guestPhone,
-                'check_in_date' => $checkInDate,
-                'check_out_date' => $checkOutDate,
-                'nights' => $nights,
-                'subtotal' => $subtotal,
-                'tax_percent' => $taxPercent,
-                'tax_amount' => $taxAmount,
-                'service_fee' => $serviceFee,
-                'discount_amount' => $discountAmount,
-                'total_amount' => $subtotal,
-                'final_amount' => $finalAmount,
-                'deposit_amount' => $depositAmount,
+                'hotel_name'       => $hotelName,
+                'guest_name'       => $guestName,
+                'guest_phone'      => $guestPhone,
+                'check_in_date'    => $checkInDate,
+                'check_out_date'   => $checkOutDate,
+                'nights'           => $nights,
+                'subtotal'         => $subtotal,
+                'tax_percent'      => $taxPercent,
+                'tax_amount'       => $taxAmount,
+                'service_fee'      => $serviceFee,
+                'discount_amount'  => $discountAmount,
+                'total_amount'     => $subtotal,
+                'final_amount'     => $finalAmount,
+                'deposit_amount'   => $depositAmount,
                 'transfer_included' => $transferIncluded,
-                'visa_included' => $visaIncluded,
+                'visa_included'    => $visaIncluded,
                 'insurance_included' => $insuranceIncluded,
-                'extra_services' => $extraServices,
-                'payment_terms' => $paymentTerms,
-                'valid_until' => $validUntil,
-                'notes' => $notes,
-                'footer_text' => $footerText,
-                'invoice_status' => $invoiceStatus,
-                'invoice_type' => $invoiceType,
+                'extra_services'   => $extraServices,
+                'payment_terms'    => $paymentTerms,
+                'valid_until'      => $validUntil,
+                'notes'            => $notes,
+                'footer_text'      => $footerText,
+                'invoice_status'   => $invoiceStatus,
+                'invoice_type'     => $invoiceType,
             ], 'id = :id', [':id' => $invoiceId]);
 
-            // Delete old items and insert new ones
+            // Delete old items, insert new
             $db->delete('hotel_invoice_items', 'invoice_id = :id', [':id' => $invoiceId]);
             foreach ($items as $item) {
                 $db->insert('hotel_invoice_items', array_merge($item, ['invoice_id' => $invoiceId]));
             }
 
-            ActivityLog::log('update_hotel_invoice', 'hotel_invoice', $invoiceId, "فاکتور هتل {$hotelName} بروزرسانی شد");
+            ActivityLog::log('update_hotel_invoice', 'hotel_invoice', $invoiceId,
+                "فاکتور هتل {$hotelName} بروزرسانی شد");
 
             if ($isAjax) {
                 echo json_encode(['success' => true, 'message' => 'فاکتور بروزرسانی شد.', 'invoice_id' => $invoiceId]);
@@ -463,6 +460,7 @@ class HotelInvoiceController
             }
             Session::setFlash('success', 'فاکتور با موفقیت بروزرسانی شد.');
             View::redirect('/hotel-invoice/view/' . $invoiceId);
+
         } catch (\Exception $e) {
             if ($isAjax) {
                 echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
@@ -473,9 +471,248 @@ class HotelInvoiceController
         }
     }
 
-    /**
-     * Create payment link for invoice
-     */
+    // ============================================================
+    // VIEW
+    // ============================================================
+    public function view(array $params): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $invoiceId = (int)$params['id'];
+
+        $invoice = $db->fetch(
+            "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    u.full_name as creator_name
+             FROM hotel_invoices hi
+             JOIN deals d ON hi.deal_id = d.id
+             LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN users u ON hi.created_by = u.id
+             WHERE hi.id = :id",
+            [':id' => $invoiceId]
+        );
+
+        if (!$invoice) {
+            Session::setFlash('danger', 'فاکتور مورد نظر یافت نشد.');
+            View::redirect('/deals');
+        }
+
+        $items = $db->fetchAll(
+            "SELECT * FROM hotel_invoice_items WHERE invoice_id = :invoice_id ORDER BY sort_order ASC",
+            [':invoice_id' => $invoiceId]
+        );
+
+        $invoiceSettings = $this->getSettings();
+        $payments = $db->fetchAll(
+            "SELECT * FROM payments WHERE deal_id = :deal_id ORDER BY created_at DESC",
+            [':deal_id' => $invoice->deal_id]
+        );
+
+        View::render('hotel_invoice/view', [
+            'title' => 'فاکتور هتل: ' . $invoice->hotel_name,
+            'invoice' => $invoice,
+            'items' => $items,
+            'invoiceSettings' => $invoiceSettings,
+            'payments' => $payments,
+        ]);
+    }
+
+    // ============================================================
+    // PRINT
+    // ============================================================
+    public function print(array $params): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $invoiceId = (int)$params['id'];
+
+        $invoice = $db->fetch(
+            "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
+                    c.full_name as contact_name, c.phone as contact_phone,
+                    u.full_name as creator_name
+             FROM hotel_invoices hi
+             JOIN deals d ON hi.deal_id = d.id
+             LEFT JOIN contacts c ON d.contact_id = c.id
+             LEFT JOIN users u ON hi.created_by = u.id
+             WHERE hi.id = :id",
+            [':id' => $invoiceId]
+        );
+
+        if (!$invoice) {
+            Session::setFlash('danger', 'فاکتور مورد نظر یافت نشد.');
+            View::redirect('/deals');
+        }
+
+        $items = $db->fetchAll(
+            "SELECT * FROM hotel_invoice_items WHERE invoice_id = :invoice_id ORDER BY sort_order ASC",
+            [':invoice_id' => $invoiceId]
+        );
+
+        $invoiceSettings = $this->getSettings();
+        $config = $GLOBALS['app_config'];
+        $viewPath = __DIR__ . '/../views/hotel_invoice/print.php';
+        extract(['title' => 'چاپ فاکتور هتل', 'invoice' => $invoice, 'items' => $items, 'config' => $config, 'invoiceSettings' => $invoiceSettings]);
+        require $viewPath;
+        exit;
+    }
+
+    // ============================================================
+    // DELETE
+    // ============================================================
+    public function delete(array $params): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $invoiceId = (int)$params['id'];
+
+        $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE id = :id", [':id' => $invoiceId]);
+        if (!$invoice) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
+            Session::setFlash('danger', 'فاکتور یافت نشد.');
+            View::redirect('/deals');
+        }
+
+        try {
+            $db->delete('hotel_invoice_items', 'invoice_id = :id', [':id' => $invoiceId]);
+            $db->delete('hotel_invoices', 'id = :id', [':id' => $invoiceId]);
+            ActivityLog::log('delete_hotel_invoice', 'hotel_invoice', $invoiceId, "فاکتور هتل {$invoice->hotel_name} حذف شد");
+
+            if ($isAjax) {
+                echo json_encode(['success' => true, 'message' => 'فاکتور حذف شد.']);
+                exit;
+            }
+            Session::setFlash('success', 'فاکتور حذف شد.');
+            View::redirect('/hotel-invoice/create/' . $invoice->deal_id);
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]); exit; }
+            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
+            View::redirect('/hotel-invoice/create/' . $invoice->deal_id);
+        }
+    }
+
+    // ============================================================
+    // UPDATE STATUS
+    // ============================================================
+    public function updateStatus(array $params): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $invoiceId = (int)$params['id'];
+        $status = $_POST['status'] ?? '';
+
+        $validStatuses = ['pending', 'settled', 'prepaid'];
+        if (!in_array($status, $validStatuses)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'وضعیت نامعتبر.']); exit; }
+            Session::setFlash('danger', 'وضعیت نامعتبر.');
+            View::redirect('/deals');
+        }
+
+        try {
+            $db->update('hotel_invoices', ['invoice_status' => $status], 'id = :id', [':id' => $invoiceId]);
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'وضعیت فاکتور بروزرسانی شد.']); exit; }
+            Session::setFlash('success', 'وضعیت فاکتور بروزرسانی شد.');
+            View::redirect('/hotel-invoice/view/' . $invoiceId);
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]); exit; }
+            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
+            View::redirect('/hotel-invoice/view/' . $invoiceId);
+        }
+    }
+
+    // ============================================================
+    // CALCULATE (AJAX endpoint)
+    // ============================================================
+    public function calculate(): void
+    {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    // ============================================================
+    // ITEMS CATALOG
+    // ============================================================
+    public function getItemsCatalog(): void
+    {
+        header('Content-Type: application/json');
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        try {
+            $items = $db->fetchAll("SELECT * FROM invoice_items_catalog WHERE is_active=1 ORDER BY category, name");
+            echo json_encode(['success' => true, 'items' => $items]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    public function itemsCatalog(): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $items = $db->fetchAll("SELECT * FROM invoice_items_catalog ORDER BY category, name");
+        View::render('hotel_invoice/items_catalog', [
+            'title' => 'مدیریت آیتم‌های فاکتور',
+            'items' => $items,
+        ]);
+    }
+
+    public function storeItem(): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $defaultPrice = (float)str_replace(',', '', $_POST['default_price'] ?? '0');
+        $category = trim($_POST['category'] ?? 'general');
+
+        if (empty($name)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'نام آیتم الزامی است.']); exit; }
+            Session::setFlash('danger', 'نام آیتم الزامی است.');
+            View::redirect('/hotel-invoice/items-catalog');
+        }
+
+        try {
+            $db->insert('invoice_items_catalog', [
+                'name' => $name,
+                'description' => $description,
+                'default_price' => $defaultPrice,
+                'category' => $category,
+            ]);
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم اضافه شد.']); exit; }
+            Session::setFlash('success', 'آیتم اضافه شد.');
+            View::redirect('/hotel-invoice/items-catalog');
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
+            Session::setFlash('danger', $e->getMessage());
+            View::redirect('/hotel-invoice/items-catalog');
+        }
+    }
+
+    public function deleteItem(array $params): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+        try {
+            $db->delete('invoice_items_catalog', 'id = :id', [':id' => $id]);
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم حذف شد.']); exit; }
+            Session::setFlash('success', 'آیتم حذف شد.');
+            View::redirect('/hotel-invoice/items-catalog');
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
+            Session::setFlash('danger', $e->getMessage());
+            View::redirect('/hotel-invoice/items-catalog');
+        }
+    }
+
+    // ============================================================
+    // PAYMENT LINK
+    // ============================================================
     private function createPaymentLink(int $invoiceId, int $dealId, float $finalAmount, float $depositAmount): void
     {
         try {
@@ -540,271 +777,9 @@ class HotelInvoiceController
         }
     }
 
-    /**
-     * View a specific hotel invoice
-     */
-    public function view(array $params): void
-    {
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $invoiceId = (int)$params['id'];
-
-        $invoice = $db->fetch(
-            "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
-                    c.full_name as contact_name, c.phone as contact_phone,
-                    u.full_name as creator_name
-             FROM hotel_invoices hi
-             JOIN deals d ON hi.deal_id = d.id
-             LEFT JOIN contacts c ON d.contact_id = c.id
-             LEFT JOIN users u ON hi.created_by = u.id
-             WHERE hi.id = :id",
-            [':id' => $invoiceId]
-        );
-
-        if (!$invoice) {
-            Session::setFlash('danger', 'فاکتور مورد نظر یافت نشد.');
-            View::redirect('/deals');
-        }
-
-        $items = $db->fetchAll(
-            "SELECT * FROM hotel_invoice_items WHERE invoice_id = :invoice_id ORDER BY sort_order ASC",
-            [':invoice_id' => $invoiceId]
-        );
-
-        $invoiceSettings = $this->getSettings();
-
-        $payments = $db->fetchAll(
-            "SELECT * FROM payments WHERE deal_id = :deal_id ORDER BY created_at DESC",
-            [':deal_id' => $invoice->deal_id]
-        );
-
-        View::render('hotel_invoice/view', [
-            'title' => 'فاکتور هتل: ' . $invoice->hotel_name,
-            'invoice' => $invoice,
-            'items' => $items,
-            'invoiceSettings' => $invoiceSettings,
-            'payments' => $payments,
-        ]);
-    }
-
-    /**
-     * Print a hotel invoice
-     */
-    public function print(array $params): void
-    {
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $invoiceId = (int)$params['id'];
-
-        $invoice = $db->fetch(
-            "SELECT hi.*, d.title as deal_title, d.amount as deal_amount,
-                    c.full_name as contact_name, c.phone as contact_phone,
-                    u.full_name as creator_name
-             FROM hotel_invoices hi
-             JOIN deals d ON hi.deal_id = d.id
-             LEFT JOIN contacts c ON d.contact_id = c.id
-             LEFT JOIN users u ON hi.created_by = u.id
-             WHERE hi.id = :id",
-            [':id' => $invoiceId]
-        );
-
-        if (!$invoice) {
-            Session::setFlash('danger', 'فاکتور مورد نظر یافت نشد.');
-            View::redirect('/deals');
-        }
-
-        $items = $db->fetchAll(
-            "SELECT * FROM hotel_invoice_items WHERE invoice_id = :invoice_id ORDER BY sort_order ASC",
-            [':invoice_id' => $invoiceId]
-        );
-
-        $invoiceSettings = $this->getSettings();
-
-        $config = $GLOBALS['app_config'];
-        $viewPath = __DIR__ . '/../views/hotel_invoice/print.php';
-        extract(['title' => 'چاپ فاکتور هتل', 'invoice' => $invoice, 'items' => $items, 'config' => $config, 'invoiceSettings' => $invoiceSettings]);
-        require $viewPath;
-        exit;
-    }
-
-    /**
-     * Delete a hotel invoice
-     */
-    public function delete(array $params): void
-    {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $invoiceId = (int)$params['id'];
-
-        $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE id = :id", [':id' => $invoiceId]);
-        if (!$invoice) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
-            Session::setFlash('danger', 'فاکتور یافت نشد.');
-            View::redirect('/deals');
-        }
-
-        try {
-            // Delete line items first
-            $db->delete('hotel_invoice_items', 'invoice_id = :id', [':id' => $invoiceId]);
-            $db->delete('hotel_invoices', 'id = :id', [':id' => $invoiceId]);
-            ActivityLog::log('delete_hotel_invoice', 'hotel_invoice', $invoiceId, "فاکتور هتل {$invoice->hotel_name} حذف شد");
-
-            if ($isAjax) {
-                echo json_encode(['success' => true, 'message' => 'فاکتور حذف شد.']);
-                exit;
-            }
-            Session::setFlash('success', 'فاکتور حذف شد.');
-            View::redirect('/hotel-invoice/create/' . $invoice->deal_id);
-        } catch (\Exception $e) {
-            if ($isAjax) {
-                echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
-                exit;
-            }
-            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
-            View::redirect('/hotel-invoice/create/' . $invoice->deal_id);
-        }
-    }
-
-    /**
-     * Update invoice status
-     */
-    public function updateStatus(array $params): void
-    {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $invoiceId = (int)$params['id'];
-        $status = $_POST['status'] ?? '';
-
-        $validStatuses = ['pending', 'settled', 'prepaid'];
-        if (!in_array($status, $validStatuses)) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'وضعیت نامعتبر.']); exit; }
-            Session::setFlash('danger', 'وضعیت نامعتبر.');
-            View::redirect('/deals');
-        }
-
-        try {
-            $db->update('hotel_invoices', ['invoice_status' => $status], 'id = :id', [':id' => $invoiceId]);
-            if ($isAjax) {
-                echo json_encode(['success' => true, 'message' => 'وضعیت فاکتور بروزرسانی شد.']);
-                exit;
-            }
-            Session::setFlash('success', 'وضعیت فاکتور بروزرسانی شد.');
-            View::redirect('/hotel-invoice/view/' . $invoiceId);
-        } catch (\Exception $e) {
-            if ($isAjax) {
-                echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
-                exit;
-            }
-            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
-            View::redirect('/hotel-invoice/view/' . $invoiceId);
-        }
-    }
-
-    /**
-     * API: Calculate invoice amounts (AJAX)
-     */
-    public function calculate(): void
-    {
-        header('Content-Type: application/json');
-        // This is now handled client-side with line items
-        echo json_encode(['success' => true]);
-        exit;
-    }
-
-    /**
-     * Get invoice items catalog (AJAX)
-     */
-    public function getItemsCatalog(): void
-    {
-        header('Content-Type: application/json');
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        try {
-            $items = $db->fetchAll("SELECT * FROM invoice_items_catalog WHERE is_active=1 ORDER BY category, name");
-            echo json_encode(['success' => true, 'items' => $items]);
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-        }
-        exit;
-    }
-
-    /**
-     * Manage invoice items catalog
-     */
-    public function itemsCatalog(): void
-    {
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $items = $db->fetchAll("SELECT * FROM invoice_items_catalog ORDER BY category, name");
-        View::render('hotel_invoice/items_catalog', [
-            'title' => 'مدیریت آیتم‌های فاکتور',
-            'items' => $items,
-        ]);
-    }
-
-    /**
-     * Store new item in catalog
-     */
-    public function storeItem(): void
-    {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $defaultPrice = (float)str_replace(',', '', $_POST['default_price'] ?? '0');
-        $category = trim($_POST['category'] ?? 'general');
-
-        if (empty($name)) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'نام آیتم الزامی است.']); exit; }
-            Session::setFlash('danger', 'نام آیتم الزامی است.');
-            View::redirect('/hotel-invoice/items-catalog');
-        }
-
-        try {
-            $db->insert('invoice_items_catalog', [
-                'name' => $name,
-                'description' => $description,
-                'default_price' => $defaultPrice,
-                'category' => $category,
-            ]);
-            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم اضافه شد.']); exit; }
-            Session::setFlash('success', 'آیتم اضافه شد.');
-            View::redirect('/hotel-invoice/items-catalog');
-        } catch (\Exception $e) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
-            Session::setFlash('danger', $e->getMessage());
-            View::redirect('/hotel-invoice/items-catalog');
-        }
-    }
-
-    /**
-     * Delete item from catalog
-     */
-    public function deleteItem(array $params): void
-    {
-        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        Auth::requireAuth();
-        $db = Database::getInstance();
-        $id = (int)$params['id'];
-        try {
-            $db->delete('invoice_items_catalog', 'id = :id', [':id' => $id]);
-            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم حذف شد.']); exit; }
-            Session::setFlash('success', 'آیتم حذف شد.');
-            View::redirect('/hotel-invoice/items-catalog');
-        } catch (\Exception $e) {
-            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
-            Session::setFlash('danger', $e->getMessage());
-            View::redirect('/hotel-invoice/items-catalog');
-        }
-    }
-
-    // ============================================
-    // Public Hotel Invoice (no authentication)
-    // ============================================
-
+    // ============================================================
+    // PUBLIC VIEW (no auth)
+    // ============================================================
     public function publicView(array $params): void
     {
         $token = $params['token'] ?? '';
@@ -947,7 +922,6 @@ class HotelInvoiceController
                 $merchant = $config['zibal']['merchant'];
 
                 $data = ['merchant' => $merchant, 'trackId' => $trackId];
-
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, 'https://gateway.zibal.ir/v1/verify');
                 curl_setopt($ch, CURLOPT_POST, 1);
@@ -980,8 +954,8 @@ class HotelInvoiceController
                     if ($invoiceId > 0) {
                         $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoiceId]);
                     } else {
-                        $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE deal_id = :deal_id AND payment_token IS NOT NULL ORDER BY id DESC LIMIT 1", [':deal_id' => $payment->deal_id]);
-                        if ($invoice) { $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoice->id]); }
+                        $inv = $db->fetch("SELECT * FROM hotel_invoices WHERE deal_id = :deal_id AND payment_token IS NOT NULL ORDER BY id DESC LIMIT 1", [':deal_id' => $payment->deal_id]);
+                        if ($inv) { $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $inv->id]); }
                     }
 
                     $success = true;

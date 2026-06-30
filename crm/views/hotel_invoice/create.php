@@ -54,11 +54,11 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
-                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalcHotelItems()">
+                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalc()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-minus me-1"></i>تاریخ خروج <span class="text-danger">*</span></label>
-                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalcHotelItems()">
+                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-file-earmark me-1"></i>نوع فاکتور</label>
@@ -116,15 +116,15 @@
                             <select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">
                                 <option value="">انتخاب آیتم...</option>
                             </select>
+                            <input type="hidden" name="item_category[]" class="item-category" value="">
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
-                            <input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()">
-                            <input type="hidden" name="item_total[]" value="0">
+                            <input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">
                         </div>
                         <div class="col-3">
                             <label class="form-label text-muted small">قیمت واحد (تومان)</label>
-                            <input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;">
+                            <input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-2">
                             <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>
@@ -143,15 +143,15 @@
                 <div class="row g-3">
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium">درصد مالیات</label>
-                        <input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="calculateInvoice()" dir="ltr" style="text-align:left;">
+                        <input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label>
-                        <input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;">
+                        <input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium">تخفیف (تومان)</label>
-                        <input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;">
+                        <input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label>
@@ -316,8 +316,7 @@ fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
     if (data.success && data.items) {
         catalogItems = data.items;
         populateItemSelects();
-        recalcHotelItems();
-        calculateInvoice();
+        recalc();
     }
 })
 .catch(function() {});
@@ -333,7 +332,6 @@ function populateItemSelects() {
             opt.textContent = item.name + (item.default_price > 0 ? ' (' + formatNumber(item.default_price) + ' ت)' : '');
             opt.setAttribute('data-price', item.default_price);
             opt.setAttribute('data-category', item.category);
-            opt.setAttribute('data-search', (item.name + ' ' + (item.description || '') + ' ' + item.category).toLowerCase());
             sel.appendChild(opt);
         });
         if (currentVal) {
@@ -345,32 +343,43 @@ function populateItemSelects() {
 
 function onItemSelect(sel) {
     var row = sel.closest('.item-row');
-    var priceInput = row.querySelector('input[name="item_unit_price[]"]');
+    var priceInput = row.querySelector('.item-price');
+    var catInput = row.querySelector('.item-category');
     var selectedOption = sel.options[sel.selectedIndex];
-    
+
     if (sel.value === '') {
         priceInput.value = '0';
-        var qtyInput = row.querySelector('input[name="item_quantity[]"]');
+        catInput.value = '';
+        var qtyInput = row.querySelector('.item-qty');
         if (qtyInput) qtyInput.value = '1';
     } else {
         priceInput.value = selectedOption.getAttribute('data-price') || '0';
-        // Hotel items: quantity = number of rooms (default 1), 
-        // total will be qty × price_per_night × nights in calculateInvoice()
+        catInput.value = selectedOption.getAttribute('data-category') || 'general';
     }
-    calculateInvoice();
+    recalc();
 }
 
 function addItem() {
     var container = document.getElementById('itemsContainer');
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 align-items-end';
-    row.innerHTML = '<div class="col-5"><select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select></div>' +
-        '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()"></div>' +
-        '<div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;"></div>' +
-        '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
+    row.innerHTML =
+        '<div class="col-5">' +
+            '<select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select>' +
+            '<input type="hidden" name="item_category[]" class="item-category" value="">' +
+        '</div>' +
+        '<div class="col-2">' +
+            '<input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">' +
+        '</div>' +
+        '<div class="col-3">' +
+            '<input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">' +
+        '</div>' +
+        '<div class="col-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>' +
+        '</div>';
     container.appendChild(row);
     populateItemSelects();
-    calculateInvoice();
+    recalc();
 }
 
 function removeItem(btn) {
@@ -378,46 +387,43 @@ function removeItem(btn) {
     var container = document.getElementById('itemsContainer');
     if (container.children.length > 1) {
         row.remove();
-        calculateInvoice();
+        recalc();
     }
 }
 
-function calculateInvoice() {
+function getNights() {
     var checkIn = document.getElementById('checkInDate').value;
     var checkOut = document.getElementById('checkOutDate').value;
-    var nights = 0;
-    if (checkIn && checkOut) {
-        var d1 = new Date(checkIn);
-        var d2 = new Date(checkOut);
-        nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-        if (isNaN(nights) || nights < 0) nights = 0;
-    }
+    if (!checkIn || !checkOut) return 0;
+    var d1 = new Date(checkIn);
+    var d2 = new Date(checkOut);
+    var n = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+    return (isNaN(n) || n < 0) ? 0 : n;
+}
 
+function recalc() {
+    var nights = getNights();
     var subtotal = 0;
     var itemCount = 0;
-    var selects = document.querySelectorAll('select[name="item_description[]"]');
-    var qtys = document.querySelectorAll('input[name="item_quantity[]"]');
-    var prices = document.querySelectorAll('input[name="item_unit_price[]"]');
-    var totals = document.querySelectorAll('input[name="item_total[]"]');
-    for (var i = 0; i < selects.length; i++) {
-        if (selects[i].value) {
-            var qty = parseFloat(qtys[i].value) || 0;
-            var price = parseFloat(prices[i].value) || 0;
-            var selectedOption = selects[i].options[selects[i].selectedIndex];
-            var category = selectedOption ? (selectedOption.getAttribute('data-category') || '') : '';
-            var lineTotal = 0;
-            // For hotel items: total = rooms (qty) × price per night × nights
-            if (category === 'hotel' && nights > 0) {
-                lineTotal = qty * price * nights;
-            } else {
-                lineTotal = qty * price;
-            }
-            subtotal += lineTotal;
-            // Update hidden total field for server-side processing
-            if (totals[i]) totals[i].value = lineTotal;
-            itemCount++;
+    var rows = document.querySelectorAll('.item-row');
+
+    rows.forEach(function(row) {
+        var sel = row.querySelector('.item-select');
+        if (!sel || !sel.value) return;
+
+        var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+        var price = parseFloat(row.querySelector('.item-price').value) || 0;
+        var cat = (row.querySelector('.item-category') || {}).value || '';
+
+        var lineTotal = 0;
+        if (cat === 'hotel' && nights > 0) {
+            lineTotal = qty * price * nights;
+        } else {
+            lineTotal = qty * price;
         }
-    }
+        subtotal += lineTotal;
+        itemCount++;
+    });
 
     var taxPct = parseFloat(document.getElementById('taxPercent').value) || 0;
     var taxAmount = subtotal * (taxPct / 100);
@@ -469,15 +475,15 @@ function saveNewItem() {
     var desc = document.getElementById('newItemDesc').value.trim();
     var price = document.getElementById('newItemPrice').value;
     var category = document.getElementById('newItemCategory').value;
-    
+
     if (!name) { alert('نام آیتم الزامی است.'); return; }
-    
+
     var fd = new FormData();
     fd.append('name', name);
     fd.append('description', desc);
     fd.append('default_price', price);
     fd.append('category', category);
-    
+
     fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/store', {
         method: 'POST',
         headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -508,15 +514,8 @@ function saveNewItem() {
     .catch(function() { alert('خطای شبکه'); });
 }
 
-function recalcHotelItems() {
-    // Just recalculate - hotel items total = rooms (qty) × price per night × nights
-    // No need to override quantity field anymore
-    calculateInvoice();
-}
-
-document.addEventListener('DOMContentLoaded', function() { 
-    recalcHotelItems();
-    calculateInvoice();
+document.addEventListener('DOMContentLoaded', function() {
+    recalc();
     var invoiceType = document.getElementById('invoiceType');
     if (invoiceType) {
         invoiceType.addEventListener('change', function() {
@@ -524,13 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (calcInvoiceType) {
                 calcInvoiceType.textContent = this.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
             }
-        });
-    }
-    // Recalculate hotel items before form submission
-    var form = document.getElementById('invoiceForm');
-    if (form) {
-        form.addEventListener('submit', function() {
-            recalcHotelItems();
         });
     }
 });

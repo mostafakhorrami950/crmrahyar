@@ -42,19 +42,12 @@
             </div>
 
             <div class="row g-2 mb-4">
-                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">تاریخ ورود</small><strong class="small"><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
-                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">تاریخ خروج</small><strong class="small"><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
-                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">شب‌ها</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?></strong></div></div>
-                <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">خدمات</small><strong class="small"><?php
-                    $svcs = [];
-                    if ($invoice->transfer_included) $svcs[] = 'ترانسفر';
-                    if ($invoice->visa_included) $svcs[] = 'ویزا';
-                    if ($invoice->insurance_included) $svcs[] = 'بیمه';
-                    echo !empty($svcs) ? implode(' | ', $svcs) : '-';
-                ?></strong></div></div>
+                <div class="col-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">تاریخ ورود</small><strong class="small"><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
+                <div class="col-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">تاریخ خروج</small><strong class="small"><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
+                <div class="col-4"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">مدت اقامت</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?> شب</strong></div></div>
             </div>
 
-            <!-- Line Items -->
+            <!-- Line Items with Breakdown -->
             <?php if (!empty($items)): ?>
             <div class="mb-4">
                 <h6 class="fw-bold mb-2"><i class="bi bi-list-ol me-2" style="color:<?php echo $primaryColor; ?>;"></i>آیتم‌های فاکتور</h6>
@@ -62,26 +55,37 @@
                     <table class="table table-bordered table-sm mb-0">
                         <thead>
                             <tr>
-                                <th style="width:5%">#</th>
-                                <th style="width:45%">شرح</th>
-                                <th style="width:10%" class="text-center">تعداد</th>
-                                <th style="width:20%" class="text-center">قیمت واحد</th>
-                                <th style="width:20%" class="text-center">مبلغ کل</th>
+                                <th style="width:4%">#</th>
+                                <th style="width:36%">شرح</th>
+                                <th style="width:8%" class="text-center">تعداد</th>
+                                <th style="width:14%" class="text-center">قیمت واحد</th>
+                                <th style="width:8%" class="text-center">شب‌ها</th>
+                                <th style="width:15%" class="text-center">مبلغ کل</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($items as $i => $item): ?>
                             <tr>
                                 <td class="text-center"><?php echo $i + 1; ?></td>
-                                <td><?php echo htmlspecialchars($item->description); ?></td>
+                                <td>
+                                    <?php echo htmlspecialchars($item->description); ?>
+                                    <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
+                                    <br><small class="text-muted" style="font-size:10px;">(قیمت هر شب)</small>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
                                 <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
+                                <td class="text-center"><?php echo $invoice->nights; ?></td>
                                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
+                <small class="text-muted d-block mt-1">
+                    <i class="bi bi-info-circle me-1"></i>
+                    اقلام هتل: <?php echo $invoice->nights; ?> شب × قیمت هر شب = مبلغ کل
+                </small>
             </div>
             <?php endif; ?>
 

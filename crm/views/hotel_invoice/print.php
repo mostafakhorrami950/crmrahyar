@@ -79,7 +79,7 @@
                 <span class="inv-badge" style="background:<?php echo $pc; ?>15;color:<?php echo $pc; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?></span>
                 <?php endif; ?>
             </div>
-            <div style="color:#999;">صدور شده توسط: <strong style="color:#333;"><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></div>
+            <div style="color:#999;">صادر شده توسط: <strong style="color:#333;"><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></div>
         </div>
 
         <!-- Info Grid -->
@@ -98,30 +98,37 @@
         <div class="info-grid">
             <div class="info-item"><small>تاریخ ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div>
             <div class="info-item"><small>تاریخ خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div>
-            <div class="info-item"><small>تعداد شب‌ها</small><strong style="color:<?php echo $pc; ?>;"><?php echo $invoice->nights; ?></strong></div>
+            <div class="info-item"><small>مدت اقامت</small><strong style="color:<?php echo $pc; ?>;"><?php echo $invoice->nights; ?> شب</strong></div>
             <?php if ($invoice->valid_until): ?>
             <div class="info-item"><small>تاریخ اعتبار</small><strong><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></strong></div>
             <?php endif; ?>
         </div>
 
-        <!-- Items Table -->
+        <!-- Items Table with Nights Column -->
         <table class="item-tbl">
             <thead>
                 <tr>
                     <th style="width:4%">#</th>
-                    <th style="width:46%">شرح آیتم</th>
-                    <th style="width:10%" class="text-center">تعداد</th>
-                    <th style="width:20%" class="text-center">قیمت واحد</th>
-                    <th style="width:20%" class="text-center">مبلغ کل</th>
+                    <th style="width:38%">شرح آیتم</th>
+                    <th style="width:8%" class="text-center">تعداد</th>
+                    <th style="width:14%" class="text-center">قیمت واحد</th>
+                    <th style="width:8%" class="text-center">شب</th>
+                    <th style="width:14%" class="text-center">مبلغ کل</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($items as $i => $item): ?>
                 <tr>
                     <td class="text-center"><?php echo $i + 1; ?></td>
-                    <td><?php echo htmlspecialchars($item->description); ?></td>
+                    <td>
+                        <?php echo htmlspecialchars($item->description); ?>
+                        <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
+                        <br><small style="font-size:7pt;color:#999;">(قیمت هر شب)</small>
+                        <?php endif; ?>
+                    </td>
                     <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
                     <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
+                    <td class="text-center"><?php echo $invoice->nights; ?></td>
                     <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
                 </tr>
                 <?php endforeach; ?>
