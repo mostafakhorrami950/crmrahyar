@@ -443,5 +443,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('invoiceType').addEventListener('change', function() {
         document.getElementById('calcInvoiceType').textContent = this.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
     });
+    // Recalculate hotel items before form submission
+    var form = document.getElementById('invoiceForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            recalcHotelItems();
+        });
+    }
 });
 </script>

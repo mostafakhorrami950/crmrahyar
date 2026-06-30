@@ -538,5 +538,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Recalculate hotel items before form submission
+    var form = document.getElementById('invoiceForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            recalcHotelItems();
+        });
+    }
 });
 </script>
