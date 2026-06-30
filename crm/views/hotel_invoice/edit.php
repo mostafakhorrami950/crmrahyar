@@ -54,11 +54,11 @@
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
-                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" value="<?php echo $invoice->check_in_date; ?>" required onchange="calculateInvoice()">
+                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" value="<?php echo $invoice->check_in_date; ?>" required onchange="recalcHotelItems()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-minus me-1"></i>تاریخ خروج <span class="text-danger">*</span></label>
-                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" value="<?php echo $invoice->check_out_date; ?>" required onchange="calculateInvoice()">
+                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" value="<?php echo $invoice->check_out_date; ?>" required onchange="recalcHotelItems()">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-file-earmark me-1"></i>نوع فاکتور</label>
@@ -414,7 +414,31 @@ function saveNewItem() {
     }).catch(function() { alert('خطای شبکه'); });
 }
 
+function recalcHotelItems() {
+    var checkIn = document.getElementById('checkInDate').value;
+    var checkOut = document.getElementById('checkOutDate').value;
+    if (!checkIn || !checkOut) return;
+    var d1 = new Date(checkIn);
+    var d2 = new Date(checkOut);
+    var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+    if (nights <= 0) return;
+    var selects = document.querySelectorAll('.item-select');
+    selects.forEach(function(sel) {
+        var selectedOption = sel.options[sel.selectedIndex];
+        if (selectedOption && sel.value) {
+            var category = selectedOption.getAttribute('data-category') || '';
+            if (category === 'hotel') {
+                var row = sel.closest('.item-row');
+                var qtyInput = row.querySelector('input[name="item_quantity[]"]');
+                if (qtyInput) qtyInput.value = nights;
+            }
+        }
+    });
+    calculateInvoice();
+}
+
 document.addEventListener('DOMContentLoaded', function() { 
+    recalcHotelItems();
     calculateInvoice();
     document.getElementById('invoiceType').addEventListener('change', function() {
         document.getElementById('calcInvoiceType').textContent = this.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
