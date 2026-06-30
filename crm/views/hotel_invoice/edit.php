@@ -16,13 +16,8 @@
 
 <div class="card mb-3"><div class="card-body">
     <div class="d-flex gap-3 p-3 bg-light rounded-3">
-        <div class="rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:48px;height:48px;background:<?php echo $primaryColor; ?>;">
-            <i class="bi bi-briefcase fs-4"></i>
-        </div>
-        <div>
-            <strong class="d-block"><?php echo htmlspecialchars($deal->title); ?></strong>
-            <small class="text-muted"><?php echo htmlspecialchars($deal->contact_name ?? ''); ?> | <?php echo htmlspecialchars($deal->contact_phone ?? ''); ?></small>
-        </div>
+        <div class="rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:48px;height:48px;background:<?php echo $primaryColor; ?>;"><i class="bi bi-briefcase fs-4"></i></div>
+        <div><strong class="d-block"><?php echo htmlspecialchars($deal->title); ?></strong><small class="text-muted"><?php echo htmlspecialchars($deal->contact_name ?? ''); ?> | <?php echo htmlspecialchars($deal->contact_phone ?? ''); ?></small></div>
     </div>
 </div></div>
 
@@ -65,15 +60,10 @@
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
                         <div class="col-5">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
-                            <div class="item-search-wrapper position-relative">
-                                <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." value="<?php echo htmlspecialchars($item->description); ?>" oninput="filterItems(this)" autocomplete="off">
-                                <select name="item_description[]" class="form-select form-select-sm item-select d-none" onchange="onItemSelect(this)">
-                                    <option value="">انتخاب آیتم...</option>
-                                </select>
-                                <div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>
-                            </div>
+                            <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." value="<?php echo htmlspecialchars($item->description); ?>" oninput="filterItems(this)" autocomplete="off">
+                            <input type="hidden" name="item_description[]" class="item-description-hidden" value="<?php echo htmlspecialchars($item->description); ?>">
                             <input type="hidden" name="item_category[]" class="item-category" value="<?php echo htmlspecialchars($item->category ?? 'general'); ?>">
-                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" value="<?php echo htmlspecialchars($item->description); ?>" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">
+                            <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
@@ -92,13 +82,10 @@
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
                         <div class="col-5">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
-                            <div class="item-search-wrapper position-relative">
-                                <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off">
-                                <select name="item_description[]" class="form-select form-select-sm item-select d-none" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select>
-                                <div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>
-                            </div>
+                            <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">
+                            <input type="hidden" name="item_description[]" class="item-description-hidden" value="">
                             <input type="hidden" name="item_category[]" class="item-category" value="">
-                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">
+                            <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2"><label class="form-label text-muted small">تعداد</label><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div>
                         <div class="col-3"><label class="form-label text-muted small">قیمت واحد (تومان)</label><input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
@@ -167,83 +154,78 @@ var catalogItems = [];
 fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
 .then(function(r) { return r.json(); })
 .then(function(data) {
-    if (data.success && data.items) { catalogItems = data.items; initDropdowns(); recalc(); }
-}).catch(function() {});
+    if (data.success && data.items) { catalogItems = data.items; }
+    recalc();
+})
+.catch(function() { console.log('Failed to load catalog'); });
 
-function initDropdowns() {
-    document.querySelectorAll('.item-search-wrapper').forEach(function(w) {
-        var inp = w.querySelector('.item-search-input');
-        if (inp) filterItems({target: inp});
-    });
-}
-
-function filterItems(e) {
-    var input = e.target;
-    var wrapper = input.closest('.item-search-wrapper');
-    var dd = wrapper.querySelector('.item-dropdown');
-    var q = input.value.trim().toLowerCase();
+function filterItems(input) {
+    var row = input.closest('.item-row');
+    var dd = row.querySelector('.item-dropdown');
+    var hidden = row.querySelector('.item-description-hidden');
+    var catInput = row.querySelector('.item-category');
+    var priceInput = row.querySelector('.item-price');
+    var q = input.value.trim();
 
     if (q.length === 0) {
-        var html = '', cats = {};
-        catalogItems.forEach(function(it) { var c = it.category||'general'; if (!cats[c]) cats[c]=[]; cats[c].push(it); });
-        var cl = {'hotel':'🏨 هتل','transfer':'🚗 ترانسفر','visa':'🛂 ویزا','insurance':'🛡 بیمه','flight':'✈ بلیط','tour':'🗺 گشت','guide':'🧑 راهنما','meal':'🍽 غذا','general':'📦 عمومی','other':'📌 سایر'};
-        Object.keys(cats).forEach(function(c) {
-            html += '<div class="dropdown-item disabled small text-muted border-bottom" style="font-size:10px;background:#f8f9fa;cursor:default;">'+(cl[c]||c)+'</div>';
-            cats[c].forEach(function(it) { html += '<a class="dropdown-item small" href="#" data-value="'+it.name+'" data-price="'+it.default_price+'" data-category="'+it.category+'" onclick="selectItem(this);return false;">'+it.name+' <small class="text-muted">('+formatNumber(it.default_price)+' ت)</small></a>'; });
-        });
-        dd.innerHTML = html; dd.style.display = 'block'; return;
+        hidden.value = '';
+        catInput.value = '';
+        dd.style.display = 'none';
+        recalc();
+        return;
     }
 
-    var fl = catalogItems.filter(function(it) { return it.name.toLowerCase().indexOf(q)!==-1 || (it.description&&it.description.toLowerCase().indexOf(q)!==-1); });
-    if (fl.length === 0) { dd.innerHTML = '<div class="dropdown-item small text-muted">آیتمی یافت نشد.</div>'; dd.style.display = 'block'; return; }
+    var ql = q.toLowerCase();
+    var filtered = catalogItems.filter(function(item) {
+        return item.name.toLowerCase().indexOf(ql) !== -1 || (item.description && item.description.toLowerCase().indexOf(ql) !== -1);
+    });
+
+    if (filtered.length === 0) {
+        hidden.value = q;
+        catInput.value = 'general';
+        dd.innerHTML = '<div style="padding:6px 10px;color:#999;font-size:12px;">آیتمی یافت نشد.</div>';
+        dd.style.display = 'block';
+        recalc();
+        return;
+    }
 
     var html = '';
-    fl.forEach(function(it) { html += '<a class="dropdown-item small" href="#" data-value="'+it.name+'" data-price="'+it.default_price+'" data-category="'+it.category+'" onclick="selectItem(this);return false;">'+it.name+' <small class="text-muted">('+formatNumber(it.default_price)+' ت) ['+(it.category||'عمومی')+']</small></a>'; });
-    dd.innerHTML = html; dd.style.display = 'block';
+    filtered.forEach(function(item) {
+        var price = parseFloat(item.default_price) || 0;
+        html += '<div class="item-option" data-value="' + item.name.replace(/"/g,'"') + '" data-price="' + price + '" data-category="' + (item.category||'general') + '" style="padding:6px 10px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'" onclick="selectItem(this)">' + item.name + ' <small style="color:#999;">(' + formatNumber(price) + ' ت)</small> <small style="color:#0d6efd;">[' + (item.category||'عمومی') + ']</small></div>';
+    });
+    dd.innerHTML = html;
+    dd.style.display = 'block';
 }
 
 function selectItem(el) {
-    var w = el.closest('.item-search-wrapper');
-    w.querySelector('.item-search-input').value = el.getAttribute('data-value') + ' (' + formatNumber(parseFloat(el.getAttribute('data-price'))) + ' تومان)';
-    var row = w.closest('.item-row');
-    row.querySelector('.item-select').value = el.getAttribute('data-value');
-    row.querySelector('.item-category').value = el.getAttribute('data-category')||'general';
-    row.querySelector('.item-price').value = el.getAttribute('data-price')||'0';
-    w.querySelector('.item-dropdown').style.display = 'none';
-    recalc();
-}
+    var row = el.closest('.item-row');
+    var input = row.querySelector('.item-search-input');
+    var hidden = row.querySelector('.item-description-hidden');
+    var catInput = row.querySelector('.item-category');
+    var priceInput = row.querySelector('.item-price');
+    var dd = row.querySelector('.item-dropdown');
 
-function onCustomDesc(inp) {
-    var row = inp.closest('.item-row');
-    row.querySelector('.item-select').value = '';
-    row.querySelector('.item-category').value = 'general';
-    var w = row.querySelector('.item-search-wrapper');
-    w.querySelector('.item-search-input').value = inp.value.trim();
-    w.querySelector('.item-dropdown').style.display = 'none';
+    input.value = el.getAttribute('data-value');
+    hidden.value = el.getAttribute('data-value');
+    catInput.value = el.getAttribute('data-category') || 'general';
+    priceInput.value = el.getAttribute('data-price') || '0';
+    dd.style.display = 'none';
     recalc();
 }
 
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.item-search-wrapper')) document.querySelectorAll('.item-dropdown').forEach(function(d) { d.style.display='none'; });
-});
-
-function onItemSelect(sel) {
-    var row = sel.closest('.item-row');
-    if (sel.value) {
-        var opt = sel.options[sel.selectedIndex];
-        row.querySelector('.item-price').value = opt.getAttribute('data-price')||'0';
-        row.querySelector('.item-category').value = opt.getAttribute('data-category')||'general';
+    if (!e.target.closest('.item-row')) {
+        document.querySelectorAll('.item-dropdown').forEach(function(d) { d.style.display = 'none'; });
     }
-    recalc();
-}
+});
 
 function addItem() {
     var c = document.getElementById('itemsContainer');
     var r = document.createElement('div');
     r.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
-    r.innerHTML = '<div class="col-5"><div class="item-search-wrapper position-relative"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off"><select name="item_description[]" class="form-select form-select-sm item-select d-none"><option value="">انتخاب آیتم...</option></select><div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div></div><input type="hidden" name="item_category[]" class="item-category" value=""><input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)"></div><div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
+    r.innerHTML = '<div class="col-5"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off"><input type="hidden" name="item_description[]" class="item-description-hidden" value=""><input type="hidden" name="item_category[]" class="item-category" value=""><div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div></div><div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     c.appendChild(r);
-    if (catalogItems.length > 0) filterItems({target: r.querySelector('.item-search-input')});
     recalc();
 }
 
@@ -260,8 +242,8 @@ function getNights() {
 function recalc() {
     var nights=getNights(), subtotal=0, itemCount=0;
     document.querySelectorAll('.item-row').forEach(function(row) {
-        var sel=row.querySelector('.item-select'), cust=row.querySelector('.item-custom-desc');
-        if(!sel||(!sel.value&&!cust.value.trim())) return;
+        var h=row.querySelector('.item-description-hidden');
+        if(!h||!h.value.trim()) return;
         var qty=parseFloat(row.querySelector('.item-qty').value)||0, price=parseFloat(row.querySelector('.item-price').value)||0, cat=(row.querySelector('.item-category')||{}).value||'';
         subtotal += (cat==='hotel'&&nights>0) ? qty*price*nights : qty*price; itemCount++;
     });

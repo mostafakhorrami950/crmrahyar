@@ -67,7 +67,6 @@ class HotelInvoiceController
     private function extractItems(array $post, int $nights): array
     {
         $descriptions = $post['item_description'] ?? [];
-        $customDescs  = $post['item_description_custom'] ?? [];
         $quantities   = $post['item_quantity'] ?? [];
         $unitPrices   = $post['item_unit_price'] ?? [];
         $categories   = $post['item_category'] ?? [];
@@ -77,11 +76,8 @@ class HotelInvoiceController
 
         if (!empty($descriptions) && is_array($descriptions)) {
             foreach ($descriptions as $i => $desc) {
-                // Use custom description if select is empty but custom field has value
-                if (empty(trim($desc))) {
-                    $desc = $customDescs[$i] ?? '';
-                }
-                if (empty(trim($desc))) continue;
+                $desc = trim($desc);
+                if (empty($desc)) continue;
 
                 $qty     = (float)str_replace(',', '', $quantities[$i] ?? '1');
                 $price   = (float)str_replace(',', '', $unitPrices[$i] ?? '0');
@@ -91,7 +87,7 @@ class HotelInvoiceController
                 $subtotal += $total;
 
                 $items[] = [
-                    'description' => trim($desc),
+                    'description' => $desc,
                     'category'    => $cat,
                     'quantity'    => $qty,
                     'unit_price'  => $price,

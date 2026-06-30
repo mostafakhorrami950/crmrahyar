@@ -10,7 +10,6 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?php echo $config['url']; ?>/hotel-invoice" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i>لیست فاکتورها</a>
-        <a href="<?php echo $config['url']; ?>/settings/invoice" class="btn btn-outline-info btn-sm" target="_blank"><i class="bi bi-gear me-1"></i>تنظیمات</a>
         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
     </div>
 </div>
@@ -34,50 +33,20 @@
     <div class="col-12 col-lg-8">
         <!-- Hotel & Guest Info -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom">
-                <h6 class="fw-bold mb-0"><i class="bi bi-building me-2" style="color:<?php echo $primaryColor; ?>;"></i>اطلاعات هتل و میهمان</h6>
-            </div>
+            <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-building me-2" style="color:<?php echo $primaryColor; ?>;"></i>اطلاعات هتل و میهمان</h6></div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-building me-1"></i>نام هتل <span class="text-danger">*</span></label>
-                        <input type="text" name="hotel_name" class="form-control" placeholder="نام هتل را وارد کنید" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>نام میهمان</label>
-                        <input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>تلفن میهمان</label>
-                        <input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
-                        <input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalc()">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-minus me-1"></i>تاریخ خروج <span class="text-danger">*</span></label>
-                        <input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">نوع فاکتور</label>
-                        <select name="invoice_type" class="form-select" id="invoiceType">
-                            <option value="proforma">پیش فاکتور</option>
-                            <option value="confirmed">فاکتور تایید شده</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">وضعیت فاکتور</label>
-                        <select name="invoice_status" class="form-select">
-                            <option value="pending">مانده دارد</option>
-                            <option value="settled">تسویه شده</option>
-                            <option value="prepaid">پیش پرداخت</option>
-                        </select>
-                    </div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">نام هتل <span class="text-danger">*</span></label><input type="text" name="hotel_name" class="form-control" placeholder="نام هتل را وارد کنید" required></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">نام میهمان</label><input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تلفن میهمان</label><input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ ورود <span class="text-danger">*</span></label><input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalc()"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ خروج <span class="text-danger">*</span></label><input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">نوع فاکتور</label><select name="invoice_type" class="form-select" id="invoiceType"><option value="proforma">پیش فاکتور</option><option value="confirmed">فاکتور تایید شده</option></select></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">وضعیت فاکتور</label><select name="invoice_status" class="form-select"><option value="pending">مانده دارد</option><option value="settled">تسویه شده</option><option value="prepaid">پیش پرداخت</option></select></div>
                     <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">خدمات</small></div>
-                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="transfer_included" id="transferIncluded" value="1"><label class="form-check-label small" for="transferIncluded">ترانسفر</label></div></div>
-                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="visa_included" id="visaIncluded" value="1"><label class="form-check-label small" for="visaIncluded">ویزا</label></div></div>
-                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="insurance_included" id="insuranceIncluded" value="1"><label class="form-check-label small" for="insuranceIncluded">بیمه</label></div></div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="transfer_included" id="ti" value="1"><label class="form-check-label small" for="ti">ترانسفر</label></div></div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="visa_included" id="vi" value="1"><label class="form-check-label small" for="vi">ویزا</label></div></div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="insurance_included" id="ii" value="1"><label class="form-check-label small" for="ii">بیمه</label></div></div>
                     <div class="col-12"><label class="form-label text-muted small fw-medium">خدمات اضافی</label><textarea name="extra_services" class="form-control" rows="2"></textarea></div>
                 </div>
             </div>
@@ -94,15 +63,10 @@
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
                         <div class="col-5">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
-                            <div class="item-search-wrapper position-relative">
-                                <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off">
-                                <select name="item_description[]" class="form-select form-select-sm item-select d-none" onchange="onItemSelect(this)">
-                                    <option value="">انتخاب آیتم...</option>
-                                </select>
-                                <div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>
-                            </div>
+                            <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">
+                            <input type="hidden" name="item_description[]" class="item-description-hidden" value="">
                             <input type="hidden" name="item_category[]" class="item-category" value="">
-                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">
+                            <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
@@ -122,16 +86,14 @@
 
         <!-- Financial Details -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom">
-                <h6 class="fw-bold mb-0"><i class="bi bi-cash me-2" style="color:<?php echo $primaryColor; ?>;"></i>جزییات مالی</h6>
-            </div>
+            <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-cash me-2" style="color:<?php echo $primaryColor; ?>;"></i>جزییات مالی</h6></div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-6"><label class="form-label text-muted small fw-medium">درصد مالیات</label><input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label><input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="number" name="deposit_amount" class="form-control" id="depositAmount" value="0" min="0" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ اعتبار فاکتور</label><input type="date" name="valid_until" class="form-control"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ اعتبار</label><input type="date" name="valid_until" class="form-control"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">واحد پول</label><select name="currency" class="form-select"><option value="IRR">تومان</option><option value="USD">دلار</option><option value="EUR">یورو</option><option value="AED">درهم</option><option value="TRY">لیر</option></select></div>
                 </div>
             </div>
@@ -165,7 +127,7 @@
                 <div class="bg-light rounded p-3">
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">جمع کل</small><strong id="calcSubtotal">0 تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">مالیات (<span id="calcTaxPct">0</span>%)</small><strong id="calcTaxAmount">0 تومان</strong></div>
-                    <div class="d-flex justify-content-between mb-1"><small class="text-muted">هزینه خدمات</small><strong id="calcServiceFee">0 تومان</strong></div>
+                    <div class="d-flex justify-content-between mb-1"><small class="text-muted">خدمات</small><strong id="calcServiceFee">0 تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف</small><strong class="text-danger" id="calcDiscount">0 تومان</strong></div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount">0 تومان</strong></div>
@@ -201,128 +163,91 @@
 <script>
 var catalogItems = [];
 
-// Load catalog
+// Load catalog items from API
 fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
 .then(function(r) { return r.json(); })
 .then(function(data) {
     if (data.success && data.items) {
         catalogItems = data.items;
-        initDropdowns();
-        recalc();
     }
-}).catch(function() {});
+    recalc();
+})
+.catch(function() { console.log('Failed to load catalog'); });
 
-function initDropdowns() {
-    document.querySelectorAll('.item-search-wrapper').forEach(function(wrapper) {
-        var input = wrapper.querySelector('.item-search-input');
-        if (input) filterItems({target: input});
-    });
-}
+function filterItems(input) {
+    var row = input.closest('.item-row');
+    var dd = row.querySelector('.item-dropdown');
+    var hidden = row.querySelector('.item-description-hidden');
+    var catInput = row.querySelector('.item-category');
+    var priceInput = row.querySelector('.item-price');
+    var q = input.value.trim();
 
-function filterItems(e) {
-    var input = e.target;
-    var wrapper = input.closest('.item-search-wrapper');
-    var dropdown = wrapper.querySelector('.item-dropdown');
-    var select = wrapper.querySelector('.item-select');
-    var q = input.value.trim().toLowerCase();
-
+    // If user clears the field, reset
     if (q.length === 0) {
-        // Show all items grouped by category
-        var html = '';
-        var categories = {};
-        catalogItems.forEach(function(item) {
-            var cat = item.category || 'general';
-            if (!categories[cat]) categories[cat] = [];
-            categories[cat].push(item);
-        });
-        var catLabels = {'hotel':'🏨 هتل','transfer':'🚗 ترانسفر','visa':'🛂 ویزا','insurance':'🛡 بیمه','flight':'✈ بلیط','tour':'🗺 گشت','guide':'🧑 راهنما','meal':'🍽 غذا','general':'📦 عمومی','other':'📌 سایر'};
-        Object.keys(categories).forEach(function(cat) {
-            html += '<div class="dropdown-item disabled small text-muted border-bottom" style="font-size:10px;background:#f8f9fa;cursor:default;">' + (catLabels[cat] || cat) + '</div>';
-            categories[cat].forEach(function(item) {
-                html += '<a class="dropdown-item small item-dropdown-option" href="#" data-value="' + item.name + '" data-price="' + item.default_price + '" data-category="' + item.category + '" onclick="selectItem(this);return false;">' + item.name + ' <small class="text-muted">(' + formatNumber(item.default_price) + ' ت)</small></a>';
-            });
-        });
-        dropdown.innerHTML = html;
-        dropdown.style.display = 'block';
+        hidden.value = '';
+        catInput.value = '';
+        dd.style.display = 'none';
+        recalc();
         return;
     }
 
-    // Filter items
+    // Filter catalog items
+    var ql = q.toLowerCase();
     var filtered = catalogItems.filter(function(item) {
-        return item.name.toLowerCase().indexOf(q) !== -1 || (item.description && item.description.toLowerCase().indexOf(q) !== -1);
+        return item.name.toLowerCase().indexOf(ql) !== -1 ||
+               (item.description && item.description.toLowerCase().indexOf(ql) !== -1);
     });
 
     if (filtered.length === 0) {
-        dropdown.innerHTML = '<div class="dropdown-item small text-muted">هیچ آیتمی یافت نشد. می‌توانید شرح دلخواه بنویسید.</div>';
-        dropdown.style.display = 'block';
+        // No match - user is typing custom description
+        hidden.value = q;
+        catInput.value = 'general';
+        dd.innerHTML = '<div style="padding:6px 10px;color:#999;font-size:12px;">آیتمی یافت نشد. از شرح تایپ شده استفاده می‌شود.</div>';
+        dd.style.display = 'block';
+        recalc();
         return;
     }
 
+    // Build dropdown
     var html = '';
     filtered.forEach(function(item) {
-        html += '<a class="dropdown-item small item-dropdown-option" href="#" data-value="' + item.name + '" data-price="' + item.default_price + '" data-category="' + item.category + '" onclick="selectItem(this);return false;">' + item.name + ' <small class="text-muted">(' + formatNumber(item.default_price) + ' ت)</small> <small class="text-primary">[' + (item.category || 'عمومی') + ']</small></a>';
+        var price = parseFloat(item.default_price) || 0;
+        html += '<div class="item-option" data-value="' + item.name.replace(/"/g,'"') + '" data-price="' + price + '" data-category="' + (item.category||'general') + '" style="padding:6px 10px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'" onclick="selectItem(this)">' +
+                item.name +
+                ' <small style="color:#999;">(' + formatNumber(price) + ' ت)</small>' +
+                ' <small style="color:#0d6efd;">[' + (item.category||'عمومی') + ']</small>' +
+                '</div>';
     });
-    dropdown.innerHTML = html;
-    dropdown.style.display = 'block';
+    dd.innerHTML = html;
+    dd.style.display = 'block';
 }
 
 function selectItem(el) {
-    var wrapper = el.closest('.item-search-wrapper');
-    var input = wrapper.querySelector('.item-search-input');
-    var select = wrapper.querySelector('.item-select');
-    var catInput = wrapper.closest('.item-row').querySelector('.item-category');
-    var priceInput = wrapper.closest('.item-row').querySelector('.item-price');
+    var row = el.closest('.item-row');
+    var input = row.querySelector('.item-search-input');
+    var hidden = row.querySelector('.item-description-hidden');
+    var catInput = row.querySelector('.item-category');
+    var priceInput = row.querySelector('.item-price');
+    var dd = row.querySelector('.item-dropdown');
 
     var name = el.getAttribute('data-value');
     var price = el.getAttribute('data-price');
     var category = el.getAttribute('data-category');
 
-    input.value = name + ' (' + formatNumber(parseFloat(price)) + ' تومان)';
-    select.value = name;
+    input.value = name;
+    hidden.value = name;
     catInput.value = category || 'general';
     priceInput.value = price || '0';
-    wrapper.querySelector('.item-dropdown').style.display = 'none';
-    recalc();
-}
-
-function onCustomDesc(input) {
-    var row = input.closest('.item-row');
-    var select = row.querySelector('.item-select');
-    var catInput = row.querySelector('.item-category');
-    var priceInput = row.querySelector('.item-price');
-    var wrapper = row.querySelector('.item-search-wrapper');
-    var searchInput = wrapper.querySelector('.item-search-input');
-
-    if (input.value.trim()) {
-        // Custom description: clear select, keep user's typed desc
-        select.value = '';
-        catInput.value = 'general';
-        searchInput.value = input.value.trim();
-        var dropdown = wrapper.querySelector('.item-dropdown');
-        dropdown.style.display = 'none';
-    }
+    dd.style.display = 'none';
     recalc();
 }
 
 // Close dropdowns on outside click
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.item-search-wrapper')) {
+    if (!e.target.closest('.item-row')) {
         document.querySelectorAll('.item-dropdown').forEach(function(d) { d.style.display = 'none'; });
     }
 });
-
-function onItemSelect(sel) {
-    // This is kept for compatibility, but the search-input approach is primary
-    var row = sel.closest('.item-row');
-    var priceInput = row.querySelector('.item-price');
-    var catInput = row.querySelector('.item-category');
-    if (sel.value) {
-        var opt = sel.options[sel.selectedIndex];
-        priceInput.value = opt.getAttribute('data-price') || '0';
-        catInput.value = opt.getAttribute('data-category') || 'general';
-    }
-    recalc();
-}
 
 function addItem() {
     var container = document.getElementById('itemsContainer');
@@ -330,13 +255,10 @@ function addItem() {
     row.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
     row.innerHTML =
         '<div class="col-5">' +
-            '<div class="item-search-wrapper position-relative">' +
-                '<input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off">' +
-                '<select name="item_description[]" class="form-select form-select-sm item-select d-none"><option value="">انتخاب آیتم...</option></select>' +
-                '<div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>' +
-            '</div>' +
+            '<input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">' +
+            '<input type="hidden" name="item_description[]" class="item-description-hidden" value="">' +
             '<input type="hidden" name="item_category[]" class="item-category" value="">' +
-            '<input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">' +
+            '<div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>' +
         '</div>' +
         '<div class="col-2">' +
             '<input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">' +
@@ -348,9 +270,6 @@ function addItem() {
             '<button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>' +
         '</div>';
     container.appendChild(row);
-    var wrapper = row.querySelector('.item-search-wrapper');
-    var input = wrapper.querySelector('.item-search-input');
-    if (catalogItems.length > 0) filterItems({target: input});
     recalc();
 }
 
@@ -373,19 +292,21 @@ function getNights() {
 function recalc() {
     var nights = getNights();
     var subtotal = 0, itemCount = 0;
+
     document.querySelectorAll('.item-row').forEach(function(row) {
-        var select = row.querySelector('.item-select');
-        var customDesc = row.querySelector('.item-custom-desc');
-        var hasSelection = select && select.value;
-        var hasCustom = customDesc && customDesc.value.trim();
-        if (!hasSelection && !hasCustom) return;
+        var hidden = row.querySelector('.item-description-hidden');
+        if (!hidden || !hidden.value.trim()) return;
 
         var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
         var price = parseFloat(row.querySelector('.item-price').value) || 0;
         var cat = (row.querySelector('.item-category') || {}).value || '';
+
         var lineTotal = 0;
-        if (cat === 'hotel' && nights > 0) lineTotal = qty * price * nights;
-        else lineTotal = qty * price;
+        if (cat === 'hotel' && nights > 0) {
+            lineTotal = qty * price * nights;
+        } else {
+            lineTotal = qty * price;
+        }
         subtotal += lineTotal;
         itemCount++;
     });
