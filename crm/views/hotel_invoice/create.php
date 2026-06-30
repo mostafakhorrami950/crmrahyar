@@ -98,10 +98,6 @@
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-list-check me-1"></i>خدمات اضافی</label>
                         <textarea name="extra_services" class="form-control" rows="2" placeholder="خدمات اضافی (اختیاری)"></textarea>
                     </div>
-                    <div class="col-4">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-people me-1"></i>تعداد نفرات</label>
-                        <input type="number" name="persons_count" class="form-control" id="personsCount" value="1" min="1" onchange="calculateInvoice()">
-                    </div>
                 </div>
             </div>
         </div>
@@ -333,6 +329,7 @@ function populateItemSelects() {
             opt.value = item.name;
             opt.textContent = item.name + (item.default_price > 0 ? ' (' + formatNumber(item.default_price) + ' ت)' : '');
             opt.setAttribute('data-price', item.default_price);
+            opt.setAttribute('data-category', item.category);
             opt.setAttribute('data-search', (item.name + ' ' + (item.description || '') + ' ' + item.category).toLowerCase());
             sel.appendChild(opt);
         });
@@ -352,16 +349,18 @@ function onItemSelect(sel) {
     } else {
         var price = selectedOption.getAttribute('data-price') || '0';
         priceInput.value = price;
-        // Auto-set quantity to persons × nights for hotel items
-        var checkIn = document.getElementById('checkInDate').value;
-        var checkOut = document.getElementById('checkOutDate').value;
-        var persons = parseInt(document.getElementById('personsCount').value) || 1;
-        if (checkIn && checkOut) {
-            var d1 = new Date(checkIn);
-            var d2 = new Date(checkOut);
-            var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-            if (nights > 0) {
-                qtyInput.value = persons * nights;
+        // Auto-set quantity to nights for hotel category items
+        var category = selectedOption.getAttribute('data-category') || '';
+        if (category === 'hotel') {
+            var checkIn = document.getElementById('checkInDate').value;
+            var checkOut = document.getElementById('checkOutDate').value;
+            if (checkIn && checkOut) {
+                var d1 = new Date(checkIn);
+                var d2 = new Date(checkOut);
+                var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+                if (nights > 0) {
+                    qtyInput.value = nights;
+                }
             }
         }
     }
