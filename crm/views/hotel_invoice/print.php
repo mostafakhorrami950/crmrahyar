@@ -54,7 +54,7 @@
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" style="max-height:40px;margin-bottom:4px;" alt="لوگو"><?php endif; ?>
-                    <h5 style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;margin:0 0 2px 0;"><?php echo htmlspecialchars($invoiceTitle ?? 'فاکتور رزرو هتل'); ?></h5>
+                    <h5 style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;margin:0 0 2px 0;"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></h5>
                     <span style="font-size:8pt;color:#666;">شماره: <strong><?php echo $invoice->invoice_number ?? '#'.$invoice->id; ?></strong></span>
                     &nbsp;|&nbsp;
                     <span style="font-size:8pt;color:#666;">تاریخ صدور: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></span>
@@ -182,4 +182,3 @@
         </div>
     </div>
 </body>
-</html>

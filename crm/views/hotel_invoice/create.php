@@ -10,12 +10,11 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?php echo $config['url']; ?>/hotel-invoice" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i>لیست فاکتورها</a>
-        <button type="button" class="btn btn-outline-success btn-sm" onclick="showAddItemModal()"><i class="bi bi-plus-circle me-1"></i>افزودن آیتم جدید</button>
+        <a href="<?php echo $config['url']; ?>/settings/invoice" class="btn btn-outline-info btn-sm" target="_blank"><i class="bi bi-gear me-1"></i>تنظیمات</a>
         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
     </div>
 </div>
 
-<!-- Deal Info -->
 <div class="card mb-3"><div class="card-body">
     <div class="d-flex gap-3 p-3 bg-light rounded-3">
         <div class="rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:48px;height:48px;background:<?php echo $primaryColor; ?>;">
@@ -28,7 +27,7 @@
     </div>
 </div></div>
 
-<form method="POST" action="<?php echo $config['url']; ?>/hotel-invoice/store" id="invoiceForm" data-ajax="true">
+<form method="POST" action="<?php echo $config['url']; ?>/hotel-invoice/store" id="invoiceForm">
 <input type="hidden" name="deal_id" value="<?php echo $deal->id; ?>">
 
 <div class="row g-3">
@@ -45,12 +44,12 @@
                         <input type="text" name="hotel_name" class="form-control" placeholder="نام هتل را وارد کنید" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>نام میهمان (خودکار از معامله)</label>
-                        <input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>" placeholder="نام میهمان">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>نام میهمان</label>
+                        <input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>">
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>تلفن میهمان (خودکار از معامله)</label>
-                        <input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" placeholder="تلفن میهمان" dir="ltr" style="text-align:left;">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>تلفن میهمان</label>
+                        <input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
@@ -61,43 +60,25 @@
                         <input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()">
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-file-earmark me-1"></i>نوع فاکتور</label>
+                        <label class="form-label text-muted small fw-medium">نوع فاکتور</label>
                         <select name="invoice_type" class="form-select" id="invoiceType">
                             <option value="proforma">پیش فاکتور</option>
                             <option value="confirmed">فاکتور تایید شده</option>
                         </select>
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-tag me-1"></i>وضعیت فاکتور</label>
-                        <select name="invoice_status" class="form-select" id="invoiceStatus">
+                        <label class="form-label text-muted small fw-medium">وضعیت فاکتور</label>
+                        <select name="invoice_status" class="form-select">
                             <option value="pending">مانده دارد</option>
                             <option value="settled">تسویه شده</option>
                             <option value="prepaid">پیش پرداخت</option>
                         </select>
                     </div>
                     <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">خدمات</small></div>
-                    <div class="col-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="transfer_included" id="transferIncluded" value="1">
-                            <label class="form-check-label small" for="transferIncluded"><i class="bi bi-car-front me-1"></i>ترانسفر</label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="visa_included" id="visaIncluded" value="1">
-                            <label class="form-check-label small" for="visaIncluded"><i class="bi bi-passport me-1"></i>ویزا</label>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="insurance_included" id="insuranceIncluded" value="1">
-                            <label class="form-check-label small" for="insuranceIncluded"><i class="bi bi-shield-check me-1"></i>بیمه</label>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-list-check me-1"></i>خدمات اضافی</label>
-                        <textarea name="extra_services" class="form-control" rows="2" placeholder="خدمات اضافی (اختیاری)"></textarea>
-                    </div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="transfer_included" id="transferIncluded" value="1"><label class="form-check-label small" for="transferIncluded">ترانسفر</label></div></div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="visa_included" id="visaIncluded" value="1"><label class="form-check-label small" for="visaIncluded">ویزا</label></div></div>
+                    <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="insurance_included" id="insuranceIncluded" value="1"><label class="form-check-label small" for="insuranceIncluded">بیمه</label></div></div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">خدمات اضافی</label><textarea name="extra_services" class="form-control" rows="2"></textarea></div>
                 </div>
             </div>
         </div>
@@ -110,13 +91,18 @@
             </div>
             <div class="card-body">
                 <div id="itemsContainer">
-                    <div class="item-row row g-2 mb-2 align-items-end">
+                    <div class="item-row row g-2 mb-2 pb-2 border-bottom">
                         <div class="col-5">
-                            <label class="form-label text-muted small">شرح</label>
-                            <select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">
-                                <option value="">انتخاب آیتم...</option>
-                            </select>
+                            <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
+                            <div class="item-search-wrapper position-relative">
+                                <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off">
+                                <select name="item_description[]" class="form-select form-select-sm item-select d-none" onchange="onItemSelect(this)">
+                                    <option value="">انتخاب آیتم...</option>
+                                </select>
+                                <div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>
+                            </div>
                             <input type="hidden" name="item_category[]" class="item-category" value="">
+                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
@@ -126,7 +112,7 @@
                             <label class="form-label text-muted small">قیمت واحد (تومان)</label>
                             <input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
-                        <div class="col-2">
+                        <div class="col-2 d-flex align-items-end">
                             <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
@@ -141,75 +127,36 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">درصد مالیات</label>
-                        <input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label>
-                        <input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">تخفیف (تومان)</label>
-                        <input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label>
-                        <input type="number" name="deposit_amount" class="form-control" id="depositAmount" value="0" min="0" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">تاریخ اعتبار فاکتور</label>
-                        <input type="date" name="valid_until" class="form-control">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium">واحد پول</label>
-                        <select name="currency" class="form-select">
-                            <option value="IRR">تومان (IRR)</option>
-                            <option value="USD">دلار (USD)</option>
-                            <option value="EUR">یورو (EUR)</option>
-                            <option value="AED">درهم (AED)</option>
-                            <option value="TRY">لیر (TRY)</option>
-                        </select>
-                    </div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">درصد مالیات</label><input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label><input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="number" name="deposit_amount" class="form-control" id="depositAmount" value="0" min="0" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ اعتبار فاکتور</label><input type="date" name="valid_until" class="form-control"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">واحد پول</label><select name="currency" class="form-select"><option value="IRR">تومان</option><option value="USD">دلار</option><option value="EUR">یورو</option><option value="AED">درهم</option><option value="TRY">لیر</option></select></div>
                 </div>
             </div>
         </div>
 
         <!-- Notes & Footer -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom">
-                <h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-2" style="color:<?php echo $primaryColor; ?>;"></i>توضیحات و شرایط</h6>
-            </div>
+            <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-2" style="color:<?php echo $primaryColor; ?>;"></i>توضیحات و شرایط</h6></div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label text-muted small fw-medium">توضیحات</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="توضیحات اختیاری"><?php echo htmlspecialchars($invSet['invoice_notes'] ?? ''); ?></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label text-muted small fw-medium">شرایط پرداخت</label>
-                        <textarea name="payment_terms" class="form-control" rows="2" placeholder="شرایط پرداخت"><?php echo htmlspecialchars($invSet['invoice_terms'] ?? ''); ?></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label text-muted small fw-medium">متن فوتر فاکتور</label>
-                        <textarea name="footer_text" class="form-control" rows="2" placeholder="متن فوتر فاکتور"><?php echo htmlspecialchars($invSet['invoice_footer_text'] ?? ''); ?></textarea>
-                    </div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">توضیحات</label><textarea name="notes" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_notes'] ?? ''); ?></textarea></div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">شرایط پرداخت</label><textarea name="payment_terms" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_terms'] ?? ''); ?></textarea></div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">متن فوتر فاکتور</label><textarea name="footer_text" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_footer_text'] ?? ''); ?></textarea></div>
                 </div>
             </div>
         </div>
 
-        <div class="ajax-error alert alert-danger d-none mt-2 small p-2"></div>
         <button type="submit" class="btn w-100 mt-3 fw-bold" style="background:<?php echo $primaryColor; ?>;color:#fff;">
             <i class="bi bi-check-circle me-1"></i>صدور فاکتور
         </button>
     </div>
 
     <div class="col-12 col-lg-4">
-        <!-- Summary -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-bottom">
-                <h6 class="fw-bold mb-0"><i class="bi bi-calculator me-2" style="color:<?php echo $primaryColor; ?>;"></i>خلاصه محاسبات</h6>
-            </div>
+            <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-calculator me-2" style="color:<?php echo $primaryColor; ?>;"></i>خلاصه محاسبات</h6></div>
             <div class="card-body">
                 <div class="row g-2 mb-3">
                     <div class="col-6"><div class="bg-light rounded p-3 text-center"><small class="text-muted d-block" style="font-size:11px;">تعداد شب‌ها</small><strong class="fs-5" style="color:<?php echo $primaryColor; ?>;" id="calcNights">0</strong></div></div>
@@ -222,7 +169,6 @@
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف</small><strong class="text-danger" id="calcDiscount">0 تومان</strong></div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount">0 تومان</strong></div>
-                    <div class="d-flex justify-content-between mt-1"><small class="text-muted">نوع فاکتور</small><strong id="calcInvoiceType">پیش فاکتور</strong></div>
                 </div>
             </div>
         </div>
@@ -236,26 +182,12 @@
                 <?php else: ?>
                 <div class="d-flex flex-column gap-2">
                     <?php foreach ($invoices as $inv): ?>
-                    <div class="bg-light rounded p-3">
+                    <div class="bg-light rounded p-2">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong class="small"><?php echo htmlspecialchars($inv->hotel_name); ?></strong>
-                                <br><small class="text-muted"><?php echo \Core\JDate::displayDate($inv->check_in_date); ?> تا <?php echo \Core\JDate::displayDate($inv->check_out_date); ?></small>
-                                <br><small class="text-muted"><?php echo $inv->nights; ?> شب</small>
-                            </div>
-                            <div class="text-end">
-                                <strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong>
-                                <br><span class="badge <?php echo $inv->invoice_status=='settled'?'bg-success':($inv->invoice_status=='prepaid'?'bg-info':'bg-warning text-dark'); ?>" style="font-size:10px;">
-                                    <?php echo $inv->invoice_status=='settled'?'تسویه شده':($inv->invoice_status=='prepaid'?'پیش پرداخت':'مانده دارد'); ?>
-                                </span>
-                            </div>
+                            <div><strong class="small"><?php echo htmlspecialchars($inv->hotel_name); ?></strong><br><small class="text-muted"><?php echo \Core\JDate::displayDate($inv->check_in_date); ?> تا <?php echo \Core\JDate::displayDate($inv->check_out_date); ?> | <?php echo $inv->nights; ?> شب</small></div>
+                            <div class="text-end"><strong class="text-success"><?php echo number_format($inv->final_amount); ?> ت</strong><br><span class="badge <?php echo $inv->invoice_status=='settled'?'bg-success':($inv->invoice_status=='prepaid'?'bg-info':'bg-warning text-dark'); ?>" style="font-size:9px;"><?php echo $inv->invoice_status=='settled'?'تسویه':($inv->invoice_status=='prepaid'?'پیش':'مانده'); ?></span></div>
                         </div>
-                        <div class="d-flex gap-1 mt-2">
-                            <a href="<?php echo $config['url']; ?>/hotel-invoice/view/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-primary" style="font-size:11px;padding:2px 8px;"><i class="bi bi-eye me-1"></i>مشاهده</a>
-                            <a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-warning" style="font-size:11px;padding:2px 8px;"><i class="bi bi-pencil me-1"></i>ویرایش</a>
-                            <a href="<?php echo $config['url']; ?>/hotel-invoice/print/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 8px;" target="_blank"><i class="bi bi-printer me-1"></i>چاپ</a>
-                            <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:11px;padding:2px 8px;" onclick="deleteInvoice(<?php echo $inv->id; ?>)"><i class="bi bi-trash me-1"></i>حذف</button>
-                        </div>
+                        <div class="d-flex gap-1 mt-1"><a href="<?php echo $config['url']; ?>/hotel-invoice/view/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-primary py-0" style="font-size:10px;">مشاهده</a><a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $inv->id; ?>" class="btn btn-sm btn-outline-warning py-0" style="font-size:10px;">ویرایش</a><button type="button" class="btn btn-sm btn-outline-danger py-0" style="font-size:10px;" onclick="deleteInvoice(<?php echo $inv->id; ?>)">حذف</button></div>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -266,95 +198,128 @@
 </div>
 </form>
 
-<!-- Add Item Modal -->
-<div class="modal fade" id="addItemModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>افزودن آیتم جدید به کاتالوگ</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body">
-        <div class="row g-3">
-            <div class="col-12">
-                <label class="form-label text-muted small">نام آیتم <span class="text-danger">*</span></label>
-                <input type="text" id="newItemName" class="form-control" placeholder="نام آیتم" required>
-            </div>
-            <div class="col-12">
-                <label class="form-label text-muted small">توضیحات</label>
-                <input type="text" id="newItemDesc" class="form-control" placeholder="توضیحات اختیاری">
-            </div>
-            <div class="col-6">
-                <label class="form-label text-muted small">قیمت پیش‌فرض (تومان)</label>
-                <input type="number" id="newItemPrice" class="form-control" value="0" min="0" dir="ltr" style="text-align:left;">
-            </div>
-            <div class="col-6">
-                <label class="form-label text-muted small">دسته‌بندی</label>
-                <select id="newItemCategory" class="form-select">
-                    <option value="hotel">هتل</option>
-                    <option value="transfer">ترانسفر</option>
-                    <option value="visa">ویزا</option>
-                    <option value="insurance">بیمه</option>
-                    <option value="flight">بلیط</option>
-                    <option value="tour">گشت</option>
-                    <option value="guide">راهنما</option>
-                    <option value="meal">غذا</option>
-                    <option value="general">عمومی</option>
-                    <option value="other">سایر</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="saveNewItem()"><i class="bi bi-check-circle me-1"></i>ذخیره و افزودن</button>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">لغو</button>
-    </div>
-</div></div></div>
-
 <script>
 var catalogItems = [];
 
-// Load items catalog
+// Load catalog
 fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
 .then(function(r) { return r.json(); })
 .then(function(data) {
     if (data.success && data.items) {
         catalogItems = data.items;
-        populateItemSelects();
+        initDropdowns();
         recalc();
     }
-})
-.catch(function() {});
+}).catch(function() {});
 
-function populateItemSelects() {
-    var selects = document.querySelectorAll('.item-select');
-    selects.forEach(function(sel) {
-        var currentVal = sel.value;
-        sel.innerHTML = '<option value="">انتخاب آیتم...</option>';
-        catalogItems.forEach(function(item) {
-            var opt = document.createElement('option');
-            opt.value = item.name;
-            opt.textContent = item.name + (item.default_price > 0 ? ' (' + formatNumber(item.default_price) + ' ت)' : '');
-            opt.setAttribute('data-price', item.default_price);
-            opt.setAttribute('data-category', item.category);
-            sel.appendChild(opt);
-        });
-        if (currentVal) {
-            sel.value = currentVal;
-            onItemSelect(sel);
-        }
+function initDropdowns() {
+    document.querySelectorAll('.item-search-wrapper').forEach(function(wrapper) {
+        var input = wrapper.querySelector('.item-search-input');
+        if (input) filterItems({target: input});
     });
 }
 
+function filterItems(e) {
+    var input = e.target;
+    var wrapper = input.closest('.item-search-wrapper');
+    var dropdown = wrapper.querySelector('.item-dropdown');
+    var select = wrapper.querySelector('.item-select');
+    var q = input.value.trim().toLowerCase();
+
+    if (q.length === 0) {
+        // Show all items grouped by category
+        var html = '';
+        var categories = {};
+        catalogItems.forEach(function(item) {
+            var cat = item.category || 'general';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(item);
+        });
+        var catLabels = {'hotel':'🏨 هتل','transfer':'🚗 ترانسفر','visa':'🛂 ویزا','insurance':'🛡 بیمه','flight':'✈ بلیط','tour':'🗺 گشت','guide':'🧑 راهنما','meal':'🍽 غذا','general':'📦 عمومی','other':'📌 سایر'};
+        Object.keys(categories).forEach(function(cat) {
+            html += '<div class="dropdown-item disabled small text-muted border-bottom" style="font-size:10px;background:#f8f9fa;cursor:default;">' + (catLabels[cat] || cat) + '</div>';
+            categories[cat].forEach(function(item) {
+                html += '<a class="dropdown-item small item-dropdown-option" href="#" data-value="' + item.name + '" data-price="' + item.default_price + '" data-category="' + item.category + '" onclick="selectItem(this);return false;">' + item.name + ' <small class="text-muted">(' + formatNumber(item.default_price) + ' ت)</small></a>';
+            });
+        });
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    // Filter items
+    var filtered = catalogItems.filter(function(item) {
+        return item.name.toLowerCase().indexOf(q) !== -1 || (item.description && item.description.toLowerCase().indexOf(q) !== -1);
+    });
+
+    if (filtered.length === 0) {
+        dropdown.innerHTML = '<div class="dropdown-item small text-muted">هیچ آیتمی یافت نشد. می‌توانید شرح دلخواه بنویسید.</div>';
+        dropdown.style.display = 'block';
+        return;
+    }
+
+    var html = '';
+    filtered.forEach(function(item) {
+        html += '<a class="dropdown-item small item-dropdown-option" href="#" data-value="' + item.name + '" data-price="' + item.default_price + '" data-category="' + item.category + '" onclick="selectItem(this);return false;">' + item.name + ' <small class="text-muted">(' + formatNumber(item.default_price) + ' ت)</small> <small class="text-primary">[' + (item.category || 'عمومی') + ']</small></a>';
+    });
+    dropdown.innerHTML = html;
+    dropdown.style.display = 'block';
+}
+
+function selectItem(el) {
+    var wrapper = el.closest('.item-search-wrapper');
+    var input = wrapper.querySelector('.item-search-input');
+    var select = wrapper.querySelector('.item-select');
+    var catInput = wrapper.closest('.item-row').querySelector('.item-category');
+    var priceInput = wrapper.closest('.item-row').querySelector('.item-price');
+
+    var name = el.getAttribute('data-value');
+    var price = el.getAttribute('data-price');
+    var category = el.getAttribute('data-category');
+
+    input.value = name + ' (' + formatNumber(parseFloat(price)) + ' تومان)';
+    select.value = name;
+    catInput.value = category || 'general';
+    priceInput.value = price || '0';
+    wrapper.querySelector('.item-dropdown').style.display = 'none';
+    recalc();
+}
+
+function onCustomDesc(input) {
+    var row = input.closest('.item-row');
+    var select = row.querySelector('.item-select');
+    var catInput = row.querySelector('.item-category');
+    var priceInput = row.querySelector('.item-price');
+    var wrapper = row.querySelector('.item-search-wrapper');
+    var searchInput = wrapper.querySelector('.item-search-input');
+
+    if (input.value.trim()) {
+        // Custom description: clear select, keep user's typed desc
+        select.value = '';
+        catInput.value = 'general';
+        searchInput.value = input.value.trim();
+        var dropdown = wrapper.querySelector('.item-dropdown');
+        dropdown.style.display = 'none';
+    }
+    recalc();
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.item-search-wrapper')) {
+        document.querySelectorAll('.item-dropdown').forEach(function(d) { d.style.display = 'none'; });
+    }
+});
+
 function onItemSelect(sel) {
+    // This is kept for compatibility, but the search-input approach is primary
     var row = sel.closest('.item-row');
     var priceInput = row.querySelector('.item-price');
     var catInput = row.querySelector('.item-category');
-    var selectedOption = sel.options[sel.selectedIndex];
-
-    if (sel.value === '') {
-        priceInput.value = '0';
-        catInput.value = '';
-        var qtyInput = row.querySelector('.item-qty');
-        if (qtyInput) qtyInput.value = '1';
-    } else {
-        priceInput.value = selectedOption.getAttribute('data-price') || '0';
-        catInput.value = selectedOption.getAttribute('data-category') || 'general';
+    if (sel.value) {
+        var opt = sel.options[sel.selectedIndex];
+        priceInput.value = opt.getAttribute('data-price') || '0';
+        catInput.value = opt.getAttribute('data-category') || 'general';
     }
     recalc();
 }
@@ -362,11 +327,16 @@ function onItemSelect(sel) {
 function addItem() {
     var container = document.getElementById('itemsContainer');
     var row = document.createElement('div');
-    row.className = 'item-row row g-2 mb-2 align-items-end';
+    row.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
     row.innerHTML =
         '<div class="col-5">' +
-            '<select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select>' +
+            '<div class="item-search-wrapper position-relative">' +
+                '<input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجوی آیتم ..." oninput="filterItems(this)" autocomplete="off">' +
+                '<select name="item_description[]" class="form-select form-select-sm item-select d-none"><option value="">انتخاب آیتم...</option></select>' +
+                '<div class="item-dropdown dropdown-menu w-100 py-0" style="max-height:200px;overflow-y:auto;display:none;position:absolute;z-index:1000;"></div>' +
+            '</div>' +
             '<input type="hidden" name="item_category[]" class="item-category" value="">' +
+            '<input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1 item-custom-desc" placeholder="یا شرح دلخواه را بنویسید..." oninput="onCustomDesc(this)">' +
         '</div>' +
         '<div class="col-2">' +
             '<input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">' +
@@ -374,156 +344,77 @@ function addItem() {
         '<div class="col-3">' +
             '<input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">' +
         '</div>' +
-        '<div class="col-2">' +
+        '<div class="col-2 d-flex align-items-end">' +
             '<button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>' +
         '</div>';
     container.appendChild(row);
-    populateItemSelects();
+    var wrapper = row.querySelector('.item-search-wrapper');
+    var input = wrapper.querySelector('.item-search-input');
+    if (catalogItems.length > 0) filterItems({target: input});
     recalc();
 }
 
 function removeItem(btn) {
-    var row = btn.closest('.item-row');
     var container = document.getElementById('itemsContainer');
     if (container.children.length > 1) {
-        row.remove();
+        btn.closest('.item-row').remove();
         recalc();
     }
 }
 
 function getNights() {
-    var checkIn = document.getElementById('checkInDate').value;
-    var checkOut = document.getElementById('checkOutDate').value;
-    if (!checkIn || !checkOut) return 0;
-    var d1 = new Date(checkIn);
-    var d2 = new Date(checkOut);
-    var n = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+    var ci = document.getElementById('checkInDate').value;
+    var co = document.getElementById('checkOutDate').value;
+    if (!ci || !co) return 0;
+    var n = Math.ceil((new Date(co) - new Date(ci)) / (1000 * 60 * 60 * 24));
     return (isNaN(n) || n < 0) ? 0 : n;
 }
 
 function recalc() {
     var nights = getNights();
-    var subtotal = 0;
-    var itemCount = 0;
-    var rows = document.querySelectorAll('.item-row');
-
-    rows.forEach(function(row) {
-        var sel = row.querySelector('.item-select');
-        if (!sel || !sel.value) return;
+    var subtotal = 0, itemCount = 0;
+    document.querySelectorAll('.item-row').forEach(function(row) {
+        var select = row.querySelector('.item-select');
+        var customDesc = row.querySelector('.item-custom-desc');
+        var hasSelection = select && select.value;
+        var hasCustom = customDesc && customDesc.value.trim();
+        if (!hasSelection && !hasCustom) return;
 
         var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
         var price = parseFloat(row.querySelector('.item-price').value) || 0;
         var cat = (row.querySelector('.item-category') || {}).value || '';
-
         var lineTotal = 0;
-        if (cat === 'hotel' && nights > 0) {
-            lineTotal = qty * price * nights;
-        } else {
-            lineTotal = qty * price;
-        }
+        if (cat === 'hotel' && nights > 0) lineTotal = qty * price * nights;
+        else lineTotal = qty * price;
         subtotal += lineTotal;
         itemCount++;
     });
 
-    var taxPct = parseFloat(document.getElementById('taxPercent').value) || 0;
-    var taxAmount = subtotal * (taxPct / 100);
-    var serviceFee = parseFloat(document.getElementById('serviceFee').value) || 0;
-    var discount = parseFloat(document.getElementById('discountAmount').value) || 0;
-    var finalAmount = subtotal + taxAmount + serviceFee - discount;
+    var tp = parseFloat(document.getElementById('taxPercent').value) || 0;
+    var ta = subtotal * (tp / 100);
+    var sf = parseFloat(document.getElementById('serviceFee').value) || 0;
+    var disc = parseFloat(document.getElementById('discountAmount').value) || 0;
+    var fa = subtotal + ta + sf - disc;
 
     document.getElementById('calcNights').textContent = nights;
     document.getElementById('calcItems').textContent = itemCount;
     document.getElementById('calcSubtotal').textContent = formatNumber(subtotal) + ' تومان';
-    document.getElementById('calcTaxPct').textContent = taxPct;
-    document.getElementById('calcTaxAmount').textContent = formatNumber(taxAmount) + ' تومان';
-    document.getElementById('calcServiceFee').textContent = formatNumber(serviceFee) + ' تومان';
-    document.getElementById('calcDiscount').textContent = formatNumber(discount) + ' تومان';
-    document.getElementById('calcFinalAmount').textContent = formatNumber(finalAmount) + ' تومان';
-
-    var invoiceType = document.getElementById('invoiceType');
-    var calcInvoiceType = document.getElementById('calcInvoiceType');
-    if (invoiceType && calcInvoiceType) {
-        calcInvoiceType.textContent = invoiceType.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
-    }
+    document.getElementById('calcTaxPct').textContent = tp;
+    document.getElementById('calcTaxAmount').textContent = formatNumber(ta) + ' تومان';
+    document.getElementById('calcServiceFee').textContent = formatNumber(sf) + ' تومان';
+    document.getElementById('calcDiscount').textContent = formatNumber(disc) + ' تومان';
+    document.getElementById('calcFinalAmount').textContent = formatNumber(fa) + ' تومان';
 }
 
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+function formatNumber(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
 function deleteInvoice(id) {
     if (!confirm('آیا از حذف فاکتور مطمئن هستید؟')) return;
-    fetch(CRM_BASE_URL + '/hotel-invoice/delete/' + id, {
-        method: 'POST',
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
+    fetch(CRM_BASE_URL + '/hotel-invoice/delete/' + id, {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r) { return r.json(); })
-    .then(function(data) { if (data.success) { location.reload(); } else { alert(data.message || 'خطا'); } })
+    .then(function(d) { if (d.success) location.reload(); else alert(d.message || 'خطا'); })
     .catch(function() { alert('خطای شبکه'); });
 }
 
-function showAddItemModal() {
-    document.getElementById('newItemName').value = '';
-    document.getElementById('newItemDesc').value = '';
-    document.getElementById('newItemPrice').value = '0';
-    document.getElementById('newItemCategory').value = 'general';
-    new bootstrap.Modal(document.getElementById('addItemModal')).show();
-}
-
-function saveNewItem() {
-    var name = document.getElementById('newItemName').value.trim();
-    var desc = document.getElementById('newItemDesc').value.trim();
-    var price = document.getElementById('newItemPrice').value;
-    var category = document.getElementById('newItemCategory').value;
-
-    if (!name) { alert('نام آیتم الزامی است.'); return; }
-
-    var fd = new FormData();
-    fd.append('name', name);
-    fd.append('description', desc);
-    fd.append('default_price', price);
-    fd.append('category', category);
-
-    fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/store', {
-        method: 'POST',
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        body: fd
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.success) {
-            fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
-            .then(function(r) { return r.json(); })
-            .then(function(catalogData) {
-                if (catalogData.success && catalogData.items) {
-                    catalogItems = catalogData.items;
-                    populateItemSelects();
-                    var selects = document.querySelectorAll('.item-select');
-                    if (selects.length > 0) {
-                        var lastSelect = selects[selects.length - 1];
-                        lastSelect.value = name;
-                        onItemSelect(lastSelect);
-                    }
-                }
-            });
-            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
-        } else {
-            alert(data.message || 'خطا');
-        }
-    })
-    .catch(function() { alert('خطای شبکه'); });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    recalc();
-    var invoiceType = document.getElementById('invoiceType');
-    if (invoiceType) {
-        invoiceType.addEventListener('change', function() {
-            var calcInvoiceType = document.getElementById('calcInvoiceType');
-            if (calcInvoiceType) {
-                calcInvoiceType.textContent = this.value === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
-            }
-        });
-    }
-});
+document.addEventListener('DOMContentLoaded', function() { recalc(); });
 </script>
