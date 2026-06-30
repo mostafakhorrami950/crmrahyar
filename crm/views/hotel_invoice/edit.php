@@ -303,10 +303,25 @@ function populateItemSelects() {
 function onItemSelect(sel) {
     var row = sel.closest('.item-row');
     var priceInput = row.querySelector('input[name="item_unit_price[]"]');
-    var customInput = row.querySelector('input[name="item_description_custom[]"]');
+    var qtyInput = row.querySelector('input[name="item_quantity[]"]');
     var selectedOption = sel.options[sel.selectedIndex];
-    if (sel.value === '') { priceInput.value = '0'; }
-    else { priceInput.value = selectedOption.getAttribute('data-price') || '0'; }
+    if (sel.value === '') {
+        priceInput.value = '0';
+        qtyInput.value = '1';
+    } else {
+        priceInput.value = selectedOption.getAttribute('data-price') || '0';
+        // Auto-set quantity to number of nights for hotel items
+        var checkIn = document.getElementById('checkInDate').value;
+        var checkOut = document.getElementById('checkOutDate').value;
+        if (checkIn && checkOut) {
+            var d1 = new Date(checkIn);
+            var d2 = new Date(checkOut);
+            var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+            if (nights > 0) {
+                qtyInput.value = nights;
+            }
+        }
+    }
     calculateInvoice();
 }
 
