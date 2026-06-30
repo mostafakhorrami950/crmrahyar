@@ -315,6 +315,8 @@ fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
     if (data.success && data.items) {
         catalogItems = data.items;
         populateItemSelects();
+        recalcHotelItems();
+        calculateInvoice();
     }
 })
 .catch(function() {});
@@ -333,7 +335,10 @@ function populateItemSelects() {
             opt.setAttribute('data-search', (item.name + ' ' + (item.description || '') + ' ' + item.category).toLowerCase());
             sel.appendChild(opt);
         });
-        if (currentVal) sel.value = currentVal;
+        if (currentVal) {
+            sel.value = currentVal;
+            onItemSelect(sel);
+        }
     });
 }
 
