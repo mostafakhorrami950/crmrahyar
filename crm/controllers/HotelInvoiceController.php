@@ -144,9 +144,6 @@ class HotelInvoiceController
         $hotelName = trim($_POST['hotel_name'] ?? '');
         $guestName = trim($_POST['guest_name'] ?? '');
         $guestPhone = trim($_POST['guest_phone'] ?? '');
-        $roomType = trim($_POST['room_type'] ?? '');
-        $roomNumber = trim($_POST['room_number'] ?? '');
-        $mealPlan = trim($_POST['meal_plan'] ?? '');
         $checkInDate = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
         $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
@@ -158,7 +155,7 @@ class HotelInvoiceController
         $notes = trim($_POST['notes'] ?? '');
         $footerText = trim($_POST['footer_text'] ?? '');
         $invoiceType = $_POST['invoice_type'] ?? 'proforma';
-        $invoiceStatus = $_POST['invoice_status'] ?? 'draft';
+        $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
 
         // Line items
         $itemDescriptions = $_POST['item_description'] ?? [];
@@ -229,9 +226,6 @@ class HotelInvoiceController
                 'hotel_name' => $hotelName,
                 'guest_name' => $guestName,
                 'guest_phone' => $guestPhone,
-                'room_type' => $roomType,
-                'room_number' => $roomNumber,
-                'meal_plan' => $mealPlan,
                 'check_in_date' => $checkInDate,
                 'check_out_date' => $checkOutDate,
                 'nights' => $nights,
@@ -354,9 +348,6 @@ class HotelInvoiceController
         $hotelName = trim($_POST['hotel_name'] ?? '');
         $guestName = trim($_POST['guest_name'] ?? '');
         $guestPhone = trim($_POST['guest_phone'] ?? '');
-        $roomType = trim($_POST['room_type'] ?? '');
-        $roomNumber = trim($_POST['room_number'] ?? '');
-        $mealPlan = trim($_POST['meal_plan'] ?? '');
         $checkInDate = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
         $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
@@ -368,7 +359,7 @@ class HotelInvoiceController
         $notes = trim($_POST['notes'] ?? '');
         $footerText = trim($_POST['footer_text'] ?? '');
         $invoiceType = $_POST['invoice_type'] ?? 'proforma';
-        $invoiceStatus = $_POST['invoice_status'] ?? 'draft';
+        $invoiceStatus = $_POST['invoice_status'] ?? 'pending';
 
         $itemDescriptions = $_POST['item_description'] ?? [];
         $itemQuantities = $_POST['item_quantity'] ?? [];
@@ -430,9 +421,6 @@ class HotelInvoiceController
                 'hotel_name' => $hotelName,
                 'guest_name' => $guestName,
                 'guest_phone' => $guestPhone,
-                'room_type' => $roomType,
-                'room_number' => $roomNumber,
-                'meal_plan' => $mealPlan,
                 'check_in_date' => $checkInDate,
                 'check_out_date' => $checkOutDate,
                 'nights' => $nights,
@@ -680,7 +668,7 @@ class HotelInvoiceController
         $invoiceId = (int)$params['id'];
         $status = $_POST['status'] ?? '';
 
-        $validStatuses = ['draft', 'final', 'paid', 'cancelled'];
+        $validStatuses = ['pending', 'settled', 'prepaid'];
         if (!in_array($status, $validStatuses)) {
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'وضعیت نامعتبر.']); exit; }
             Session::setFlash('danger', 'وضعیت نامعتبر.');
@@ -714,6 +702,94 @@ class HotelInvoiceController
         // This is now handled client-side with line items
         echo json_encode(['success' => true]);
         exit;
+    }
+
+    /**
+     * Get invoice items catalog (AJAX)
+     */
+    public function getItemsCatalog(): void
+    {
+        header('Content-Type: application/json');
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        try {
+            $items = $db->fetchAll("SELECT * FROM invoice_items_catalog WHERE is_active=1 ORDER BY category, name");
+            echo json_encode(['success' => true, 'items' => $items]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
+     * Manage invoice items catalog
+     */
+    public function itemsCatalog(): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $items = $db->fetchAll("SELECT * FROM invoice_items_catalog ORDER BY category, name");
+        View::render('hotel_invoice/items_catalog', [
+            'title' => 'مدیریت آیتم‌های فاکتور',
+            'items' => $items,
+        ]);
+    }
+
+    /**
+     * Store new item in catalog
+     */
+    public function storeItem(): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $defaultPrice = (float)str_replace(',', '', $_POST['default_price'] ?? '0');
+        $category = trim($_POST['category'] ?? 'general');
+
+        if (empty($name)) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => 'نام آیتم الزامی است.']); exit; }
+            Session::setFlash('danger', 'نام آیتم الزامی است.');
+            View::redirect('/hotel-invoice/items-catalog');
+        }
+
+        try {
+            $db->insert('invoice_items_catalog', [
+                'name' => $name,
+                'description' => $description,
+                'default_price' => $defaultPrice,
+                'category' => $category,
+            ]);
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم اضافه شد.']); exit; }
+            Session::setFlash('success', 'آیتم اضافه شد.');
+            View::redirect('/hotel-invoice/items-catalog');
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
+            Session::setFlash('danger', $e->getMessage());
+            View::redirect('/hotel-invoice/items-catalog');
+        }
+    }
+
+    /**
+     * Delete item from catalog
+     */
+    public function deleteItem(array $params): void
+    {
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+        try {
+            $db->delete('invoice_items_catalog', 'id = :id', [':id' => $id]);
+            if ($isAjax) { echo json_encode(['success' => true, 'message' => 'آیتم حذف شد.']); exit; }
+            Session::setFlash('success', 'آیتم حذف شد.');
+            View::redirect('/hotel-invoice/items-catalog');
+        } catch (\Exception $e) {
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $e->getMessage()]); exit; }
+            Session::setFlash('danger', $e->getMessage());
+            View::redirect('/hotel-invoice/items-catalog');
+        }
     }
 
     // ============================================

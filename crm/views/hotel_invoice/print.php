@@ -73,17 +73,15 @@
             <div class="col-3"><div class="info-box"><small class="text-muted d-block">میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></strong></div></div>
             <div class="col-3"><div class="info-box"><small class="text-muted d-block">تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></strong></div></div>
             <div class="col-3"><div class="info-box"><small class="text-muted d-block">وضعیت</small><strong><?php
-                $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
+                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
                 echo $statusLabels[$invoice->invoice_status] ?? $invoice->invoice_status;
             ?></strong><?php if (!empty($invoice->invoice_type)): ?><br><small style="color:<?php echo $invoice->invoice_type=='confirmed'?$primaryColor:$secondaryColor; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?></small><?php endif; ?></div></div>
         </div>
         <div class="row g-1 mb-2">
-            <div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
-            <div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
-            <div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">شب</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?></strong></div></div>
-            <?php if ($invoice->room_type): ?><div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">اتاق</small><strong><?php echo htmlspecialchars($invoice->room_type); ?></strong></div></div><?php endif; ?>
-            <?php if ($invoice->meal_plan): ?><div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">وعده</small><strong><?php echo htmlspecialchars($invoice->meal_plan); ?></strong></div></div><?php endif; ?>
-            <div class="col-2"><div class="info-box text-center"><small class="text-muted d-block">خدمات</small><strong><?php
+            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
+            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
+            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">شب</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?></strong></div></div>
+            <div class="col-3"><div class="info-box text-center"><small class="text-muted d-block">خدمات</small><strong><?php
                 $services = [];
                 if ($invoice->transfer_included) $services[] = 'ترانسفر';
                 if ($invoice->visa_included) $services[] = 'ویزا';

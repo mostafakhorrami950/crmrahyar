@@ -319,6 +319,10 @@ Router::group('/hotel-invoice', function() {
     Router::post('/delete/{id}', [HotelInvoiceController::class, 'delete'], 'deals.edit');
     Router::post('/status/{id}', [HotelInvoiceController::class, 'updateStatus'], 'deals.edit');
     Router::post('/calculate', [HotelInvoiceController::class, 'calculate'], 'deals.view');
+    Router::get('/items-catalog', [HotelInvoiceController::class, 'itemsCatalog'], 'settings.manage');
+    Router::post('/items-catalog/store', [HotelInvoiceController::class, 'storeItem'], 'settings.manage');
+    Router::post('/items-catalog/delete/{id}', [HotelInvoiceController::class, 'deleteItem'], 'settings.manage');
+    Router::get('/items-catalog/api', [HotelInvoiceController::class, 'getItemsCatalog'], 'deals.view');
 });
 
 // Public Hotel Invoice (no auth required)

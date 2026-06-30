@@ -10,6 +10,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?php echo $config['url']; ?>/hotel-invoice" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i>لیست فاکتورها</a>
+        <a href="<?php echo $config['url']; ?>/hotel-invoice/items-catalog" class="btn btn-outline-info btn-sm"><i class="bi bi-gear me-1"></i>مدیریت آیتم‌ها</a>
         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
     </div>
 </div>
@@ -44,32 +45,12 @@
                         <input type="text" name="hotel_name" class="form-control" placeholder="نام هتل را وارد کنید" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>نام میهمان</label>
-                        <input type="text" name="guest_name" class="form-control" placeholder="نام میهمان">
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-person me-1"></i>نام میهمان (خودکار از معامله)</label>
+                        <input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>" placeholder="نام میهمان">
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>تلفن میهمان</label>
-                        <input type="text" name="guest_phone" class="form-control" placeholder="تلفن میهمان" dir="ltr" style="text-align:left;">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-door-open me-1"></i>نوع اتاق</label>
-                        <input type="text" name="room_type" class="form-control" placeholder="مثلاً: سوئیت دو نفره">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-hash me-1"></i>شماره اتاق</label>
-                        <input type="text" name="room_number" class="form-control" placeholder="شماره اتاق">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label text-muted small fw-medium"><i class="bi bi-cup me-1"></i>نوع وعده غذایی</label>
-                        <select name="meal_plan" class="form-select">
-                            <option value="">انتخاب کنید</option>
-                            <option value="BB">BB - صبحانه</option>
-                            <option value="HB">HB - صبحانه و شام</option>
-                            <option value="FB">FB - سه وعده</option>
-                            <option value="AI">AI - همه‌چیز شامل</option>
-                            <option value="UAI">UAI - بدون محدودیت</option>
-                            <option value="RO">RO - بدون وعده</option>
-                        </select>
+                        <label class="form-label text-muted small fw-medium"><i class="bi bi-phone me-1"></i>تلفن میهمان (خودکار از معامله)</label>
+                        <input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" placeholder="تلفن میهمان" dir="ltr" style="text-align:left;">
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-calendar-plus me-1"></i>تاریخ ورود <span class="text-danger">*</span></label>
@@ -89,8 +70,9 @@
                     <div class="col-6">
                         <label class="form-label text-muted small fw-medium"><i class="bi bi-tag me-1"></i>وضعیت فاکتور</label>
                         <select name="invoice_status" class="form-select" id="invoiceStatus">
-                            <option value="draft">پیش‌نویس</option>
-                            <option value="final">نهایی</option>
+                            <option value="pending">مانده دارد</option>
+                            <option value="settled">تسویه شده</option>
+                            <option value="prepaid">پیش پرداخت</option>
                         </select>
                     </div>
                     <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">خدمات</small></div>
@@ -131,7 +113,10 @@
                     <div class="item-row row g-2 mb-2 align-items-end">
                         <div class="col-5">
                             <label class="form-label text-muted small">شرح</label>
-                            <input type="text" name="item_description[]" class="form-control form-control-sm" placeholder="شرح آیتم" required>
+                            <select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">
+                                <option value="">انتخاب آیتم...</option>
+                            </select>
+                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1" placeholder="یا شرح دلخواه" style="display:none;">
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
@@ -199,7 +184,7 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label text-muted small fw-medium">توضیحات</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="توضیحات اختیاری"></textarea>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="توضیحات اختیاری"><?php echo htmlspecialchars($invSet['invoice_notes'] ?? ''); ?></textarea>
                     </div>
                     <div class="col-12">
                         <label class="form-label text-muted small fw-medium">شرایط پرداخت</label>
@@ -260,8 +245,8 @@
                             </div>
                             <div class="text-end">
                                 <strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong>
-                                <br><span class="badge <?php echo $inv->invoice_status=='final'?'bg-success':($inv->invoice_status=='cancelled'?'bg-danger':'bg-warning text-dark'); ?>" style="font-size:10px;">
-                                    <?php echo $inv->invoice_status=='final'?'نهایی':($inv->invoice_status=='cancelled'?'لغو شده':'پیش‌نویس'); ?>
+                                <br><span class="badge <?php echo $inv->invoice_status=='settled'?'bg-success':($inv->invoice_status=='prepaid'?'bg-info':'bg-warning text-dark'); ?>" style="font-size:10px;">
+                                    <?php echo $inv->invoice_status=='settled'?'تسویه شده':($inv->invoice_status=='prepaid'?'پیش پرداخت':'مانده دارد'); ?>
                                 </span>
                             </div>
                         </div>
@@ -282,15 +267,65 @@
 </form>
 
 <script>
+var catalogItems = [];
+
+// Load items catalog
+fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
+.then(function(r) { return r.json(); })
+.then(function(data) {
+    if (data.success && data.items) {
+        catalogItems = data.items;
+        populateItemSelects();
+    }
+})
+.catch(function() {});
+
+function populateItemSelects() {
+    var selects = document.querySelectorAll('.item-select');
+    selects.forEach(function(sel) {
+        sel.innerHTML = '<option value="">انتخاب آیتم...</option>';
+        catalogItems.forEach(function(item) {
+            var opt = document.createElement('option');
+            opt.value = item.name;
+            opt.textContent = item.name + (item.default_price > 0 ? ' (' + formatNumber(item.default_price) + ' ت)' : '');
+            opt.setAttribute('data-price', item.default_price);
+            sel.appendChild(opt);
+        });
+    });
+}
+
+function onItemSelect(sel) {
+    var row = sel.closest('.item-row');
+    var priceInput = row.querySelector('input[name="item_unit_price[]"]');
+    var customInput = row.querySelector('input[name="item_description_custom[]"]');
+    var selectedOption = sel.options[sel.selectedIndex];
+    
+    if (sel.value === '') {
+        customInput.style.display = 'none';
+        priceInput.value = '0';
+    } else {
+        customInput.style.display = 'none';
+        var price = selectedOption.getAttribute('data-price') || '0';
+        priceInput.value = price;
+    }
+    calculateInvoice();
+}
+
 function addItem() {
     var container = document.getElementById('itemsContainer');
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 align-items-end';
-    row.innerHTML = '<div class="col-5"><input type="text" name="item_description[]" class="form-control form-control-sm" placeholder="شرح آیتم" required></div>' +
+    row.innerHTML = '<div class="col-5">' +
+        '<select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">' +
+        '<option value="">انتخاب آیتم...</option>' +
+        '</select>' +
+        '<input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1" placeholder="یا شرح دلخواه" style="display:none;">' +
+        '</div>' +
         '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="0" step="0.01" onchange="calculateInvoice()"></div>' +
         '<div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;"></div>' +
         '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     container.appendChild(row);
+    populateItemSelects();
     calculateInvoice();
 }
 
@@ -317,10 +352,16 @@ function calculateInvoice() {
     var subtotal = 0;
     var itemCount = 0;
     var descs = document.querySelectorAll('input[name="item_description[]"]');
+    var selects = document.querySelectorAll('select[name="item_description[]"]');
     var qtys = document.querySelectorAll('input[name="item_quantity[]"]');
     var prices = document.querySelectorAll('input[name="item_unit_price[]"]');
-    for (var i = 0; i < descs.length; i++) {
-        if (descs[i].value.trim()) {
+    for (var i = 0; i < selects.length; i++) {
+        var desc = selects[i].value;
+        if (!desc) {
+            var customInput = descs[i] ? descs[i].value : '';
+            if (customInput) desc = customInput;
+        }
+        if (desc) {
             var qty = parseFloat(qtys[i].value) || 0;
             var price = parseFloat(prices[i].value) || 0;
             subtotal += qty * price;
