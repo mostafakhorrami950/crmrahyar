@@ -123,6 +123,7 @@
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
                             <input type="number" name="item_quantity[]" class="form-control form-control-sm" value="<?php echo (int)$item->quantity; ?>" min="1" onchange="calculateInvoice()">
+                            <input type="hidden" name="item_total[]" value="<?php echo $item->total_price; ?>">
                         </div>
                         <div class="col-3">
                             <label class="form-label text-muted small">قیمت واحد (تومان)</label>
@@ -309,27 +310,16 @@ function populateItemSelects() {
 function onItemSelect(sel) {
     var row = sel.closest('.item-row');
     var priceInput = row.querySelector('input[name="item_unit_price[]"]');
-    var qtyInput = row.querySelector('input[name="item_quantity[]"]');
     var selectedOption = sel.options[sel.selectedIndex];
     if (sel.value === '') {
         priceInput.value = '0';
-        qtyInput.value = '1';
+        var qtyInput = row.querySelector('input[name="item_quantity[]"]');
+        if (qtyInput) qtyInput.value = '1';
     } else {
         priceInput.value = selectedOption.getAttribute('data-price') || '0';
-        // Auto-set quantity to nights for hotel category items
-        var category = selectedOption.getAttribute('data-category') || '';
-        if (category === 'hotel') {
-            var checkIn = document.getElementById('checkInDate').value;
-            var checkOut = document.getElementById('checkOutDate').value;
-            if (checkIn && checkOut) {
-                var d1 = new Date(checkIn);
-                var d2 = new Date(checkOut);
-                var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-                if (nights > 0) {
-                    qtyInput.value = nights;
-                }
-            }
-        }
+        // Hotel items: quantity = number of rooms (default 1), 
+        // total will be qty × price_per_night × nights in calculateInvoice()
+        // No longer override qty with nights count
     }
     calculateInvoice();
 }
@@ -339,7 +329,7 @@ function addItem() {
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 align-items-end';
     row.innerHTML = '<div class="col-5"><select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select><input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1" placeholder="شرح دلخواه"></div>' +
-        '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()"></div>' +
+        '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="1" onchange="calculateInvoice()"><input type="hidden" name="item_total[]" value="0"></div>' +
         '<div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;"></div>' +
         '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     container.appendChild(row);
@@ -366,9 +356,23 @@ function calculateInvoice() {
     var selects = document.querySelectorAll('select[name="item_description[]"]');
     var qtys = document.querySelectorAll('input[name="item_quantity[]"]');
     var prices = document.querySelectorAll('input[name="item_unit_price[]"]');
+    var totals = document.querySelectorAll('input[name="item_total[]"]');
     for (var i = 0; i < selects.length; i++) {
         if (selects[i].value) {
-            subtotal += (parseInt(qtys[i].value) || 0) * (parseFloat(prices[i].value) || 0);
+            var qty = (parseInt(qtys[i].value) || 0);
+            var price = (parseFloat(prices[i].value) || 0);
+            var selectedOption = selects[i].options[selects[i].selectedIndex];
+            var category = selectedOption ? (selectedOption.getAttribute('data-category') || '') : '';
+            var lineTotal = 0;
+            // For hotel items: total = rooms (qty) × price per night × nights
+            if (category === 'hotel' && nights > 0) {
+                lineTotal = qty * price * nights;
+            } else {
+                lineTotal = qty * price;
+            }
+            subtotal += lineTotal;
+            // Update hidden total field for server-side processing
+            if (totals[i]) totals[i].value = lineTotal;
             itemCount++;
         }
     }
@@ -420,25 +424,8 @@ function saveNewItem() {
 }
 
 function recalcHotelItems() {
-    var checkIn = document.getElementById('checkInDate').value;
-    var checkOut = document.getElementById('checkOutDate').value;
-    if (!checkIn || !checkOut) return;
-    var d1 = new Date(checkIn);
-    var d2 = new Date(checkOut);
-    var nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-    if (nights <= 0) return;
-    var selects = document.querySelectorAll('.item-select');
-    selects.forEach(function(sel) {
-        var selectedOption = sel.options[sel.selectedIndex];
-        if (selectedOption && sel.value) {
-            var category = selectedOption.getAttribute('data-category') || '';
-            if (category === 'hotel') {
-                var row = sel.closest('.item-row');
-                var qtyInput = row.querySelector('input[name="item_quantity[]"]');
-                if (qtyInput) qtyInput.value = nights;
-            }
-        }
-    });
+    // Just recalculate - hotel items total = qty (rooms) × price_per_night × nights
+    // No need to override quantity field anymore
     calculateInvoice();
 }
 

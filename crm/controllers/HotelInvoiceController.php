@@ -162,6 +162,7 @@ class HotelInvoiceController
         $itemDescriptions = $_POST['item_description'] ?? [];
         $itemQuantities = $_POST['item_quantity'] ?? [];
         $itemUnitPrices = $_POST['item_unit_price'] ?? [];
+        $itemTotals = $_POST['item_total'] ?? [];
 
         if (!$dealId || empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
             $msg = 'لطفاً فیلدهای الزامی (نام هتل، تاریخ ورود، تاریخ خروج) را پر کنید.';
@@ -182,7 +183,7 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/create/' . $dealId);
         }
 
-        // Calculate subtotal from line items
+        // Calculate subtotal from line items (use pre-calculated totals from client)
         $subtotal = 0;
         $items = [];
         if (!empty($itemDescriptions) && is_array($itemDescriptions)) {
@@ -190,7 +191,8 @@ class HotelInvoiceController
                 if (empty($desc)) continue;
                 $qty = (float)($itemQuantities[$i] ?? 1);
                 $price = (float)str_replace(',', '', $itemUnitPrices[$i] ?? '0');
-                $total = $qty * $price;
+                // Use pre-calculated total from client (includes nightly multiplication for hotel items)
+                $total = isset($itemTotals[$i]) ? (float)str_replace(',', '', $itemTotals[$i]) : ($qty * $price);
                 $subtotal += $total;
                 $items[] = [
                     'description' => $desc,
@@ -365,6 +367,7 @@ class HotelInvoiceController
         $itemDescriptions = $_POST['item_description'] ?? [];
         $itemQuantities = $_POST['item_quantity'] ?? [];
         $itemUnitPrices = $_POST['item_unit_price'] ?? [];
+        $itemTotals = $_POST['item_total'] ?? [];
 
         if (empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
             $msg = 'لطفاً فیلدهای الزامی را پر کنید.';
@@ -391,7 +394,8 @@ class HotelInvoiceController
                 if (empty($desc)) continue;
                 $qty = (float)($itemQuantities[$i] ?? 1);
                 $price = (float)str_replace(',', '', $itemUnitPrices[$i] ?? '0');
-                $total = $qty * $price;
+                // Use pre-calculated total from client (includes nightly multiplication for hotel items)
+                $total = isset($itemTotals[$i]) ? (float)str_replace(',', '', $itemTotals[$i]) : ($qty * $price);
                 $subtotal += $total;
                 $items[] = [
                     'description' => $desc,
