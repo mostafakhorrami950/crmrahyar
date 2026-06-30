@@ -10,7 +10,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?php echo $config['url']; ?>/hotel-invoice" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i>لیست فاکتورها</a>
-        <a href="<?php echo $config['url']; ?>/hotel-invoice/items-catalog" class="btn btn-outline-info btn-sm"><i class="bi bi-gear me-1"></i>مدیریت آیتم‌ها</a>
+        <button type="button" class="btn btn-outline-success btn-sm" onclick="showAddItemModal()"><i class="bi bi-plus-circle me-1"></i>افزودن آیتم جدید</button>
         <a href="<?php echo $config['url']; ?>/deals/view/<?php echo $deal->id; ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
     </div>
 </div>
@@ -116,7 +116,6 @@
                             <select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">
                                 <option value="">انتخاب آیتم...</option>
                             </select>
-                            <input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1" placeholder="یا شرح دلخواه" style="display:none;">
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">تعداد</label>
@@ -266,6 +265,46 @@
 </div>
 </form>
 
+<!-- Add Item Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>افزودن آیتم جدید به کاتالوگ</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label text-muted small">نام آیتم <span class="text-danger">*</span></label>
+                <input type="text" id="newItemName" class="form-control" placeholder="نام آیتم" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label text-muted small">توضیحات</label>
+                <input type="text" id="newItemDesc" class="form-control" placeholder="توضیحات اختیاری">
+            </div>
+            <div class="col-6">
+                <label class="form-label text-muted small">قیمت پیش‌فرض (تومان)</label>
+                <input type="number" id="newItemPrice" class="form-control" value="0" min="0" dir="ltr" style="text-align:left;">
+            </div>
+            <div class="col-6">
+                <label class="form-label text-muted small">دسته‌بندی</label>
+                <select id="newItemCategory" class="form-select">
+                    <option value="hotel">هتل</option>
+                    <option value="transfer">ترانسفر</option>
+                    <option value="visa">ویزا</option>
+                    <option value="insurance">بیمه</option>
+                    <option value="flight">بلیط</option>
+                    <option value="tour">گشت</option>
+                    <option value="guide">راهنما</option>
+                    <option value="meal">غذا</option>
+                    <option value="general">عمومی</option>
+                    <option value="other">سایر</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="saveNewItem()"><i class="bi bi-check-circle me-1"></i>ذخیره و افزودن</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">لغو</button>
+    </div>
+</div></div></div>
+
 <script>
 var catalogItems = [];
 
@@ -297,14 +336,11 @@ function populateItemSelects() {
 function onItemSelect(sel) {
     var row = sel.closest('.item-row');
     var priceInput = row.querySelector('input[name="item_unit_price[]"]');
-    var customInput = row.querySelector('input[name="item_description_custom[]"]');
     var selectedOption = sel.options[sel.selectedIndex];
     
     if (sel.value === '') {
-        customInput.style.display = 'none';
         priceInput.value = '0';
     } else {
-        customInput.style.display = 'none';
         var price = selectedOption.getAttribute('data-price') || '0';
         priceInput.value = price;
     }
@@ -315,12 +351,7 @@ function addItem() {
     var container = document.getElementById('itemsContainer');
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 align-items-end';
-    row.innerHTML = '<div class="col-5">' +
-        '<select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)">' +
-        '<option value="">انتخاب آیتم...</option>' +
-        '</select>' +
-        '<input type="text" name="item_description_custom[]" class="form-control form-control-sm mt-1" placeholder="یا شرح دلخواه" style="display:none;">' +
-        '</div>' +
+    row.innerHTML = '<div class="col-5"><select name="item_description[]" class="form-select form-select-sm item-select" onchange="onItemSelect(this)"><option value="">انتخاب آیتم...</option></select></div>' +
         '<div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm" value="1" min="0" step="0.01" onchange="calculateInvoice()"></div>' +
         '<div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm" value="0" min="0" onchange="calculateInvoice()" dir="ltr" style="text-align:left;"></div>' +
         '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
@@ -351,17 +382,11 @@ function calculateInvoice() {
 
     var subtotal = 0;
     var itemCount = 0;
-    var descs = document.querySelectorAll('input[name="item_description[]"]');
     var selects = document.querySelectorAll('select[name="item_description[]"]');
     var qtys = document.querySelectorAll('input[name="item_quantity[]"]');
     var prices = document.querySelectorAll('input[name="item_unit_price[]"]');
     for (var i = 0; i < selects.length; i++) {
-        var desc = selects[i].value;
-        if (!desc) {
-            var customInput = descs[i] ? descs[i].value : '';
-            if (customInput) desc = customInput;
-        }
-        if (desc) {
+        if (selects[i].value) {
             var qty = parseFloat(qtys[i].value) || 0;
             var price = parseFloat(prices[i].value) || 0;
             subtotal += qty * price;
@@ -403,6 +428,58 @@ function deleteInvoice(id) {
     })
     .then(function(r) { return r.json(); })
     .then(function(data) { if (data.success) { location.reload(); } else { alert(data.message || 'خطا'); } })
+    .catch(function() { alert('خطای شبکه'); });
+}
+
+function showAddItemModal() {
+    document.getElementById('newItemName').value = '';
+    document.getElementById('newItemDesc').value = '';
+    document.getElementById('newItemPrice').value = '0';
+    document.getElementById('newItemCategory').value = 'general';
+    new bootstrap.Modal(document.getElementById('addItemModal')).show();
+}
+
+function saveNewItem() {
+    var name = document.getElementById('newItemName').value.trim();
+    var desc = document.getElementById('newItemDesc').value.trim();
+    var price = document.getElementById('newItemPrice').value;
+    var category = document.getElementById('newItemCategory').value;
+    
+    if (!name) { alert('نام آیتم الزامی است.'); return; }
+    
+    var fd = new FormData();
+    fd.append('name', name);
+    fd.append('description', desc);
+    fd.append('default_price', price);
+    fd.append('category', category);
+    
+    fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/store', {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            fetch(CRM_BASE_URL + '/hotel-invoice/items-catalog/api')
+            .then(function(r) { return r.json(); })
+            .then(function(catalogData) {
+                if (catalogData.success && catalogData.items) {
+                    catalogItems = catalogData.items;
+                    populateItemSelects();
+                    var selects = document.querySelectorAll('.item-select');
+                    if (selects.length > 0) {
+                        var lastSelect = selects[selects.length - 1];
+                        lastSelect.value = name;
+                        onItemSelect(lastSelect);
+                    }
+                }
+            });
+            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
+        } else {
+            alert(data.message || 'خطا');
+        }
+    })
     .catch(function() { alert('خطای شبکه'); });
 }
 

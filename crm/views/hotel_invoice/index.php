@@ -2,6 +2,9 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <h5 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>لیست فاکتورهای هتل</h5>
+    <div class="d-flex gap-2">
+        <a href="<?php echo $config['url']; ?>/hotel-invoice/items-catalog" class="btn btn-outline-info btn-sm"><i class="bi bi-gear me-1"></i>مدیریت آیتم‌ها</a>
+    </div>
 </div>
 
 <!-- Search & Filter -->
@@ -14,10 +17,9 @@
             <div class="col-md-3">
                 <select name="status" class="form-select">
                     <option value="">همه وضعیت‌ها</option>
-                    <option value="draft" <?php echo $status==='draft'?'selected':''; ?>>پیش‌نویس</option>
-                    <option value="final" <?php echo $status==='final'?'selected':''; ?>>نهایی</option>
-                    <option value="paid" <?php echo $status==='paid'?'selected':''; ?>>پرداخت شده</option>
-                    <option value="cancelled" <?php echo $status==='cancelled'?'selected':''; ?>>لغو شده</option>
+                    <option value="pending" <?php echo $status==='pending'?'selected':''; ?>>مانده دارد</option>
+                    <option value="settled" <?php echo $status==='settled'?'selected':''; ?>>تسویه شده</option>
+                    <option value="prepaid" <?php echo $status==='prepaid'?'selected':''; ?>>پیش پرداخت</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -69,8 +71,8 @@
                         <td><strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong></td>
                         <td>
                             <?php
-                            $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
-                            $statusColors = ['draft'=>'bg-warning text-dark','final'=>'bg-success','paid'=>'bg-info','cancelled'=>'bg-danger'];
+                            $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
+                            $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info'];
                             $st = $inv->invoice_status;
                             ?>
                             <span class="badge <?php echo $statusColors[$st] ?? 'bg-secondary'; ?>"><?php echo $statusLabels[$st] ?? $st; ?></span>
