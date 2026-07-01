@@ -918,14 +918,59 @@ class HotelInvoiceController
         exit;
     }
 
-    public function paymentResult(): void
+    /**
+     * Ensure invoice_status ENUM accepts new values (pending, settled, prepaid)
+     * Runs once per request and caches the result
+     */
+    private function ensureStatusEnum(): void
     {
-        // Auto-fix: ensure ENUM accepts new status values
+        static $done = false;
+        if ($done) return;
+        $done = true;
         try {
             $db = Database::getInstance();
-            $db->query("ALTER TABLE `hotel_invoices` MODIFY COLUMN `invoice_status` ENUM('draft','final','paid','cancelled','pending','settled','prepaid') DEFAULT 'pending'");
-        } catch (\Exception $e) { /* Already correct or table issue */ }
+            $col = $db->fetch("SHOW COLUMNS FROM hotel_invoices WHERE Field = 'invoice_status'");
+            if ($col && strpos($col->Type ?? '', 'pending') === false) {
+                $db->query("ALTER TABLE `hotel_invoices` MODIFY COLUMN `invoice_status` ENUM('draft','final','paid','cancelled','pending','settled','prepaid') DEFAULT 'pending'");
+            }
+        } catch (\Exception $e) {
+            error_log('ensureStatusEnum failed: ' . $e->getMessage());
+        }
+    }
 
+    /**
+     * Update invoice status with fallback if ENUM doesn't accept the value
+     */
+    private function updateInvoiceStatus(int $invoiceId, string $status): bool
+    {
+        $this->ensureStatusEnum();
+        $db = Database::getInstance();
+        
+        // Try the desired status first
+        try {
+            $db->query("UPDATE hotel_invoices SET invoice_status = :status WHERE id = :id", [':status' => $status, ':id' => $invoiceId]);
+            // Verify it was actually saved
+            $row = $db->fetch("SELECT invoice_status FROM hotel_invoices WHERE id = :id", [':id' => $invoiceId]);
+            if ($row && $row->invoice_status === $status) return true;
+        } catch (\Exception $e) {
+            error_log("Status '$status' rejected for invoice $invoiceId: " . $e->getMessage());
+        }
+        
+        // Fallback: use 'paid' which exists in the old ENUM
+        if ($status !== 'paid') {
+            try {
+                $db->query("UPDATE hotel_invoices SET invoice_status = 'paid' WHERE id = :id", [':id' => $invoiceId]);
+                error_log("Invoice $invoiceId: fell back to 'paid' instead of '$status'");
+                return true;
+            } catch (\Exception $e) {
+                error_log("Fallback 'paid' also failed for invoice $invoiceId: " . $e->getMessage());
+            }
+        }
+        return false;
+    }
+
+    public function paymentResult(): void
+    {
         $trackId = $_GET['trackId'] ?? '';
         $success = false;
         $message = '';
@@ -984,19 +1029,9 @@ class HotelInvoiceController
                                 $newStatus = 'settled';
                             }
 
-                            try {
-                                $db->update('hotel_invoices', ['invoice_status' => $newStatus], 'id = :id', [':id' => $invoiceId]);
-                            } catch (\Exception $e) {
-                                // If ENUM doesn't accept the value, try with raw SQL
-                                error_log('Invoice status update failed, trying raw SQL: ' . $e->getMessage());
-                                try {
-                                    $db->query("UPDATE hotel_invoices SET invoice_status = :status WHERE id = :id", [':status' => $newStatus, ':id' => $invoiceId]);
-                                } catch (\Exception $e2) {
-                                    error_log('Invoice status raw SQL also failed: ' . $e2->getMessage());
-                                }
-                            }
+                            $this->updateInvoiceStatus($invoiceId, $newStatus);
 
-                            // Update deal as won
+                            // Update deal as won only for full payment
                             if ($newStatus === 'settled' && $payment->deal_id) {
                                 try {
                                     $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
