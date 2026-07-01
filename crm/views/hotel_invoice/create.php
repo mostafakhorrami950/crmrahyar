@@ -184,8 +184,7 @@ function filterItems(input) {
 
     // If user clears the field, reset
     if (q.length === 0) {
-        hidden.value = '';
-        catInput.value = '';
+        // Don't clear hidden field - keep existing value
         dd.style.display = 'none';
         recalc();
         return;

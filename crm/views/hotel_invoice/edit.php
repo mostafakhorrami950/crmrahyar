@@ -168,8 +168,7 @@ function filterItems(input) {
     var q = input.value.trim();
 
     if (q.length === 0) {
-        hidden.value = '';
-        catInput.value = '';
+        // Don't clear hidden field - keep existing value
         dd.style.display = 'none';
         recalc();
         return;
