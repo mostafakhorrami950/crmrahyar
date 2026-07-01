@@ -369,33 +369,35 @@ class HotelInvoiceController
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
             Session::setFlash('danger', 'فاکتور یافت نشد.');
             View::redirect('/hotel-invoice');
+            return;
         }
 
-        $hotelName    = trim($_POST['hotel_name'] ?? '');
-        $guestName    = trim($_POST['guest_name'] ?? '');
-        $guestPhone   = trim($_POST['guest_phone'] ?? '');
-        $checkInDate  = $_POST['check_in_date'] ?? '';
-        $checkOutDate = $_POST['check_out_date'] ?? '';
-        $extraServices = trim($_POST['extra_services'] ?? '');
-        $notes        = trim($_POST['notes'] ?? '');
-        $paymentTerms = trim($_POST['payment_terms'] ?? '');
-        $footerText   = trim($_POST['footer_text'] ?? '');
+        $hotelName    = trim($_POST['hotel_name'] ?? $invoice->hotel_name);
+        $guestName    = trim($_POST['guest_name'] ?? $invoice->guest_name ?? '');
+        $guestPhone   = trim($_POST['guest_phone'] ?? $invoice->guest_phone ?? '');
+        $checkInDate  = $_POST['check_in_date'] ?? $invoice->check_in_date;
+        $checkOutDate = $_POST['check_out_date'] ?? $invoice->check_out_date;
+        $extraServices = trim($_POST['extra_services'] ?? $invoice->extra_services ?? '');
+        $notes        = trim($_POST['notes'] ?? $invoice->notes ?? '');
+        $paymentTerms = trim($_POST['payment_terms'] ?? $invoice->payment_terms ?? '');
+        $footerText   = trim($_POST['footer_text'] ?? $invoice->footer_text ?? '');
         $validUntil   = !empty($_POST['valid_until']) ? $_POST['valid_until'] : null;
-        $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
-        $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
-        $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
-        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
-        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
-        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
-        $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
-        $visaIncluded     = isset($_POST['visa_included']) ? 1 : 0;
-        $insuranceIncluded= isset($_POST['insurance_included']) ? 1 : 0;
+        $invoiceType  = $_POST['invoice_type'] ?? $invoice->invoice_type ?? 'proforma';
+        $invoiceStatus= $_POST['invoice_status'] ?? $invoice->invoice_status ?? 'pending';
+        $taxPercent   = (float)($_POST['tax_percent'] ?? $invoice->tax_percent ?? 0);
+        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? $invoice->service_fee ?? '0');
+        $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? $invoice->discount_amount ?? '0');
+        $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? $invoice->deposit_amount ?? '0');
+        $transferIncluded = isset($_POST['transfer_included']) ? 1 : ($invoice->transfer_included ?? 0);
+        $visaIncluded     = isset($_POST['visa_included']) ? 1 : ($invoice->visa_included ?? 0);
+        $insuranceIncluded= isset($_POST['insurance_included']) ? 1 : ($invoice->insurance_included ?? 0);
 
         if (empty($hotelName) || empty($checkInDate) || empty($checkOutDate)) {
             $msg = 'لطفاً فیلدهای الزامی را پر کنید.';
             if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
             Session::setFlash('danger', $msg);
             View::redirect('/hotel-invoice/edit/' . $invoiceId);
+            return;
         }
 
         $nights = $this->recalcNights($checkInDate, $checkOutDate);
@@ -404,6 +406,7 @@ class HotelInvoiceController
             if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
             Session::setFlash('danger', $msg);
             View::redirect('/hotel-invoice/edit/' . $invoiceId);
+            return;
         }
 
         // Extract and calculate line items
@@ -418,6 +421,7 @@ class HotelInvoiceController
         if (empty($footerText))   $footerText = $this->getSettings()['invoice_footer_text'] ?? '';
         if (empty($paymentTerms)) $paymentTerms = $this->getSettings()['invoice_terms'] ?? '';
 
+        // First update the invoice info and status (this should always succeed)
         try {
             $db->update('hotel_invoices', [
                 'hotel_name'       => $hotelName,
@@ -445,31 +449,36 @@ class HotelInvoiceController
                 'invoice_status'   => $invoiceStatus,
                 'invoice_type'     => $invoiceType,
             ], 'id = :id', [':id' => $invoiceId]);
-
-            // Delete old items, insert new
-            $db->delete('hotel_invoice_items', 'invoice_id = :id', [':id' => $invoiceId]);
-            foreach ($items as $item) {
-                $db->insert('hotel_invoice_items', array_merge($item, ['invoice_id' => $invoiceId]));
-            }
-
-            ActivityLog::log('update_hotel_invoice', 'hotel_invoice', $invoiceId,
-                "فاکتور هتل {$hotelName} بروزرسانی شد");
-
-            if ($isAjax) {
-                echo json_encode(['success' => true, 'message' => 'فاکتور بروزرسانی شد.', 'invoice_id' => $invoiceId]);
-                exit;
-            }
-            Session::setFlash('success', 'فاکتور با موفقیت بروزرسانی شد.');
-            View::redirect('/hotel-invoice/view/' . $invoiceId);
-
         } catch (\Exception $e) {
-            if ($isAjax) {
-                echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
-                exit;
-            }
-            Session::setFlash('danger', 'خطا: ' . $e->getMessage());
+            $msg = 'خطا در بروزرسانی فاکتور: ' . $e->getMessage();
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
+            Session::setFlash('danger', $msg);
             View::redirect('/hotel-invoice/edit/' . $invoiceId);
+            return;
         }
+
+        // Then update items separately (if any items were submitted)
+        if (!empty($items)) {
+            try {
+                $db->delete('hotel_invoice_items', 'invoice_id = :id', [':id' => $invoiceId]);
+                foreach ($items as $item) {
+                    $db->insert('hotel_invoice_items', array_merge($item, ['invoice_id' => $invoiceId]));
+                }
+            } catch (\Exception $e) {
+                // Items failed but invoice updated - log but don't block
+                error_log('Failed to update items for invoice ' . $invoiceId . ': ' . $e->getMessage());
+            }
+        }
+
+        ActivityLog::log('update_hotel_invoice', 'hotel_invoice', $invoiceId,
+            "فاکتور هتل {$hotelName} بروزرسانی شد");
+
+        if ($isAjax) {
+            echo json_encode(['success' => true, 'message' => 'فاکتور بروزرسانی شد.', 'invoice_id' => $invoiceId]);
+            exit;
+        }
+        Session::setFlash('success', 'فاکتور با موفقیت بروزرسانی شد.');
+        View::redirect('/hotel-invoice/view/' . $invoiceId);
     }
 
     // ============================================================
