@@ -51,7 +51,7 @@
         <small class="text-muted"><?php echo htmlspecialchars($companyName); ?> | <?php echo htmlspecialchars($invoiceSubtitle); ?></small>
         <div class="mt-2">
             <?php
-            $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'تسویه شده'];
+            $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
             $stC = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
             $st = $invoice->invoice_status;
             ?>
@@ -122,13 +122,19 @@
     <?php endif; ?>
 
     <!-- Payment Status -->
-    <?php if ($invoice->invoice_status === 'settled'): ?>
+    <?php if ($invoice->invoice_status === 'settled' || $invoice->invoice_status === 'paid'): ?>
     <div class="text-center p-4 mb-3" style="background:<?php echo $successColor; ?>18;border-radius:12px;">
         <i class="bi bi-check-circle-fill text-success" style="font-size:48px;"></i>
-        <h5 class="mt-2 fw-bold text-success">تسویه شده</h5>
-        <p class="text-muted mb-0">این فاکتور تسویه شده است.</p>
+        <h5 class="mt-2 fw-bold text-success"><?php echo $invoice->invoice_status === 'paid' ? 'پرداخت شده' : 'تسویه شده'; ?></h5>
+        <p class="text-muted mb-0">این فاکتور <?php echo $invoice->invoice_status === 'paid' ? 'پرداخت شده' : 'تسویه شده'; ?> است.</p>
     </div>
-    <?php elseif ($invoice->invoice_status === 'pending' || $invoice->invoice_status === 'prepaid'): ?>
+    <?php elseif ($invoice->invoice_status === 'pending'): ?>
+    <div class="text-center p-4 mb-3" style="background:#ffc10718;border-radius:12px;">
+        <i class="bi bi-hourglass-split text-warning" style="font-size:48px;"></i>
+        <h5 class="mt-2 fw-bold text-warning">مانده دارد</h5>
+        <p class="text-muted mb-0">این فاکتور دارای مانده است و در انتظار تسویه نهایی می‌باشد.</p>
+    </div>
+    <?php elseif ($invoice->invoice_status === 'prepaid'): ?>
     <div class="text-center p-4 mb-3" style="background:<?php echo $successColor; ?>18;border-radius:12px;">
         <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
         <small class="text-muted">مبلغ قابل پرداخت (بیعانه)</small>

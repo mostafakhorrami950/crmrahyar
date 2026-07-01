@@ -24,8 +24,8 @@
                 <small class="text-muted">شماره فاکتور: <?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></small>
                 <br>
                 <?php
-                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
-                $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info'];
+                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+                $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
                 $st = $invoice->invoice_status;
                 ?>
                 <span class="badge <?php echo $statusColors[$st] ?? 'bg-secondary'; ?>"><?php echo $statusLabels[$st] ?? $st; ?></span>
@@ -119,8 +119,10 @@
             <?php endif; ?>
 
             <div class="d-flex gap-2 flex-wrap">
-                <?php if ($invoice->invoice_status !== 'settled'): ?><button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'settled')"><i class="bi bi-check-circle me-1"></i>تسویه شده</button><?php endif; ?>
                 <?php if ($invoice->invoice_status !== 'prepaid'): ?><button class="btn btn-sm btn-outline-info" onclick="updateStatus(<?php echo $invoice->id; ?>, 'prepaid')"><i class="bi bi-wallet2 me-1"></i>پیش پرداخت</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'pending'): ?><button class="btn btn-sm btn-outline-warning" onclick="updateStatus(<?php echo $invoice->id; ?>, 'pending')"><i class="bi bi-hourglass-split me-1"></i>مانده دارد</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'paid'): ?><button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'paid')"><i class="bi bi-check-circle me-1"></i>پرداخت شده</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'settled'): ?><button class="btn btn-sm btn-outline-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'settled')"><i class="bi bi-check-all me-1"></i>تسویه شده</button><?php endif; ?>
                 <a href="<?php echo $config['url']; ?>/hotel-invoice/edit/<?php echo $invoice->id; ?>" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil me-1"></i>ویرایش</a>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice(<?php echo $invoice->id; ?>)"><i class="bi bi-trash me-1"></i>حذف</button>
             </div>
@@ -141,7 +143,7 @@
                     <br><small class="text-warning">بیعانه: <?php echo number_format($invoice->deposit_amount); ?> تومان</small>
                     <?php endif; ?>
                 </div>
-                <?php if ($invoice->invoice_status !== 'settled'): ?>
+                <?php if ($invoice->invoice_status === 'prepaid'): ?>
                     <?php if (!empty($invoice->short_code)): ?>
                     <a href="<?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($invoice->short_code); ?>" class="btn w-100 fw-bold mt-2" style="background:<?php echo $successColor; ?>;color:#fff;" target="_blank"><i class="bi bi-credit-card me-1"></i>لینک پرداخت کوتاه</a>
                     <small class="text-muted d-block mt-1" style="font-size:10px;direction:ltr;text-align:center;"><?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($invoice->short_code); ?></small>
@@ -172,7 +174,13 @@
 
 <script>
 function updateStatus(id, status) {
-    var msg = status === 'settled' ? 'آیا فاکتور را تسویه شده می‌کنید؟' : 'آیا فاکتور را پیش پرداخت می‌کنید؟';
+    var msgs = {
+        'settled': 'آیا فاکتور را تسویه شده می‌کنید؟',
+        'prepaid': 'آیا فاکتور را پیش پرداخت می‌کنید؟',
+        'pending': 'آیا فاکتور را مانده دارد می‌کنید؟',
+        'paid': 'آیا فاکتور را پرداخت شده می‌کنید؟'
+    };
+    var msg = msgs[status] || 'آیا مطمئن هستید؟';
     if (!confirm(msg)) return;
     var fd = new FormData(); fd.append('status', status);
     fetch(CRM_BASE_URL + '/hotel-invoice/status/' + id, {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body:fd})

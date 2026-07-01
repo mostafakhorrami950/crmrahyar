@@ -18,8 +18,9 @@
                 <select name="status" class="form-select">
                     <option value="">همه وضعیت‌ها</option>
                     <option value="pending" <?php echo $status==='pending'?'selected':''; ?>>مانده دارد</option>
-                    <option value="settled" <?php echo $status==='settled'?'selected':''; ?>>تسویه شده</option>
                     <option value="prepaid" <?php echo $status==='prepaid'?'selected':''; ?>>پیش پرداخت</option>
+                    <option value="paid" <?php echo $status==='paid'?'selected':''; ?>>پرداخت شده</option>
+                    <option value="settled" <?php echo $status==='settled'?'selected':''; ?>>تسویه شده</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -71,8 +72,8 @@
                         <td><strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong></td>
                         <td>
                             <?php
-                            $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
-                            $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info'];
+                            $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+                            $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
                             $st = $inv->invoice_status;
                             ?>
                             <span class="badge <?php echo $statusColors[$st] ?? 'bg-secondary'; ?>"><?php echo $statusLabels[$st] ?? $st; ?></span>
@@ -87,7 +88,7 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($inv->invoice_status !== 'paid' && $inv->invoice_status !== 'cancelled'): ?>
+                            <?php if ($inv->invoice_status === 'prepaid'): ?>
                                 <?php if (!empty($inv->short_code)): ?>
                                 <button class="btn btn-sm btn-outline-success" style="font-size:11px;padding:2px 6px;" onclick="copyPaymentLink('<?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($inv->short_code); ?>')" title="کپی لینک کوتاه پرداخت"><i class="bi bi-link-45deg"></i></button>
                                 <small class="text-muted d-block" style="font-size:9px;direction:ltr;text-align:left;"><?php echo $config['url']; ?>/hi/<?php echo htmlspecialchars($inv->short_code); ?></small>
@@ -96,8 +97,10 @@
                                 <?php else: ?>
                                 <span class="text-muted" style="font-size:11px;">ندارد</span>
                                 <?php endif; ?>
+                            <?php elseif ($inv->invoice_status === 'paid' || $inv->invoice_status === 'settled'): ?>
+                                <span class="text-success" style="font-size:11px;"><i class="bi bi-check-circle"></i> پرداخت شد</span>
                             <?php else: ?>
-                                <span class="text-success" style="font-size:11px;"><i class="bi bi-check-circle"></i></span>
+                                <span class="text-muted" style="font-size:11px;">-</span>
                             <?php endif; ?>
                         </td>
                         <td>

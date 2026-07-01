@@ -70,8 +70,8 @@
         <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:8pt;">
             <div>
                 <?php
-                $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
-                $stC = ['pending'=>'#ffc107','settled'=>'#198754','prepaid'=>'#0dcaf0'];
+                $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+                $stC = ['pending'=>'#ffc107','settled'=>'#198754','prepaid'=>'#0dcaf0','paid'=>'#198754'];
                 $st = $invoice->invoice_status;
                 ?>
                 <span class="inv-badge" style="background:<?php echo $stC[$st]??'#6c757d'; ?>20;color:<?php echo $stC[$st]??'#6c757d'; ?>;"><?php echo $stL[$st]??$st; ?></span>

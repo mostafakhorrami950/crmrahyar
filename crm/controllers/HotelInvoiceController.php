@@ -605,7 +605,7 @@ class HotelInvoiceController
         $invoiceId = (int)$params['id'];
         $status = $_POST['status'] ?? '';
 
-        $validStatuses = ['pending', 'settled', 'prepaid'];
+        $validStatuses = ['pending', 'settled', 'prepaid', 'paid'];
         if (!in_array($status, $validStatuses)) {
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'وضعیت نامعتبر.']); exit; }
             Session::setFlash('danger', 'وضعیت نامعتبر.');
@@ -866,7 +866,16 @@ class HotelInvoiceController
         }
 
         if (!$invoice) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
-        if (in_array($invoice->invoice_status, ['settled', 'paid'])) { echo json_encode(['success' => false, 'message' => 'این فاکتور قبلاً پرداخت شده است.']); exit; }
+        if ($invoice->invoice_status !== 'prepaid') {
+            $statusMsg = 'این فاکتور قابل پرداخت نیست.';
+            if ($invoice->invoice_status === 'paid' || $invoice->invoice_status === 'settled') {
+                $statusMsg = 'این فاکتور قبلاً پرداخت شده است.';
+            } elseif ($invoice->invoice_status === 'pending') {
+                $statusMsg = 'این فاکتور مانده دارد و در انتظار تسویه نهایی است.';
+            }
+            echo json_encode(['success' => false, 'message' => $statusMsg]);
+            exit;
+        }
 
         $payAmount = ($invoice->deposit_amount > 0) ? $invoice->deposit_amount : $invoice->final_amount;
         $amountRial = $payAmount * 10;
@@ -1022,17 +1031,17 @@ class HotelInvoiceController
                         if ($invoice) {
                             // If invoice has deposit, check if paid amount matches deposit or full
                             if ($invoice->deposit_amount > 0 && $payment->amount >= $invoice->deposit_amount && $payment->amount < $invoice->final_amount) {
-                                // Deposit paid → set to 'prepaid' (مانده دارد)
-                                $newStatus = 'prepaid';
+                                // Deposit paid → set to 'pending' (مانده دارد)
+                                $newStatus = 'pending';
                             } else {
                                 // Full amount paid or no deposit
-                                $newStatus = 'settled';
+                                $newStatus = 'paid';
                             }
 
                             $this->updateInvoiceStatus($invoiceId, $newStatus);
 
                             // Update deal as won only for full payment
-                            if ($newStatus === 'settled' && $payment->deal_id) {
+                            if ($newStatus === 'paid' && $payment->deal_id) {
                                 try {
                                     $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
                                 } catch (\Exception $e) {
