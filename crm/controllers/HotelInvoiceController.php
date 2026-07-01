@@ -954,9 +954,13 @@ class HotelInvoiceController
                         'paid_at' => date('Y-m-d H:i:s'),
                     ], 'id = :id', [':id' => $payment->id]);
 
-                    // Find the invoice
+                    // Find the invoice from description or orderId
                     $invoiceId = 0;
                     if (preg_match('/فاکتور هتل #(\d+)/', $payment->description ?? '', $m)) {
+                        $invoiceId = (int)$m[1];
+                    }
+                    // Fallback: try orderId format INV-{id}-{timestamp}
+                    if (!$invoiceId && preg_match('/INV-(\d+)-/', $payment->order_id ?? $payment->description ?? '', $m)) {
                         $invoiceId = (int)$m[1];
                     }
 
@@ -971,11 +975,26 @@ class HotelInvoiceController
                                 // Full amount paid or no deposit
                                 $newStatus = 'settled';
                             }
-                            $db->update('hotel_invoices', ['invoice_status' => $newStatus], 'id = :id', [':id' => $invoiceId]);
+
+                            try {
+                                $db->update('hotel_invoices', ['invoice_status' => $newStatus], 'id = :id', [':id' => $invoiceId]);
+                            } catch (\Exception $e) {
+                                // If ENUM doesn't accept the value, try with raw SQL
+                                error_log('Invoice status update failed, trying raw SQL: ' . $e->getMessage());
+                                try {
+                                    $db->query("UPDATE hotel_invoices SET invoice_status = :status WHERE id = :id", [':status' => $newStatus, ':id' => $invoiceId]);
+                                } catch (\Exception $e2) {
+                                    error_log('Invoice status raw SQL also failed: ' . $e2->getMessage());
+                                }
+                            }
 
                             // Update deal as won
                             if ($newStatus === 'settled' && $payment->deal_id) {
-                                $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
+                                try {
+                                    $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
+                                } catch (\Exception $e) {
+                                    error_log('Deal update failed: ' . $e->getMessage());
+                                }
                             }
                         }
                     }
