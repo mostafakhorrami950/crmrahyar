@@ -203,7 +203,7 @@ class HotelInvoiceController
         $notes        = trim($_POST['notes'] ?? '');
         $paymentTerms = trim($_POST['payment_terms'] ?? '');
         $footerText   = trim($_POST['footer_text'] ?? '');
-        $validUntil   = $_POST['valid_until'] ?? null;
+        $validUntil   = !empty($_POST['valid_until']) ? $_POST['valid_until'] : null;
         $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
         $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
@@ -380,7 +380,7 @@ class HotelInvoiceController
         $notes        = trim($_POST['notes'] ?? '');
         $paymentTerms = trim($_POST['payment_terms'] ?? '');
         $footerText   = trim($_POST['footer_text'] ?? '');
-        $validUntil   = $_POST['valid_until'] ?? null;
+        $validUntil   = !empty($_POST['valid_until']) ? $_POST['valid_until'] : null;
         $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
         $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
