@@ -58,20 +58,29 @@
                     <?php if (!empty($items)): ?>
                     <?php foreach ($items as $item): ?>
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
-                        <div class="col-5">
+                        <div class="col-4">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." value="<?php echo htmlspecialchars($item->description); ?>" oninput="filterItems(this)" autocomplete="off">
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="<?php echo htmlspecialchars($item->description); ?>">
                             <input type="hidden" name="item_category[]" class="item-category" value="<?php echo htmlspecialchars($item->category ?? 'general'); ?>">
+                            <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="<?php echo $item->default_price ?? $item->unit_price; ?>">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
+                            <label class="form-label text-muted small">قیمت اصلی</label>
+                            <input type="text" class="form-control form-control-sm item-default-price bg-light" value="<?php echo number_format($item->default_price ?? $item->unit_price); ?>" readonly dir="ltr" style="text-align:left;font-size:12px;">
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label text-muted small">قیمت جدید</label>
+                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
+                        </div>
+                        <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>
                             <input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="<?php echo (int)$item->quantity; ?>" min="1" onchange="recalc()">
                         </div>
-                        <div class="col-3">
-                            <label class="form-label text-muted small">قیمت واحد (تومان)</label>
-                            <input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="<?php echo $item->unit_price; ?>" min="0" onchange="recalc()" dir="ltr" style="text-align:left;">
+                        <div class="col-1">
+                            <label class="form-label text-muted small">کل</label>
+                            <div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div>
                         </div>
                         <div class="col-2 d-flex align-items-end">
                             <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button>
@@ -80,15 +89,18 @@
                     <?php endforeach; ?>
                     <?php else: ?>
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
-                        <div class="col-5">
+                        <div class="col-4">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="">
                             <input type="hidden" name="item_category[]" class="item-category" value="">
+                            <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
-                        <div class="col-2"><label class="form-label text-muted small">تعداد</label><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div>
-                        <div class="col-3"><label class="form-label text-muted small">قیمت واحد (تومان)</label><input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
+                        <div class="col-2"><label class="form-label text-muted small">قیمت اصلی</label><input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;"></div>
+                        <div class="col-2"><label class="form-label text-muted small">قیمت جدید</label><input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
+                        <div class="col-1"><label class="form-label text-muted small">تعداد</label><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div>
+                        <div class="col-1"><label class="form-label text-muted small">کل</label><div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div></div>
                         <div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>
                     </div>
                     <?php endif; ?>
@@ -202,13 +214,21 @@ function selectItem(el) {
     var input = row.querySelector('.item-search-input');
     var hidden = row.querySelector('.item-description-hidden');
     var catInput = row.querySelector('.item-category');
-    var priceInput = row.querySelector('.item-price');
+    var defPriceHidden = row.querySelector('.item-default-price-hidden');
+    var defPriceDisplay = row.querySelector('.item-default-price');
+    var newPriceInput = row.querySelector('.item-new-price');
     var dd = row.querySelector('.item-dropdown');
 
-    input.value = el.getAttribute('data-value');
-    hidden.value = el.getAttribute('data-value');
-    catInput.value = el.getAttribute('data-category') || 'general';
-    priceInput.value = el.getAttribute('data-price') || '0';
+    var name = el.getAttribute('data-value');
+    var price = el.getAttribute('data-price');
+    var category = el.getAttribute('data-category');
+
+    input.value = name;
+    hidden.value = name;
+    catInput.value = category || 'general';
+    defPriceHidden.value = price || '0';
+    defPriceDisplay.value = formatNumber(price || '0');
+    newPriceInput.value = '';
     dd.style.display = 'none';
     recalc();
 }
@@ -223,7 +243,7 @@ function addItem() {
     var c = document.getElementById('itemsContainer');
     var r = document.createElement('div');
     r.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
-    r.innerHTML = '<div class="col-5"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off"><input type="hidden" name="item_description[]" class="item-description-hidden" value=""><input type="hidden" name="item_category[]" class="item-category" value=""><div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div></div><div class="col-2"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-3"><input type="number" name="item_unit_price[]" class="form-control form-control-sm item-price" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
+    r.innerHTML = '<div class="col-4"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off"><input type="hidden" name="item_description[]" class="item-description-hidden" value=""><input type="hidden" name="item_category[]" class="item-category" value=""><input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0"><div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div></div><div class="col-2"><input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;"></div><div class="col-2"><input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-1"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-1"><div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     c.appendChild(r);
     recalc();
 }
@@ -239,16 +259,26 @@ function getNights() {
 }
 
 function recalc() {
-    var nights=getNights(), subtotal=0, itemCount=0;
+    var nights=getNights(), subtotal=0, itemCount=0, itemsDiscount=0;
     document.querySelectorAll('.item-row').forEach(function(row) {
         var h=row.querySelector('.item-description-hidden');
         if(!h||!h.value.trim()) return;
-        var qty=parseFloat(row.querySelector('.item-qty').value)||0, price=parseFloat(row.querySelector('.item-price').value)||0, cat=(row.querySelector('.item-category')||{}).value||'';
-        subtotal += (cat==='hotel'&&nights>0) ? qty*price*nights : qty*price; itemCount++;
+        var qty=parseFloat(row.querySelector('.item-qty').value)||0;
+        var defPriceHidden=row.querySelector('.item-default-price-hidden');
+        var defPrice=defPriceHidden?(parseFloat(defPriceHidden.value)||0):0;
+        var newPriceInput=row.querySelector('.item-new-price');
+        var newPrice=newPriceInput?(parseFloat(newPriceInput.value)||0):0;
+        var cat=(row.querySelector('.item-category')||{}).value||'';
+        var lineTotalEl=row.querySelector('.item-line-total');
+        var actualPrice=(newPrice>0)?newPrice:defPrice;
+        var lineTotal=(cat==='hotel'&&nights>0)?qty*actualPrice*nights:qty*actualPrice;
+        subtotal+=lineTotal; itemCount++;
+        if(newPrice>0&&newPrice<defPrice){var diff=defPrice-newPrice;itemsDiscount+=(cat==='hotel'&&nights>0)?diff*qty*nights:diff*qty;}
+        if(lineTotalEl)lineTotalEl.textContent=formatNumber(lineTotal);
     });
-    var tp=parseFloat(document.getElementById('taxPercent').value)||0, ta=subtotal*(tp/100), sf=parseFloat(document.getElementById('serviceFee').value)||0, disc=parseFloat(document.getElementById('discountAmount').value)||0, fa=subtotal+ta+sf-disc;
+    var tp=parseFloat(document.getElementById('taxPercent').value)||0, ta=subtotal*(tp/100), sf=parseFloat(document.getElementById('serviceFee').value)||0, manualDisc=parseFloat(document.getElementById('discountAmount').value)||0, totalDisc=manualDisc+itemsDiscount, fa=subtotal+ta+sf-totalDisc;
     document.getElementById('calcNights').textContent=nights; document.getElementById('calcItems').textContent=itemCount;
-    document.getElementById('calcSubtotal').textContent=formatNumber(subtotal)+' تومان'; document.getElementById('calcTaxPct').textContent=tp; document.getElementById('calcTaxAmount').textContent=formatNumber(ta)+' تومان'; document.getElementById('calcServiceFee').textContent=formatNumber(sf)+' تومان'; document.getElementById('calcDiscount').textContent=formatNumber(disc)+' تومان'; document.getElementById('calcFinalAmount').textContent=formatNumber(fa)+' تومان';
+    document.getElementById('calcSubtotal').textContent=formatNumber(subtotal)+' تومان'; document.getElementById('calcTaxPct').textContent=tp; document.getElementById('calcTaxAmount').textContent=formatNumber(ta)+' تومان'; document.getElementById('calcServiceFee').textContent=formatNumber(sf)+' تومان'; document.getElementById('calcDiscount').textContent=formatNumber(totalDisc)+' تومان'; document.getElementById('calcFinalAmount').textContent=formatNumber(fa)+' تومان';
 }
 
 function formatNumber(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }

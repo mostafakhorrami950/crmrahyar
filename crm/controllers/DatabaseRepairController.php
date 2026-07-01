@@ -214,8 +214,34 @@ class DatabaseRepairController
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoices', 'discount_percent', 'DECIMAL(5,2) DEFAULT 0');
                 if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'short_code', 'VARCHAR(20) NULL');
+                if ($result) $repairs[] = $result;
+                // Ensure invoice_status ENUM includes 'paid'
+                try {
+                    $col = $db->fetch("SHOW COLUMNS FROM hotel_invoices WHERE Field = 'invoice_status'");
+                    if ($col && strpos($col->Type ?? '', 'paid') === false) {
+                        $db->query("ALTER TABLE `hotel_invoices` MODIFY COLUMN `invoice_status` ENUM('draft','final','paid','cancelled','pending','settled','prepaid') DEFAULT 'pending'");
+                        $repairs[] = ['table' => 'hotel_invoices', 'column' => 'invoice_status', 'action' => 'update_enum', 'description' => 'ENUM وضعیت فاکتور بروزرسانی شد (اضافه شدن paid)'];
+                    }
+                } catch (\Exception $e) {}
             } catch (\Exception $e) {
                 // hotel_invoices table might not exist yet
+            }
+            
+            // Check hotel_invoice_items table columns
+            try {
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'default_price', 'DECIMAL(15,2) NOT NULL DEFAULT 0');
+                if ($result) {
+                    $repairs[] = $result;
+                    // Update existing items: set default_price = unit_price
+                    try {
+                        $db->query("UPDATE `hotel_invoice_items` SET `default_price` = `unit_price` WHERE `default_price` = 0");
+                    } catch (\Exception $e) {}
+                }
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'category', "VARCHAR(50) DEFAULT 'general'");
+                if ($result) $repairs[] = $result;
+            } catch (\Exception $e) {
+                // hotel_invoice_items table might not exist yet
             }
             
             // Check invoice_settings table

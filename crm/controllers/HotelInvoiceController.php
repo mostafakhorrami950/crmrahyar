@@ -68,11 +68,13 @@ class HotelInvoiceController
     {
         $descriptions = $post['item_description'] ?? [];
         $quantities   = $post['item_quantity'] ?? [];
-        $unitPrices   = $post['item_unit_price'] ?? [];
+        $defaultPrices = $post['item_default_price'] ?? [];
+        $newPrices    = $post['item_new_price'] ?? [];
         $categories   = $post['item_category'] ?? [];
 
         $items = [];
         $subtotal = 0;
+        $itemsDiscount = 0;
 
         if (!empty($descriptions) && is_array($descriptions)) {
             foreach ($descriptions as $i => $desc) {
@@ -80,24 +82,36 @@ class HotelInvoiceController
                 if (empty($desc)) continue;
 
                 $qty     = (float)str_replace(',', '', $quantities[$i] ?? '1');
-                $price   = (float)str_replace(',', '', $unitPrices[$i] ?? '0');
+                $defPrice = (float)str_replace(',', '', $defaultPrices[$i] ?? '0');
+                $newPrice = (float)str_replace(',', '', $newPrices[$i] ?? '0');
                 $cat     = $categories[$i] ?? 'general';
 
-                $total   = $this->calcLineTotal($qty, $price, $cat, $nights);
+                // Use new price if provided, otherwise use default price
+                $actualPrice = ($newPrice > 0) ? $newPrice : $defPrice;
+
+                $total   = $this->calcLineTotal($qty, $actualPrice, $cat, $nights);
                 $subtotal += $total;
+
+                // Calculate item-level discount (difference between default and new price)
+                if ($newPrice > 0 && $newPrice < $defPrice) {
+                    $diff = $defPrice - $newPrice;
+                    $itemDiscount = ($cat === 'hotel' && $nights > 0) ? $diff * $qty * $nights : $diff * $qty;
+                    $itemsDiscount += $itemDiscount;
+                }
 
                 $items[] = [
                     'description' => $desc,
                     'category'    => $cat,
                     'quantity'    => $qty,
-                    'unit_price'  => $price,
+                    'default_price' => $defPrice,
+                    'unit_price'  => $actualPrice,
                     'total_price' => $total,
                     'sort_order'  => $i,
                 ];
             }
         }
 
-        return ['items' => $items, 'subtotal' => $subtotal];
+        return ['items' => $items, 'subtotal' => $subtotal, 'items_discount' => $itemsDiscount];
     }
 
     // ============================================================

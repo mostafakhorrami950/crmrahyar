@@ -56,11 +56,12 @@
                         <thead>
                             <tr>
                                 <th style="width:4%">#</th>
-                                <th style="width:36%">شرح</th>
+                                <th style="width:32%">شرح</th>
                                 <th style="width:8%" class="text-center">تعداد</th>
-                                <th style="width:14%" class="text-center">قیمت واحد</th>
+                                <th style="width:12%" class="text-center">قیمت اصلی</th>
+                                <th style="width:12%" class="text-center">قیمت واحد</th>
                                 <th style="width:8%" class="text-center">شب‌ها</th>
-                                <th style="width:15%" class="text-center">مبلغ کل</th>
+                                <th style="width:14%" class="text-center">مبلغ کل</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -74,7 +75,8 @@
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
-                                <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
+                                <td class="text-center text-muted" dir="ltr"><?php echo number_format($item->default_price ?? $item->unit_price); ?></td>
+                                <td class="text-center fw-bold" dir="ltr" <?php echo ($item->unit_price < ($item->default_price ?? $item->unit_price)) ? 'style="color:#dc3545;"' : ''; ?>><?php echo number_format($item->unit_price); ?></td>
                                 <td class="text-center"><?php echo $invoice->nights; ?></td>
                                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
                             </tr>
