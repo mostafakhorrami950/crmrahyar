@@ -37,7 +37,7 @@
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ ورود <span class="text-danger">*</span></label><input type="date" name="check_in_date" class="form-control" id="checkInDate" value="<?php echo $invoice->check_in_date; ?>" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ خروج <span class="text-danger">*</span></label><input type="date" name="check_out_date" class="form-control" id="checkOutDate" value="<?php echo $invoice->check_out_date; ?>" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">نوع فاکتور</label><select name="invoice_type" class="form-select" id="invoiceType"><option value="proforma" <?php echo $invoice->invoice_type=='proforma'?'selected':''; ?>>پیش فاکتور</option><option value="confirmed" <?php echo $invoice->invoice_type=='confirmed'?'selected':''; ?>>فاکتور تایید شده</option></select></div>
-<div class="col-6"><label class="form-label text-muted small fw-medium">وضعیت فاکتور</label><select name="invoice_status" class="form-select"><option value="pending" <?php echo $invoice->invoice_status=='pending'?'selected':''; ?>>مانده دارد</option><option value="prepaid" <?php echo $invoice->invoice_status=='prepaid'?'selected':''; ?>>پیش پرداخت</option><option value="paid" <?php echo $invoice->invoice_status=='paid'?'selected':''; ?>>پرداخت شده</option><option value="settled" <?php echo $invoice->invoice_status=='settled'?'selected':''; ?>>تسویه شده</option></select></div>
+<div class="col-6"><label class="form-label text-muted small fw-medium">وضعیت فاکتور</label><select name="invoice_status" class="form-select"><option value="prepaid" <?php echo ($invoice->invoice_status=='prepaid' || empty($invoice->invoice_status))?'selected':''; ?>>پیش پرداخت</option><option value="pending" <?php echo $invoice->invoice_status=='pending'?'selected':''; ?>>مانده دارد</option><option value="paid" <?php echo $invoice->invoice_status=='paid'?'selected':''; ?>>پرداخت شده</option><option value="settled" <?php echo $invoice->invoice_status=='settled'?'selected':''; ?>>تسویه شده</option></select></div>
                     <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">خدمات</small></div>
                     <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="transfer_included" id="ti" value="1" <?php echo $invoice->transfer_included?'checked':''; ?>><label class="form-check-label small" for="ti">ترانسفر</label></div></div>
                     <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="visa_included" id="vi" value="1" <?php echo $invoice->visa_included?'checked':''; ?>><label class="form-check-label small" for="vi">ویزا</label></div></div>
@@ -114,9 +114,9 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-6"><label class="form-label text-muted small fw-medium">درصد مالیات</label><input type="number" name="tax_percent" class="form-control" id="taxPercent" value="<?php echo $invoice->tax_percent ?? 0; ?>" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label><input type="number" name="service_fee" class="form-control" id="serviceFee" value="<?php echo $invoice->service_fee ?? 0; ?>" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="number" name="discount_amount" class="form-control" id="discountAmount" value="<?php echo $invoice->discount_amount ?? 0; ?>" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="number" name="deposit_amount" class="form-control" id="depositAmount" value="<?php echo $invoice->deposit_amount ?? 0; ?>" min="0" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="text" name="discount_amount" class="form-control" id="discountAmount" value="<?php echo number_format($invoice->discount_amount ?? 0); ?>" onkeyup="formatInput(this);recalc()" onblur="formatInput(this)" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="text" name="deposit_amount" class="form-control" id="depositAmount" value="<?php echo number_format($invoice->deposit_amount ?? 0); ?>" onkeyup="formatInput(this)" onblur="formatInput(this)" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ اعتبار</label><input type="date" name="valid_until" class="form-control" value="<?php echo $invoice->valid_until ?? ''; ?>"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">واحد پول</label><select name="currency" class="form-select"><option value="IRR" <?php echo ($invoice->currency ?? 'IRR')=='IRR'?'selected':''; ?>>تومان</option><option value="USD" <?php echo ($invoice->currency ?? '')=='USD'?'selected':''; ?>>دلار</option><option value="EUR" <?php echo ($invoice->currency ?? '')=='EUR'?'selected':''; ?>>یورو</option><option value="AED" <?php echo ($invoice->currency ?? '')=='AED'?'selected':''; ?>>درهم</option><option value="TRY" <?php echo ($invoice->currency ?? '')=='TRY'?'selected':''; ?>>لیر</option></select></div>
                 </div>
@@ -149,7 +149,6 @@
                 <div class="bg-light rounded p-3">
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">جمع کل</small><strong id="calcSubtotal"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">مالیات (<span id="calcTaxPct"><?php echo $invoice->tax_percent ?? 0; ?></span>%)</small><strong id="calcTaxAmount"><?php echo number_format($invoice->tax_amount ?? 0); ?> تومان</strong></div>
-                    <div class="d-flex justify-content-between mb-1"><small class="text-muted">خدمات</small><strong id="calcServiceFee"><?php echo number_format($invoice->service_fee ?? 0); ?> تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف</small><strong class="text-danger" id="calcDiscount"><?php echo number_format($invoice->discount_amount ?? 0); ?> تومان</strong></div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount"><?php echo number_format($invoice->final_amount); ?> تومان</strong></div>
@@ -258,6 +257,17 @@ function getNights() {
     if(!ci||!co) return 0; var n=Math.ceil((new Date(co)-new Date(ci))/(1000*60*60*24)); return (isNaN(n)||n<0)?0:n;
 }
 
+function parseFormattedNumber(s) {
+    if (!s) return 0;
+    return parseInt(s.toString().replace(/,/g, ''), 10) || 0;
+}
+
+function formatInput(input) {
+    var raw = input.value.replace(/,/g, '');
+    if (raw === '' || isNaN(raw)) return;
+    input.value = parseInt(raw, 10).toLocaleString('en-US');
+}
+
 function recalc() {
     var nights=getNights(), subtotal=0, itemCount=0, itemsDiscount=0;
     document.querySelectorAll('.item-row').forEach(function(row) {
@@ -265,9 +275,9 @@ function recalc() {
         if(!h||!h.value.trim()) return;
         var qty=parseFloat(row.querySelector('.item-qty').value)||0;
         var defPriceHidden=row.querySelector('.item-default-price-hidden');
-        var defPrice=defPriceHidden?(parseFloat(defPriceHidden.value)||0):0;
+        var defPrice=defPriceHidden?(parseFormattedNumber(defPriceHidden.value)):0;
         var newPriceInput=row.querySelector('.item-new-price');
-        var newPrice=newPriceInput?(parseFloat(newPriceInput.value)||0):0;
+        var newPrice=newPriceInput?(parseFormattedNumber(newPriceInput.value)):0;
         var cat=(row.querySelector('.item-category')||{}).value||'';
         var lineTotalEl=row.querySelector('.item-line-total');
         var actualPrice=(newPrice>0)?newPrice:defPrice;
@@ -276,12 +286,12 @@ function recalc() {
         if(newPrice>0&&newPrice<defPrice){var diff=defPrice-newPrice;itemsDiscount+=(cat==='hotel'&&nights>0)?diff*qty*nights:diff*qty;}
         if(lineTotalEl)lineTotalEl.textContent=formatNumber(lineTotal);
     });
-    var tp=parseFloat(document.getElementById('taxPercent').value)||0, ta=subtotal*(tp/100), sf=parseFloat(document.getElementById('serviceFee').value)||0, manualDisc=parseFloat(document.getElementById('discountAmount').value)||0, totalDisc=manualDisc+itemsDiscount, fa=subtotal+ta+sf-totalDisc;
+    var tp=parseFloat(document.getElementById('taxPercent').value)||0, ta=subtotal*(tp/100), manualDisc=parseFormattedNumber(document.getElementById('discountAmount').value), totalDisc=manualDisc+itemsDiscount, fa=subtotal+ta-totalDisc;
     document.getElementById('calcNights').textContent=nights; document.getElementById('calcItems').textContent=itemCount;
-    document.getElementById('calcSubtotal').textContent=formatNumber(subtotal)+' تومان'; document.getElementById('calcTaxPct').textContent=tp; document.getElementById('calcTaxAmount').textContent=formatNumber(ta)+' تومان'; document.getElementById('calcServiceFee').textContent=formatNumber(sf)+' تومان'; document.getElementById('calcDiscount').textContent=formatNumber(totalDisc)+' تومان'; document.getElementById('calcFinalAmount').textContent=formatNumber(fa)+' تومان';
+    document.getElementById('calcSubtotal').textContent=formatNumber(subtotal)+' تومان'; document.getElementById('calcTaxPct').textContent=tp; document.getElementById('calcTaxAmount').textContent=formatNumber(ta)+' تومان'; document.getElementById('calcDiscount').textContent=formatNumber(totalDisc)+' تومان'; document.getElementById('calcFinalAmount').textContent=formatNumber(fa)+' تومان';
 }
 
-function formatNumber(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function formatNumber(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 
 document.addEventListener('DOMContentLoaded',function(){recalc();});
 </script>

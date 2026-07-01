@@ -42,7 +42,7 @@
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ ورود <span class="text-danger">*</span></label><input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ خروج <span class="text-danger">*</span></label><input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">نوع فاکتور</label><select name="invoice_type" class="form-select" id="invoiceType"><option value="proforma">پیش فاکتور</option><option value="confirmed">فاکتور تایید شده</option></select></div>
-<div class="col-6"><label class="form-label text-muted small fw-medium">وضعیت فاکتور</label><select name="invoice_status" class="form-select"><option value="pending">مانده دارد</option><option value="prepaid">پیش پرداخت</option><option value="paid">پرداخت شده</option><option value="settled">تسویه شده</option></select></div>
+<div class="col-6"><label class="form-label text-muted small fw-medium">وضعیت فاکتور</label><select name="invoice_status" class="form-select"><option value="prepaid" selected>پیش پرداخت</option><option value="pending">مانده دارد</option><option value="paid">پرداخت شده</option><option value="settled">تسویه شده</option></select></div>
                     <div class="col-12"><hr class="my-1"><small class="text-muted fw-bold">خدمات</small></div>
                     <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="transfer_included" id="ti" value="1"><label class="form-check-label small" for="ti">ترانسفر</label></div></div>
                     <div class="col-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="visa_included" id="vi" value="1"><label class="form-check-label small" for="vi">ویزا</label></div></div>
@@ -99,9 +99,9 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-6"><label class="form-label text-muted small fw-medium">درصد مالیات</label><input type="number" name="tax_percent" class="form-control" id="taxPercent" value="0" min="0" max="100" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">هزینه خدمات (تومان)</label><input type="number" name="service_fee" class="form-control" id="serviceFee" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="number" name="discount_amount" class="form-control" id="discountAmount" value="0" min="0" onchange="recalc()" dir="ltr" style="text-align:left;"></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="number" name="deposit_amount" class="form-control" id="depositAmount" value="0" min="0" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">تخفیف (تومان)</label><input type="text" name="discount_amount" class="form-control" id="discountAmount" value="0" onkeyup="formatInput(this);recalc()" onblur="formatInput(this)" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">مبلغ بیعانه (تومان)</label><input type="text" name="deposit_amount" class="form-control" id="depositAmount" value="0" onkeyup="formatInput(this)" onblur="formatInput(this)" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-6"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ اعتبار</label><input type="date" name="valid_until" class="form-control"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">واحد پول</label><select name="currency" class="form-select"><option value="IRR">تومان</option><option value="USD">دلار</option><option value="EUR">یورو</option><option value="AED">درهم</option><option value="TRY">لیر</option></select></div>
                 </div>
@@ -136,7 +136,6 @@
                 <div class="bg-light rounded p-3">
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">جمع کل</small><strong id="calcSubtotal">0 تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">مالیات (<span id="calcTaxPct">0</span>%)</small><strong id="calcTaxAmount">0 تومان</strong></div>
-                    <div class="d-flex justify-content-between mb-1"><small class="text-muted">خدمات</small><strong id="calcServiceFee">0 تومان</strong></div>
                     <div class="d-flex justify-content-between mb-1"><small class="text-muted">تخفیف</small><strong class="text-danger" id="calcDiscount">0 تومان</strong></div>
                     <hr class="my-2">
                     <div class="d-flex justify-content-between"><strong>مبلغ نهایی</strong><strong style="color:<?php echo $successColor; ?>;" class="fs-5" id="calcFinalAmount">0 تومان</strong></div>
@@ -308,6 +307,17 @@ function getNights() {
     return (isNaN(n) || n < 0) ? 0 : n;
 }
 
+function parseFormattedNumber(s) {
+    if (!s) return 0;
+    return parseInt(s.toString().replace(/,/g, ''), 10) || 0;
+}
+
+function formatInput(input) {
+    var raw = input.value.replace(/,/g, '');
+    if (raw === '' || isNaN(raw)) return;
+    input.value = parseInt(raw, 10).toLocaleString('en-US');
+}
+
 function recalc() {
     var nights = getNights();
     var subtotal = 0, itemCount = 0, itemsDiscount = 0;
@@ -318,56 +328,41 @@ function recalc() {
 
         var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
         var defPriceHidden = row.querySelector('.item-default-price-hidden');
-        var defPrice = defPriceHidden ? (parseFloat(defPriceHidden.value) || 0) : 0;
+        var defPrice = defPriceHidden ? (parseFormattedNumber(defPriceHidden.value)) : 0;
         var newPriceInput = row.querySelector('.item-new-price');
-        var newPrice = newPriceInput ? (parseFloat(newPriceInput.value) || 0) : 0;
+        var newPrice = newPriceInput ? (parseFormattedNumber(newPriceInput.value)) : 0;
         var cat = (row.querySelector('.item-category') || {}).value || '';
         var lineTotalEl = row.querySelector('.item-line-total');
 
-        // Use new price if provided, otherwise use default price
         var actualPrice = (newPrice > 0) ? newPrice : defPrice;
-
-        var lineTotal = 0;
-        if (cat === 'hotel' && nights > 0) {
-            lineTotal = qty * actualPrice * nights;
-        } else {
-            lineTotal = qty * actualPrice;
-        }
+        var lineTotal = (cat === 'hotel' && nights > 0) ? qty * actualPrice * nights : qty * actualPrice;
         subtotal += lineTotal;
         itemCount++;
 
-        // Calculate item-level discount
         if (newPrice > 0 && newPrice < defPrice) {
             var diff = defPrice - newPrice;
-            if (cat === 'hotel' && nights > 0) {
-                itemsDiscount += diff * qty * nights;
-            } else {
-                itemsDiscount += diff * qty;
-            }
+            itemsDiscount += (cat === 'hotel' && nights > 0) ? diff * qty * nights : diff * qty;
         }
 
-        // Update line total display
         if (lineTotalEl) lineTotalEl.textContent = formatNumber(lineTotal);
     });
 
     var tp = parseFloat(document.getElementById('taxPercent').value) || 0;
     var ta = subtotal * (tp / 100);
-    var sf = parseFloat(document.getElementById('serviceFee').value) || 0;
-    var manualDisc = parseFloat(document.getElementById('discountAmount').value) || 0;
+    var manualDisc = parseFormattedNumber(document.getElementById('discountAmount').value);
     var totalDisc = manualDisc + itemsDiscount;
-    var fa = subtotal + ta + sf - totalDisc;
+    var fa = subtotal + ta - totalDisc;
 
     document.getElementById('calcNights').textContent = nights;
     document.getElementById('calcItems').textContent = itemCount;
     document.getElementById('calcSubtotal').textContent = formatNumber(subtotal) + ' تومان';
     document.getElementById('calcTaxPct').textContent = tp;
     document.getElementById('calcTaxAmount').textContent = formatNumber(ta) + ' تومان';
-    document.getElementById('calcServiceFee').textContent = formatNumber(sf) + ' تومان';
     document.getElementById('calcDiscount').textContent = formatNumber(totalDisc) + ' تومان';
     document.getElementById('calcFinalAmount').textContent = formatNumber(fa) + ' تومان';
 }
 
-function formatNumber(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function formatNumber(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
 function deleteInvoice(id) {
     if (!confirm('آیا از حذف فاکتور مطمئن هستید؟')) return;

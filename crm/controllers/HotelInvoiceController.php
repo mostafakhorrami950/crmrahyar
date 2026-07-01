@@ -221,7 +221,7 @@ class HotelInvoiceController
         $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
         $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
-        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
+        $serviceFee   = 0; // Service fee removed
         $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
         $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
         $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;
@@ -398,7 +398,7 @@ class HotelInvoiceController
         $invoiceType  = $_POST['invoice_type'] ?? 'proforma';
         $invoiceStatus= $_POST['invoice_status'] ?? 'pending';
         $taxPercent   = (float)($_POST['tax_percent'] ?? 0);
-        $serviceFee   = (float)str_replace(',', '', $_POST['service_fee'] ?? '0');
+        $serviceFee   = 0; // Service fee removed
         $discountAmount = (float)str_replace(',', '', $_POST['discount_amount'] ?? '0');
         $depositAmount = (float)str_replace(',', '', $_POST['deposit_amount'] ?? '0');
         $transferIncluded = isset($_POST['transfer_included']) ? 1 : 0;

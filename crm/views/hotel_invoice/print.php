@@ -136,18 +136,35 @@
         </table>
 
         <!-- Financial Summary -->
+        <?php
+        // Calculate items discount
+        $itemsDiscount = 0;
+        foreach ($items as $itm) {
+            $defP = $itm->default_price ?? $itm->unit_price;
+            if ($itm->unit_price < $defP) {
+                $diff = $defP - $itm->unit_price;
+                $itemsDiscount += ($itm->category === 'hotel' && $invoice->nights > 0) ? $diff * $itm->quantity * $invoice->nights : $diff * $itm->quantity;
+            }
+        }
+        ?>
         <table class="sum-tbl">
+            <tr><td style="color:#666;">جمع کل (قیمت اصلی):</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format(($invoice->subtotal ?? 0) + $itemsDiscount); ?> <small>تومان</small></td></tr>
+            <?php if ($itemsDiscount > 0): ?>
+            <tr><td style="color:#dc3545;"><i class="bi bi-tag"></i> تخفیف تغییر قیمت:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($itemsDiscount); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
             <tr><td style="color:#666;">جمع کل:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> <small>تومان</small></td></tr>
             <?php if (($invoice->tax_percent ?? 0) > 0): ?>
             <tr><td style="color:#666;">مالیات (<?php echo $invoice->tax_percent; ?>%):</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->tax_amount ?? 0); ?> <small>تومان</small></td></tr>
             <?php endif; ?>
-            <?php if (($invoice->service_fee ?? 0) > 0): ?>
-            <tr><td style="color:#666;">هزینه خدمات:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->service_fee); ?> <small>تومان</small></td></tr>
-            <?php endif; ?>
             <?php if (($invoice->discount_amount ?? 0) > 0): ?>
             <tr><td style="color:#dc3545;">تخفیف:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->discount_amount); ?> <small>تومان</small></td></tr>
             <?php endif; ?>
+            <?php if ($invoice->invoice_status === 'pending'): ?>
+            <tr><td style="font-weight:700;font-size:10pt;padding-top:6px;border-top:2px solid #333;">مبلغ باقیمانده:</td><td class="text-end fw-bold" style="font-size:11pt;color:#dc3545;padding-top:6px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> <small>تومان</small></td></tr>
+            <tr><td colspan="2" style="font-size:7pt;color:#999;">بیعانه پرداخت شده و مبلغ نهایی کسر شده است.</td></tr>
+            <?php else: ?>
             <tr><td style="font-weight:700;font-size:10pt;padding-top:6px;border-top:2px solid #333;">مبلغ نهایی:</td><td class="text-end fw-bold" style="font-size:11pt;color:<?php echo $sc; ?>;padding-top:6px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> <small>تومان</small></td></tr>
+            <?php endif; ?>
             <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
             <tr><td style="color:#666;"><i class="bi bi-wallet2"></i> بیعانه:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->deposit_amount); ?> <small>تومان</small></td></tr>
             <?php endif; ?>

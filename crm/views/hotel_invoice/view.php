@@ -120,9 +120,11 @@
                     <?php if (($invoice->discount_amount ?? 0) > 0): ?>
                     <tr><td class="text-muted">تخفیف</td><td class="text-start fw-bold text-danger">- <?php echo number_format($invoice->discount_amount); ?> تومان</td></tr>
                     <?php endif; ?>
+                    <?php if ($invoice->invoice_status === 'pending'): ?>
+                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ باقیمانده</td><td class="text-start fw-bold fs-5" style="color:#dc3545;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
+                    <tr><td class="text-muted small" colspan="2"><i class="bi bi-info-circle me-1"></i>بیعانه پرداخت شده و مبلغ نهایی کسر شده است.</td></tr>
+                    <?php else: ?>
                     <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ نهایی</td><td class="text-start fw-bold fs-5" style="color:<?php echo $successColor; ?>;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
-                    <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
-                    <tr><td class="text-muted"><i class="bi bi-wallet2 me-1"></i>بیعانه</td><td class="text-start fw-bold"><?php echo number_format($invoice->deposit_amount); ?> تومان</td></tr>
                     <?php endif; ?>
                 </table>
             </div>
