@@ -72,7 +72,7 @@
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت جدید</label>
-                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
+                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($item->unit_price < ($item->default_price ?? $item->unit_price)) ? $item->unit_price : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>

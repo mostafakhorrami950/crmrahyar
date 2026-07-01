@@ -94,7 +94,22 @@
             <!-- Financial Summary -->
             <div class="bg-light rounded p-3 mb-4">
                 <h6 class="fw-bold mb-3"><i class="bi bi-cash me-2"></i>جزییات مالی</h6>
+                <?php
+                // Calculate items discount (difference between default prices and actual prices)
+                $itemsDiscount = 0;
+                foreach ($items as $itm) {
+                    $defP = $itm->default_price ?? $itm->unit_price;
+                    if ($itm->unit_price < $defP) {
+                        $diff = $defP - $itm->unit_price;
+                        $itemsDiscount += ($itm->category === 'hotel' && $invoice->nights > 0) ? $diff * $itm->quantity * $invoice->nights : $diff * $itm->quantity;
+                    }
+                }
+                ?>
                 <table class="table table-sm table-borderless mb-0">
+                    <tr><td class="text-muted">جمع کل (بر اساس قیمت اصلی)</td><td class="text-start fw-bold"><?php echo number_format(($invoice->subtotal ?? 0) + $itemsDiscount); ?> تومان</td></tr>
+                    <?php if ($itemsDiscount > 0): ?>
+                    <tr><td class="text-muted"><i class="bi bi-tag me-1"></i>تخفیف تغییر قیمت</td><td class="text-start fw-bold text-danger">- <?php echo number_format($itemsDiscount); ?> تومان</td></tr>
+                    <?php endif; ?>
                     <tr><td class="text-muted">جمع کل</td><td class="text-start fw-bold"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> تومان</td></tr>
                     <?php if (($invoice->tax_percent ?? 0) > 0): ?>
                     <tr><td class="text-muted">مالیات (<?php echo $invoice->tax_percent; ?>%)</td><td class="text-start fw-bold"><?php echo number_format($invoice->tax_amount ?? 0); ?> تومان</td></tr>
