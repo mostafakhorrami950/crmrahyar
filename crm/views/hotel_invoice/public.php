@@ -51,8 +51,8 @@
         <small class="text-muted"><?php echo htmlspecialchars($companyName); ?> | <?php echo htmlspecialchars($invoiceSubtitle); ?></small>
         <div class="mt-2">
             <?php
-            $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت'];
-            $stC = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info'];
+            $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'تسویه شده'];
+            $stC = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
             $st = $invoice->invoice_status;
             ?>
             <span class="badge <?php echo $stC[$st]??'bg-secondary'; ?>" style="font-size:12px;"><?php echo $stL[$st]??$st; ?></span>
@@ -161,6 +161,7 @@ function submitPayment() {
     btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>در حال اتصال...';
     var fd = new FormData();
     fd.append('token', '<?php echo htmlspecialchars($invoice->payment_token ?? ''); ?>');
+    fd.append('code', '<?php echo htmlspecialchars($invoice->short_code ?? ''); ?>');
     fetch('<?php echo $config['url']; ?>/hotel-pay/submit', { method: 'POST', body: fd, headers: {'X-Requested-With': 'XMLHttpRequest'} })
     .then(function(r) { return r.json(); })
     .then(function(data) {

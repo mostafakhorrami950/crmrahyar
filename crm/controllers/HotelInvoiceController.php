@@ -718,60 +718,63 @@ class HotelInvoiceController
     {
         try {
             $db = Database::getInstance();
+
+            $payAmount = ($depositAmount > 0) ? $depositAmount : $finalAmount;
+
+            // Always generate a short_code so the public link works
+            $publicToken = bin2hex(random_bytes(16));
+            $shortCode = strtolower(substr(md5($publicToken), 0, 6));
+            $existing = $db->fetch("SELECT id FROM hotel_invoices WHERE short_code = :sc", [':sc' => $shortCode]);
+            if ($existing) {
+                $shortCode = strtolower(substr(md5($publicToken . time()), 0, 6));
+            }
+
+            $db->update('hotel_invoices', [
+                'payment_token' => $publicToken,
+                'short_code' => $shortCode,
+            ], 'id = :id', [':id' => $invoiceId]);
+
+            // Try to create Zibal payment link (non-critical)
             $config = $GLOBALS['app_config'];
             $merchant = $config['zibal']['merchant'];
             $callbackUrl = $config['zibal']['callback_url'];
-
-            $payAmount = ($depositAmount > 0) ? $depositAmount : $finalAmount;
             $amountRial = $payAmount * 10;
 
-            if ($amountRial < 1000) return;
-
-            $data = [
-                'merchant' => $merchant,
-                'amount' => $amountRial,
-                'callbackUrl' => $callbackUrl,
-                'description' => 'پرداخت فاکتور هتل #' . $invoiceId,
-                'orderId' => 'INV-' . $invoiceId . '-' . time(),
-            ];
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://gateway.zibal.ir/v1/request');
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $result = json_decode($response, true);
-
-            if ($result && isset($result['result']) && $result['result'] === 100) {
-                $trackId = $result['trackId'];
-                $publicToken = bin2hex(random_bytes(16));
-
-                $db->insert('payments', [
-                    'deal_id' => $dealId,
-                    'amount' => $payAmount,
-                    'currency' => 'IRR',
-                    'payment_type' => 'online',
-                    'status' => 'pending',
-                    'track_id' => $trackId,
+            if (!empty($merchant) && $amountRial >= 1000) {
+                $data = [
+                    'merchant' => $merchant,
+                    'amount' => $amountRial,
+                    'callbackUrl' => $callbackUrl,
                     'description' => 'پرداخت فاکتور هتل #' . $invoiceId,
-                    'created_by' => Auth::id(),
-                ]);
+                    'orderId' => 'INV-' . $invoiceId . '-' . time(),
+                ];
 
-                $shortCode = strtolower(substr(md5($publicToken), 0, 6));
-                $existing = $db->fetch("SELECT id FROM hotel_invoices WHERE short_code = :sc", [':sc' => $shortCode]);
-                if ($existing) {
-                    $shortCode = strtolower(substr(md5($publicToken . time()), 0, 6));
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, 'https://gateway.zibal.ir/v1/request');
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                $result = json_decode($response, true);
+
+                if ($result && isset($result['result']) && $result['result'] === 100) {
+                    $trackId = $result['trackId'];
+                    $db->insert('payments', [
+                        'deal_id' => $dealId,
+                        'amount' => $payAmount,
+                        'currency' => 'IRR',
+                        'payment_type' => 'online',
+                        'status' => 'pending',
+                        'track_id' => $trackId,
+                        'description' => 'پرداخت فاکتور هتل #' . $invoiceId,
+                        'created_by' => Auth::id(),
+                    ]);
                 }
-
-                $db->update('hotel_invoices', [
-                    'payment_token' => $publicToken,
-                    'short_code' => $shortCode,
-                ], 'id = :id', [':id' => $invoiceId]);
             }
         } catch (\Exception $e) {
             error_log('Failed to create payment link for invoice ' . $invoiceId . ': ' . $e->getMessage());
@@ -848,13 +851,20 @@ class HotelInvoiceController
     public function publicPay(): void
     {
         $token = $_POST['token'] ?? '';
-        if (empty($token)) { echo json_encode(['success' => false, 'message' => 'لینک نامعتبر است.']); exit; }
+        $code  = $_POST['code'] ?? '';
+        if (empty($token) && empty($code)) { echo json_encode(['success' => false, 'message' => 'لینک نامعتبر است.']); exit; }
 
         $db = Database::getInstance();
-        $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE payment_token = :token", [':token' => $token]);
+        $invoice = null;
+        if (!empty($token)) {
+            $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE payment_token = :token", [':token' => $token]);
+        }
+        if (!$invoice && !empty($code)) {
+            $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE short_code = :code", [':code' => $code]);
+        }
 
         if (!$invoice) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
-        if ($invoice->invoice_status === 'paid') { echo json_encode(['success' => false, 'message' => 'این فاکتور قبلاً پرداخت شده است.']); exit; }
+        if (in_array($invoice->invoice_status, ['settled', 'paid'])) { echo json_encode(['success' => false, 'message' => 'این فاکتور قبلاً پرداخت شده است.']); exit; }
 
         $payAmount = ($invoice->deposit_amount > 0) ? $invoice->deposit_amount : $invoice->final_amount;
         $amountRial = $payAmount * 10;
@@ -944,19 +954,30 @@ class HotelInvoiceController
                         'paid_at' => date('Y-m-d H:i:s'),
                     ], 'id = :id', [':id' => $payment->id]);
 
-                    if ($payment->deal_id) {
-                        $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
-                    }
-
+                    // Find the invoice
                     $invoiceId = 0;
                     if (preg_match('/فاکتور هتل #(\d+)/', $payment->description ?? '', $m)) {
                         $invoiceId = (int)$m[1];
                     }
+
                     if ($invoiceId > 0) {
-                        $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $invoiceId]);
-                    } else {
-                        $inv = $db->fetch("SELECT * FROM hotel_invoices WHERE deal_id = :deal_id AND payment_token IS NOT NULL ORDER BY id DESC LIMIT 1", [':deal_id' => $payment->deal_id]);
-                        if ($inv) { $db->update('hotel_invoices', ['invoice_status' => 'paid'], 'id = :id', [':id' => $inv->id]); }
+                        $invoice = $db->fetch("SELECT * FROM hotel_invoices WHERE id = :id", [':id' => $invoiceId]);
+                        if ($invoice) {
+                            // If invoice has deposit, check if paid amount matches deposit or full
+                            if ($invoice->deposit_amount > 0 && $payment->amount >= $invoice->deposit_amount && $payment->amount < $invoice->final_amount) {
+                                // Deposit paid → set to 'prepaid' (مانده دارد)
+                                $newStatus = 'prepaid';
+                            } else {
+                                // Full amount paid or no deposit
+                                $newStatus = 'settled';
+                            }
+                            $db->update('hotel_invoices', ['invoice_status' => $newStatus], 'id = :id', [':id' => $invoiceId]);
+
+                            // Update deal as won
+                            if ($newStatus === 'settled' && $payment->deal_id) {
+                                $db->update('deals', ['is_won' => 1, 'closed_at' => date('Y-m-d H:i:s')], 'id = :id', [':id' => $payment->deal_id]);
+                            }
+                        }
                     }
 
                     $success = true;
