@@ -600,6 +600,8 @@ class HotelInvoiceController
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
         Auth::requireAuth();
         $db = Database::getInstance();
+        // Auto-fix ENUM on every status-related operation
+        try { $db->query("ALTER TABLE `hotel_invoices` MODIFY COLUMN `invoice_status` ENUM('draft','final','paid','cancelled','pending','settled','prepaid') DEFAULT 'pending'"); } catch (\Exception $e) {}
         $invoiceId = (int)$params['id'];
         $status = $_POST['status'] ?? '';
 
@@ -918,6 +920,12 @@ class HotelInvoiceController
 
     public function paymentResult(): void
     {
+        // Auto-fix: ensure ENUM accepts new status values
+        try {
+            $db = Database::getInstance();
+            $db->query("ALTER TABLE `hotel_invoices` MODIFY COLUMN `invoice_status` ENUM('draft','final','paid','cancelled','pending','settled','prepaid') DEFAULT 'pending'");
+        } catch (\Exception $e) { /* Already correct or table issue */ }
+
         $trackId = $_GET['trackId'] ?? '';
         $success = false;
         $message = '';
