@@ -63,16 +63,17 @@
                             <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." value="<?php echo htmlspecialchars($item->description); ?>" oninput="filterItems(this)" autocomplete="off">
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="<?php echo htmlspecialchars($item->description); ?>">
                             <input type="hidden" name="item_category[]" class="item-category" value="<?php echo htmlspecialchars($item->category ?? 'general'); ?>">
-                            <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="<?php echo $item->default_price ?? $item->unit_price; ?>">
+                            <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="<?php echo (float)($item->default_price ?? $item->unit_price); ?>">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت اصلی</label>
-                            <input type="text" class="form-control form-control-sm item-default-price bg-light" value="<?php echo number_format($item->default_price ?? $item->unit_price); ?>" readonly dir="ltr" style="text-align:left;font-size:12px;">
+                            <input type="text" class="form-control form-control-sm item-default-price bg-light" value="<?php echo number_format((float)($item->default_price ?? $item->unit_price)); ?>" readonly dir="ltr" style="text-align:left;font-size:12px;">
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت جدید</label>
-                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($item->unit_price < ($item->default_price ?? $item->unit_price)) ? $item->unit_price : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
+                            <?php $defP = (float)($item->default_price ?? $item->unit_price); $curP = (float)$item->unit_price; ?>
+                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($defP > 0 && $curP < $defP) ? (int)$curP : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>

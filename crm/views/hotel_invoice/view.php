@@ -121,8 +121,7 @@
                     <tr><td class="text-muted">تخفیف</td><td class="text-start fw-bold text-danger">- <?php echo number_format($invoice->discount_amount); ?> تومان</td></tr>
                     <?php endif; ?>
                     <?php if ($invoice->invoice_status === 'pending'): ?>
-                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ باقیمانده</td><td class="text-start fw-bold fs-5" style="color:#dc3545;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
-                    <tr><td class="text-muted small" colspan="2"><i class="bi bi-info-circle me-1"></i>بیعانه پرداخت شده و مبلغ نهایی کسر شده است.</td></tr>
+                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ باقیمانده (پس از کسر بیعانه)</td><td class="text-start fw-bold fs-5" style="color:#dc3545;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
                     <?php else: ?>
                     <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ نهایی</td><td class="text-start fw-bold fs-5" style="color:<?php echo $successColor; ?>;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
                     <?php endif; ?>
@@ -151,9 +150,14 @@
     <div class="col-12 col-lg-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <div class="rounded-3 p-4 mb-3" style="background:<?php echo $successColor; ?>18;">
+                <div class="rounded-3 p-4 mb-3" style="background:<?php echo ($invoice->invoice_status === 'pending') ? '#dc3545' : $successColor; ?>18;">
+                    <?php if ($invoice->invoice_status === 'pending'): ?>
+                    <small class="text-muted d-block">مبلغ باقیمانده (پس از کسر بیعانه)</small>
+                    <strong style="color:#dc3545;font-size:28px;"><?php echo number_format($invoice->final_amount); ?></strong>
+                    <?php else: ?>
                     <small class="text-muted d-block">مبلغ نهایی</small>
                     <strong style="color:<?php echo $successColor; ?>;font-size:28px;"><?php echo number_format($invoice->final_amount); ?></strong>
+                    <?php endif; ?>
                     <br><small class="text-muted">تومان</small>
                     <?php if (!empty($invoice->invoice_type)): ?>
                     <br><small class="text-muted"><?php echo $invoice->invoice_type=='confirmed'?'<span class="text-primary">فاکتور تایید شده</span>':'<span class="text-secondary">پیش فاکتور</span>'; ?></small>
