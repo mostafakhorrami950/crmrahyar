@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چاپ فاکتور - <?php echo htmlspecialchars($invoice->hotel_name); ?></title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    <title>فاکتور <?php echo htmlspecialchars($invoice->invoice_number ?? '#' . $invoice->id); ?> - <?php echo htmlspecialchars($invoice->hotel_name); ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <?php
@@ -16,183 +15,314 @@
     $logo = $invSet['invoice_logo_url'] ?? '';
     $footer = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
     $terms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
+
+    // Status labels
+    $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+    $stC = ['pending'=>'#e67e22','settled'=>'#27ae60','prepaid'=>'#3498db','paid'=>'#27ae60'];
+    $st = $invoice->invoice_status;
+
+    // Calculate items discount
+    $itemsDiscount = 0;
+    foreach ($items as $itm) {
+        $defP = $itm->default_price ?? $itm->unit_price;
+        if ($itm->unit_price < $defP) {
+            $diff = $defP - $itm->unit_price;
+            $itemsDiscount += ($itm->category === 'hotel' && $invoice->nights > 0) ? $diff * $itm->quantity * $invoice->nights : $diff * $itm->quantity;
+        }
+    }
+    $hasDiscount = $itemsDiscount > 0 || ($invoice->discount_amount ?? 0) > 0;
+    $isPending = $invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0;
     ?>
     <style>
         @media print {
-            body { margin:0; padding:0; font-size:9pt; }
-            .no-print { display:none!important; }
-            .inv-wrap { padding:8mm; max-width:100%; }
-            @page { margin:8mm; size:A4; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { margin: 0; padding: 0; background: #fff !important; }
+            .no-print { display: none !important; }
+            .inv-wrap { padding: 6mm; max-width: 100%; border: none; box-shadow: none; margin: 0; border-radius: 0; }
+            @page { margin: 6mm; size: A4; }
         }
-        body { font-family:Vazirmatn,sans-serif; background:#f0f2f5; margin:0; }
-        .inv-wrap { max-width:780px; margin:15px auto; background:#fff; padding:20px; border:1px solid #e0e0e0; border-radius:8px; }
-        .inv-top { border-bottom:2px solid <?php echo $pc; ?>; padding-bottom:10px; margin-bottom:12px; }
-        .inv-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:8pt; font-weight:600; }
-        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
-        .info-item { background:#f8f9fa; border-radius:4px; padding:6px 8px; }
-        .info-item small { font-size:7.5pt; color:#666; display:block; }
-        .info-item strong { font-size:8.5pt; }
-        .item-tbl { width:100%; border-collapse:collapse; margin-bottom:12px; font-size:8.5pt; }
-        .item-tbl th { background:#f1f3f5; padding:6px 8px; border:1px solid #dee2e6; text-align:right; font-size:8pt; }
-        .item-tbl td { padding:5px 8px; border:1px solid #dee2e6; }
-        .sum-tbl { width:45%; margin-left:0; margin-right:auto; font-size:8.5pt; }
-        .sum-tbl td { padding:3px 8px; }
-        .footer-sec { border-top:1px dashed #dee2e6; padding-top:8px; margin-top:12px; font-size:7.5pt; color:#666; }
-        .stamp-area { margin-top:20px; display:flex; justify-content:space-between; }
-        .stamp-box { width:45%; text-align:center; border-top:1px solid #999; padding-top:5px; font-size:7.5pt; color:#666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Vazirmatn, Tahoma, sans-serif; background: #eef1f5; color: #2c3e50; font-size: 10pt; line-height: 1.6; }
+        .inv-wrap { max-width: 750px; margin: 10px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); overflow: hidden; }
+
+        /* Print/Close buttons */
+        .action-bar { background: <?php echo $pc; ?>; padding: 10px; text-align: center; }
+        .action-bar button { padding: 8px 28px; border: 2px solid #fff; border-radius: 6px; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer; margin: 0 6px; transition: all 0.2s; }
+        .btn-print { background: #fff; color: <?php echo $pc; ?>; }
+        .btn-print:hover { background: <?php echo $pc; ?>; color: #fff; }
+        .btn-close { background: transparent; color: #fff; }
+        .btn-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 3px solid <?php echo $pc; ?>; }
+        .header-right { text-align: right; }
+        .header-right .logo { max-height: 45px; margin-bottom: 6px; }
+        .header-right .title { font-size: 16pt; font-weight: 800; color: <?php echo $pc; ?>; margin: 0; }
+        .header-right .inv-number { font-size: 9pt; color: #7f8c8d; margin-top: 4px; }
+        .header-left { text-align: left; }
+        .header-left .company { font-size: 14pt; font-weight: 700; color: <?php echo $pc; ?>; }
+        .header-left .subtitle { font-size: 9pt; color: #95a5a6; }
+
+        /* Status & Type badges */
+        .badges { padding: 10px 24px; display: flex; gap: 8px; align-items: center; background: #f8f9fb; }
+        .badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.3px; }
+        .badge-status { background: <?php echo $stC[$st] ?? '#95a5a6'; ?>18; color: <?php echo $stC[$st] ?? '#95a5a6'; ?>; border: 1px solid <?php echo $stC[$st] ?? '#95a5a6'; ?>30; }
+        .badge-type { background: <?php echo $pc; ?>12; color: <?php echo $pc; ?>; border: 1px solid <?php echo $pc; ?>25; }
+        .creator-info { margin-left: auto; font-size: 8pt; color: #95a5a6; }
+
+        /* Info Cards */
+        .info-section { padding: 16px 24px; }
+        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .info-card { background: linear-gradient(135deg, #f8f9fb 0%, #f1f3f7 100%); border-radius: 6px; padding: 8px 10px; border: 1px solid #e8ecf1; }
+        .info-card .label { font-size: 7pt; color: #95a5a6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .info-card .value { font-size: 9pt; font-weight: 600; color: #2c3e50; }
+        .info-card .value.accent { color: <?php echo $pc; ?>; }
+
+        /* Divider */
+        .section-title { padding: 0 24px; margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; }
+        .section-title .line { flex: 1; height: 1px; background: #e0e4e8; }
+        .section-title span { font-size: 9pt; font-weight: 700; color: <?php echo $pc; ?>; white-space: nowrap; }
+
+        /* Items Table */
+        .items-section { padding: 0 24px; }
+        .items-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+        .items-table thead th { background: <?php echo $pc; ?>; color: #fff; padding: 8px 10px; font-weight: 600; font-size: 8pt; text-align: right; }
+        .items-table thead th:first-child { border-radius: 0 6px 0 0; }
+        .items-table thead th:last-child { border-radius: 6px 0 0 0; }
+        .items-table tbody td { padding: 7px 10px; border-bottom: 1px solid #eef0f3; }
+        .items-table tbody tr:hover { background: #f8f9fb; }
+        .items-table tbody tr:last-child td { border-bottom: none; }
+        .items-table .num { text-align: center; font-weight: 600; }
+        .items-table .price { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 9pt; }
+        .items-table .total { text-align: left; direction: ltr; font-weight: 700; font-family: 'Courier New', monospace; }
+        .item-cat { display: inline-block; background: <?php echo $pc; ?>10; color: <?php echo $pc; ?>; font-size: 7pt; padding: 1px 6px; border-radius: 3px; margin-top: 2px; }
+
+        /* Financial Summary */
+        .summary-section { padding: 0 24px 16px; }
+        .summary-box { max-width: 320px; margin-right: auto; background: #f8f9fb; border-radius: 8px; padding: 12px 16px; border: 1px solid #e8ecf1; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 9pt; }
+        .summary-row .lbl { color: #7f8c8d; }
+        .summary-row .val { font-weight: 600; font-family: 'Courier New', monospace; direction: ltr; }
+        .summary-row .val.red { color: #e74c3c; }
+        .summary-row .val.green { color: <?php echo $sc; ?>; }
+        .summary-divider { border: none; border-top: 2px dashed #dce1e6; margin: 8px 0; }
+        .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 0; font-size: 11pt; font-weight: 800; }
+        .summary-total .lbl { color: #2c3e50; }
+        .summary-total .val { font-family: 'Courier New', monospace; direction: ltr; }
+        .summary-total .val.remaining { color: #e74c3c; font-size: 12pt; }
+        .summary-total .val.final { color: <?php echo $sc; ?>; font-size: 12pt; }
+
+        /* Notes & Terms */
+        .notes-section { padding: 0 24px 16px; }
+        .note-box { background: #fffde7; border-radius: 6px; padding: 10px 14px; border-right: 3px solid #f39c12; font-size: 8.5pt; color: #555; margin-bottom: 8px; }
+        .note-box .note-title { font-weight: 700; color: #e67e22; margin-bottom: 4px; font-size: 8pt; }
+        .terms-box { background: #f0f7ff; border-radius: 6px; padding: 10px 14px; border-right: 3px solid <?php echo $pc; ?>; font-size: 8.5pt; color: #555; }
+        .terms-box .terms-title { font-weight: 700; color: <?php echo $pc; ?>; margin-bottom: 4px; font-size: 8pt; }
+
+        /* Signature */
+        .signature-section { padding: 16px 24px; display: flex; justify-content: space-between; gap: 40px; }
+        .sig-box { flex: 1; text-align: center; padding-top: 40px; border-top: 1px solid #bbb; font-size: 8pt; color: #95a5a6; }
+
+        /* Footer */
+        .invoice-footer { background: #f8f9fb; padding: 12px 24px; text-align: center; border-top: 1px solid #e8ecf1; }
+        .invoice-footer p { font-size: 8pt; color: #7f8c8d; margin-bottom: 4px; }
+        .invoice-footer .company-line { font-size: 7.5pt; color: #bdc3c7; }
     </style>
 </head>
 <body>
-    <div class="no-print" style="text-align:center;padding:8px;background:<?php echo $pc; ?>;color:#fff;border-radius:0 0 8px 8px;">
-        <button onclick="window.print()" style="padding:8px 24px;background:#fff;color:<?php echo $pc; ?>;border:none;border-radius:4px;font-weight:bold;cursor:pointer;margin:4px;"><i class="bi bi-printer me-1"></i>چاپ</button>
-        <button onclick="window.close()" style="padding:8px 24px;background:#666;color:#fff;border:none;border-radius:4px;font-weight:bold;cursor:pointer;margin:4px;">بستن</button>
+    <div class="no-print action-bar">
+        <button class="btn-print" onclick="window.print()"><i class="bi bi-printer me-1"></i>چاپ فاکتور</button>
+        <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg me-1"></i>بستن</button>
     </div>
 
     <div class="inv-wrap">
         <!-- Header -->
-        <div class="inv-top">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" style="max-height:40px;margin-bottom:4px;" alt="لوگو"><?php endif; ?>
-                    <h5 style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;margin:0 0 2px 0;"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></h5>
-                    <span style="font-size:8pt;color:#666;">شماره: <strong><?php echo $invoice->invoice_number ?? '#'.$invoice->id; ?></strong></span>
-                    &nbsp;|&nbsp;
-                    <span style="font-size:8pt;color:#666;">تاریخ صدور: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></span>
+        <div class="header">
+            <div class="header-right">
+                <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" class="logo" alt="لوگو"><?php endif; ?>
+                <h1 class="title"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></h1>
+                <div class="inv-number">
+                    شماره: <strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong>
+                    &nbsp;&bull;&nbsp;
+                    تاریخ صدور: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong>
                 </div>
-                <div class="text-start">
-                    <div style="color:<?php echo $pc; ?>;font-size:14pt;font-weight:700;"><?php echo htmlspecialchars($company); ?></div>
-                    <div style="font-size:8pt;color:#666;"><?php echo htmlspecialchars($sub); ?></div>
-                </div>
+            </div>
+            <div class="header-left">
+                <div class="company"><?php echo htmlspecialchars($company); ?></div>
+                <div class="subtitle"><?php echo htmlspecialchars($sub); ?></div>
             </div>
         </div>
 
-        <!-- Status Bar -->
-        <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:8pt;">
-            <div>
-                <?php
-                $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
-                $stC = ['pending'=>'#ffc107','settled'=>'#198754','prepaid'=>'#0dcaf0','paid'=>'#198754'];
-                $st = $invoice->invoice_status;
-                ?>
-                <span class="inv-badge" style="background:<?php echo $stC[$st]??'#6c757d'; ?>20;color:<?php echo $stC[$st]??'#6c757d'; ?>;"><?php echo $stL[$st]??$st; ?></span>
-                <?php if ($invoice->invoice_type): ?>
-                <span class="inv-badge" style="background:<?php echo $pc; ?>15;color:<?php echo $pc; ?>;"><?php echo $invoice->invoice_type=='confirmed'?'تایید شده':'پیش فاکتور'; ?></span>
+        <!-- Badges -->
+        <div class="badges">
+            <span class="badge badge-status"><?php echo $stL[$st] ?? $st; ?></span>
+            <?php if ($invoice->invoice_type): ?>
+            <span class="badge badge-type"><?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span>
+            <?php endif; ?>
+            <span class="creator-info">صادر شده توسط: <strong><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></span>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="label">نام هتل</div>
+                    <div class="value"><?php echo htmlspecialchars($invoice->hotel_name); ?></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">نام میهمان</div>
+                    <div class="value"><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">تلفن</div>
+                    <div class="value" dir="ltr" style="text-align:left;"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">تعداد شب‌ها</div>
+                    <div class="value accent"><?php echo $invoice->nights; ?> شب</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">تاریخ ورود</div>
+                    <div class="value"><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">تاریخ خروج</div>
+                    <div class="value"><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></div>
+                </div>
+                <?php if ($invoice->valid_until): ?>
+                <div class="info-card">
+                    <div class="label">تاریخ اعتبار</div>
+                    <div class="value"><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></div>
+                </div>
                 <?php endif; ?>
             </div>
-            <div style="color:#999;">صادر شده توسط: <strong style="color:#333;"><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></div>
         </div>
 
-        <!-- Info Grid -->
-        <div class="info-grid">
-            <div class="info-item"><small>هتل</small><strong><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div>
-            <div class="info-item"><small>میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></strong></div>
-            <div class="info-item"><small>تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></strong></div>
-            <div class="info-item"><small>خدمات</small><strong><?php
-                $svcs = [];
-                if ($invoice->transfer_included) $svcs[] = 'ترانسفر';
-                if ($invoice->visa_included) $svcs[] = 'ویزا';
-                if ($invoice->insurance_included) $svcs[] = 'بیمه';
-                echo !empty($svcs) ? implode(' | ', $svcs) : '-';
-            ?></strong></div>
-        </div>
-        <div class="info-grid">
-            <div class="info-item"><small>تاریخ ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div>
-            <div class="info-item"><small>تاریخ خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div>
-            <div class="info-item"><small>مدت اقامت</small><strong style="color:<?php echo $pc; ?>;"><?php echo $invoice->nights; ?> شب</strong></div>
-            <?php if ($invoice->valid_until): ?>
-            <div class="info-item"><small>تاریخ اعتبار</small><strong><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></strong></div>
-            <?php endif; ?>
+        <!-- Items Section -->
+        <div class="section-title">
+            <span><i class="bi bi-list-ol me-1"></i>اقلام فاکتور</span>
+            <div class="line"></div>
         </div>
 
-        <!-- Items Table with Nights Column -->
-        <table class="item-tbl">
-            <thead>
-                <tr>
-                    <th style="width:4%">#</th>
-                    <th style="width:38%">شرح آیتم</th>
-                    <th style="width:8%" class="text-center">تعداد</th>
-                    <th style="width:14%" class="text-center">قیمت واحد</th>
-                    <th style="width:8%" class="text-center">شب</th>
-                    <th style="width:14%" class="text-center">مبلغ کل</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $i => $item): ?>
-                <tr>
-                    <td class="text-center"><?php echo $i + 1; ?></td>
-                    <td>
-                        <?php echo htmlspecialchars($item->description); ?>
-                        <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
-                        <br><small style="font-size:7pt;color:#999;">(قیمت هر شب)</small>
-                        <?php endif; ?>
-                    </td>
-                    <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
-                    <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
-                    <td class="text-center"><?php echo $invoice->nights; ?></td>
-                    <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="items-section">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width:4%">#</th>
+                        <th style="width:36%">شرح</th>
+                        <th style="width:8%" class="num">تعداد</th>
+                        <th style="width:14%" class="price">قیمت واحد</th>
+                        <th style="width:8%" class="num">شب</th>
+                        <th style="width:15%" class="total">مبلغ کل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($items as $i => $item): ?>
+                    <tr>
+                        <td class="num" style="color:#95a5a6;"><?php echo $i + 1; ?></td>
+                        <td>
+                            <div><?php echo htmlspecialchars($item->description); ?></div>
+                            <?php if (!empty($item->category) && $item->category !== 'general'): ?>
+                            <span class="item-cat"><?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="num"><?php echo number_format((int)$item->quantity); ?></td>
+                        <td class="price"><?php echo number_format($item->unit_price); ?></td>
+                        <td class="num"><?php echo $invoice->nights; ?></td>
+                        <td class="total"><?php echo number_format($item->total_price); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
         <!-- Financial Summary -->
-        <?php
-        // Calculate items discount
-        $itemsDiscount = 0;
-        foreach ($items as $itm) {
-            $defP = $itm->default_price ?? $itm->unit_price;
-            if ($itm->unit_price < $defP) {
-                $diff = $defP - $itm->unit_price;
-                $itemsDiscount += ($itm->category === 'hotel' && $invoice->nights > 0) ? $diff * $itm->quantity * $invoice->nights : $diff * $itm->quantity;
-            }
-        }
-        ?>
-        <table class="sum-tbl">
-            <tr><td style="color:#666;">جمع کل (قیمت اصلی):</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format(($invoice->subtotal ?? 0) + $itemsDiscount); ?> <small>تومان</small></td></tr>
-            <?php if ($itemsDiscount > 0): ?>
-            <tr><td style="color:#dc3545;"><i class="bi bi-tag"></i> تخفیف تغییر قیمت:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($itemsDiscount); ?> <small>تومان</small></td></tr>
-            <?php endif; ?>
-            <tr><td style="color:#666;">جمع کل:</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?> <small>تومان</small></td></tr>
-            <?php if (($invoice->tax_percent ?? 0) > 0): ?>
-            <tr><td style="color:#666;">مالیات (<?php echo $invoice->tax_percent; ?>%):</td><td class="text-end fw-bold" dir="ltr"><?php echo number_format($invoice->tax_amount ?? 0); ?> <small>تومان</small></td></tr>
-            <?php endif; ?>
-            <?php if (($invoice->discount_amount ?? 0) > 0): ?>
-            <tr><td style="color:#dc3545;">تخفیف:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->discount_amount); ?> <small>تومان</small></td></tr>
-            <?php endif; ?>
-            <?php if ($invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0): ?>
-            <tr><td style="color:#666;"><i class="bi bi-wallet2"></i> بیعانه پرداخت شده:</td><td class="text-end fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->deposit_amount); ?> <small>تومان</small></td></tr>
-            <tr><td style="font-weight:700;font-size:10pt;padding-top:6px;border-top:2px solid #333;">مبلغ باقیمانده:</td><td class="text-end fw-bold" style="font-size:11pt;color:#dc3545;padding-top:6px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> <small>تومان</small></td></tr>
-            <?php else: ?>
-            <tr><td style="font-weight:700;font-size:10pt;padding-top:6px;border-top:2px solid #333;">مبلغ نهایی:</td><td class="text-end fw-bold" style="font-size:11pt;color:<?php echo $sc; ?>;padding-top:6px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> <small>تومان</small></td></tr>
-            <?php endif; ?>
-        </table>
+        <div class="section-title">
+            <span><i class="bi bi-calculator me-1"></i>خلاصه مالی</span>
+            <div class="line"></div>
+        </div>
 
-        <!-- Payment Terms -->
-        <?php if ($terms): ?>
-        <div style="background:#f8f9fa;border-radius:4px;padding:8px;margin-top:10px;font-size:8pt;">
-            <strong style="color:#666;"><i class="bi bi-shield-check me-1"></i>شرایط پرداخت:</strong>
-            <span style="color:#555;"><?php echo nl2br(htmlspecialchars($terms)); ?></span>
+        <div class="summary-section">
+            <div class="summary-box">
+                <?php if ($itemsDiscount > 0): ?>
+                <div class="summary-row">
+                    <span class="lbl">جمع کل (قیمت اصلی)</span>
+                    <span class="val"><?php echo number_format(($invoice->subtotal ?? 0) + $itemsDiscount); ?></span>
+                </div>
+                <div class="summary-row">
+                    <span class="lbl"><i class="bi bi-tag me-1"></i>تخفیف تغییر قیمت</span>
+                    <span class="val red">- <?php echo number_format($itemsDiscount); ?></span>
+                </div>
+                <?php endif; ?>
+
+                <div class="summary-row">
+                    <span class="lbl">جمع کل</span>
+                    <span class="val"><?php echo number_format($invoice->subtotal ?? $invoice->total_amount ?? 0); ?></span>
+                </div>
+
+                <?php if (($invoice->tax_percent ?? 0) > 0): ?>
+                <div class="summary-row">
+                    <span class="lbl">مالیات (<?php echo $invoice->tax_percent; ?>%)</span>
+                    <span class="val"><?php echo number_format($invoice->tax_amount ?? 0); ?></span>
+                </div>
+                <?php endif; ?>
+
+                <?php if (($invoice->discount_amount ?? 0) > 0): ?>
+                <div class="summary-row">
+                    <span class="lbl">تخفیف</span>
+                    <span class="val red">- <?php echo number_format($invoice->discount_amount); ?></span>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($isPending): ?>
+                <hr class="summary-divider">
+                <div class="summary-row">
+                    <span class="lbl"><i class="bi bi-wallet2 me-1"></i>بیعانه پرداخت شده</span>
+                    <span class="val red">- <?php echo number_format($invoice->deposit_amount); ?></span>
+                </div>
+                <div class="summary-total">
+                    <span class="lbl">مبلغ باقیمانده:</span>
+                    <span class="val remaining"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</span>
+                </div>
+                <?php else: ?>
+                <hr class="summary-divider">
+                <div class="summary-total">
+                    <span class="lbl">مبلغ نهایی:</span>
+                    <span class="val final"><?php echo number_format($invoice->final_amount); ?> تومان</span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Notes & Terms -->
+        <?php if ($terms || $invoice->notes): ?>
+        <div class="notes-section">
+            <?php if ($invoice->notes): ?>
+            <div class="note-box">
+                <div class="note-title"><i class="bi bi-journal-text me-1"></i>توضیحات</div>
+                <?php echo nl2br(htmlspecialchars($invoice->notes)); ?>
+            </div>
+            <?php endif; ?>
+            <?php if ($terms): ?>
+            <div class="terms-box">
+                <div class="terms-title"><i class="bi bi-shield-check me-1"></i>شرایط پرداخت</div>
+                <?php echo nl2br(htmlspecialchars($terms)); ?>
+            </div>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
 
-        <!-- Notes -->
-        <?php if ($invoice->notes): ?>
-        <div style="margin-top:8px;font-size:8pt;">
-            <strong style="color:#666;"><i class="bi bi-journal-text me-1"></i>توضیحات:</strong>
-            <span style="color:#555;"><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></span>
-        </div>
-        <?php endif; ?>
-
-        <!-- Signature Area -->
-        <div class="stamp-area">
-            <div class="stamp-box">امضای صادرکننده</div>
-            <div class="stamp-box">امضای تاییدکننده</div>
+        <!-- Signature -->
+        <div class="signature-section">
+            <div class="sig-box">امضای صادرکننده</div>
+            <div class="sig-box">امضای تاییدکننده</div>
         </div>
 
         <!-- Footer -->
-        <div class="footer-sec text-center">
-            <?php if ($footer): ?><p style="margin:0 0 4px 0;"><?php echo nl2br(htmlspecialchars($footer)); ?></p><?php endif; ?>
-            <small><?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?> | صادر شده توسط: <?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></small>
+        <div class="invoice-footer">
+            <?php if ($footer): ?><p><?php echo nl2br(htmlspecialchars($footer)); ?></p><?php endif; ?>
+            <div class="company-line"><?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?></div>
         </div>
     </div>
 </body>
+</html>
