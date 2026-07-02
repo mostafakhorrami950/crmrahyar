@@ -17,9 +17,39 @@
     $logoUrl = $invSet['invoice_logo_url'] ?? '';
     $footerText = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
     ?>
+    <?php
+    // Check if invoice validity has expired
+    $isExpired = false;
+    if ($invoice && $invoice->invoice_status === 'prepaid' && !empty($invoice->valid_until)) {
+        $isExpired = strtotime($invoice->valid_until) < time();
+    }
+    ?>
     <style>
         body { font-family: Vazirmatn, sans-serif; background: #f5f7fa; }
-        .inv-box { max-width: 700px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .inv-box { max-width: 700px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
+        <?php if ($isExpired): ?>
+        .inv-box::before {
+            content: 'اعتبار فاکتور تمام شده';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 42px;
+            font-weight: 900;
+            color: rgba(220, 53, 69, 0.12);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border: 6px solid rgba(220, 53, 69, 0.12);
+            padding: 10px 30px;
+        }
+        .expired-overlay {
+            position: relative;
+            z-index: 5;
+        }
+        <?php endif; ?>
         .inv-top { border-bottom: 3px solid <?php echo $primaryColor; ?>; padding-bottom: 15px; margin-bottom: 20px; }
         .info-item { background: #f8f9fa; border-radius: 8px; padding: 10px 12px; }
         .info-item small { font-size: 10px; color: #666; display: block; }
@@ -44,6 +74,7 @@
     </div>
 
     <?php elseif ($invoice): ?>
+    <div class="<?php echo $isExpired ? 'expired-overlay' : ''; ?>">
     <!-- Header -->
     <div class="inv-top text-center">
         <?php if ($logoUrl): ?><img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="لوگو" style="max-height:55px;margin-bottom:8px;"><?php endif; ?>
@@ -148,21 +179,29 @@
         <p class="text-muted mb-0">این فاکتور دارای مانده است و در انتظار تسویه نهایی می‌باشد.</p>
     </div>
     <?php elseif ($invoice->invoice_status === 'prepaid'): ?>
-    <div class="text-center p-4 mb-3" style="background:<?php echo $successColor; ?>18;border-radius:12px;">
-        <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
-        <small class="text-muted">مبلغ قابل پرداخت (بیعانه)</small>
+        <?php if ($isExpired): ?>
+        <div class="text-center p-4 mb-3" style="background:#dc354518;border:2px dashed #dc3545;border-radius:12px;">
+            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:40px;"></i>
+            <h5 class="mt-2 fw-bold text-danger">اعتبار فاکتور تمام شده</h5>
+            <p class="text-muted mb-0">تاریخ اعتبار این فاکتور (<?php echo \Core\JDate::displayDate($invoice->valid_until); ?>) به پایان رسیده است.<br>لطفاً برای تمدید با صادرکننده فاکتور تماس بگیرید.</p>
+        </div>
         <?php else: ?>
-        <small class="text-muted">مبلغ قابل پرداخت</small>
-        <?php endif; ?>
-        <h3 class="fw-bold mt-1" style="color:<?php echo $successColor; ?>;"><?php echo number_format($payAmount); ?> تومان</h3>
-    </div>
+        <div class="text-center p-4 mb-3" style="background:<?php echo $successColor; ?>18;border-radius:12px;">
+            <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
+            <small class="text-muted">مبلغ قابل پرداخت (بیعانه)</small>
+            <?php else: ?>
+            <small class="text-muted">مبلغ قابل پرداخت</small>
+            <?php endif; ?>
+            <h3 class="fw-bold mt-1" style="color:<?php echo $successColor; ?>;"><?php echo number_format($payAmount); ?> تومان</h3>
+        </div>
 
-    <div id="paySection">
-        <button class="pay-btn" id="payBtn" onclick="submitPayment()">
-            <i class="bi bi-credit-card me-2"></i>پرداخت آنلاین
-        </button>
-        <div id="payError" class="alert alert-danger mt-3 d-none"></div>
-    </div>
+        <div id="paySection">
+            <button class="pay-btn" id="payBtn" onclick="submitPayment()">
+                <i class="bi bi-credit-card me-2"></i>پرداخت آنلاین
+            </button>
+            <div id="payError" class="alert alert-danger mt-3 d-none"></div>
+        </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <!-- Footer -->
@@ -171,6 +210,7 @@
         <small><?php echo htmlspecialchars($companyName); ?> | <?php echo htmlspecialchars($invoiceSubtitle); ?></small>
     </div>
     <?php endif; ?>
+    </div><!-- end expired-overlay -->
 </div>
 
 <script>

@@ -891,6 +891,12 @@ class HotelInvoiceController
             exit;
         }
 
+        // Check if invoice validity has expired
+        if (!empty($invoice->valid_until) && strtotime($invoice->valid_until) < time()) {
+            echo json_encode(['success' => false, 'message' => 'اعتبار این فاکتور به پایان رسیده است. لطفاً با صادرکننده فاکتور تماس بگیرید.']);
+            exit;
+        }
+
         $payAmount = ($invoice->deposit_amount > 0) ? $invoice->deposit_amount : $invoice->final_amount;
         $amountRial = $payAmount * 10;
 
