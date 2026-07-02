@@ -1046,13 +1046,8 @@ class HotelInvoiceController
                             // If invoice has deposit, check if paid amount matches deposit or full
                             if ($invoice->deposit_amount > 0 && $payment->amount >= $invoice->deposit_amount && $payment->amount < $invoice->final_amount) {
                                 // Deposit paid → set to 'pending' (مانده دارد)
+                                // Keep deposit_amount and final_amount unchanged - view calculates remaining
                                 $newStatus = 'pending';
-                                // Reduce final amount by deposit amount
-                                $newFinalAmount = max($invoice->final_amount - $invoice->deposit_amount, 0);
-                                $db->update('hotel_invoices', [
-                                    'final_amount' => $newFinalAmount,
-                                    'deposit_amount' => 0,
-                                ], 'id = :id', [':id' => $invoiceId]);
                             } else {
                                 // Full amount paid or no deposit
                                 $newStatus = 'paid';
