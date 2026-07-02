@@ -72,8 +72,8 @@
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت جدید</label>
-                            <?php $defP = (float)($item->default_price ?? $item->unit_price); $curP = (float)$item->unit_price; ?>
-                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($defP > 0 && $curP < $defP) ? (int)$curP : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
+                            <?php $defP = (float)($item->default_price ?? 0); $curP = (float)$item->unit_price; ?>
+                            <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($defP > 0 && $curP != $defP) ? (int)$curP : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>

@@ -114,16 +114,30 @@
                     <?php if (($invoice->tax_percent ?? 0) > 0): ?>
                     <tr><td class="text-muted">مالیات (<?php echo $invoice->tax_percent; ?>%)</td><td class="text-start fw-bold"><?php echo number_format($invoice->tax_amount ?? 0); ?> تومان</td></tr>
                     <?php endif; ?>
-                    <?php if (($invoice->service_fee ?? 0) > 0): ?>
-                    <tr><td class="text-muted">هزینه خدمات</td><td class="text-start fw-bold"><?php echo number_format($invoice->service_fee); ?> تومان</td></tr>
-                    <?php endif; ?>
                     <?php if (($invoice->discount_amount ?? 0) > 0): ?>
                     <tr><td class="text-muted">تخفیف</td><td class="text-start fw-bold text-danger">- <?php echo number_format($invoice->discount_amount); ?> تومان</td></tr>
                     <?php endif; ?>
+                    <?php
+                    // Calculate remaining amount when deposit was paid
+                    $paidDeposit = 0;
+                    $displayFinal = $invoice->final_amount;
+                    if ($invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0) {
+                        // Deposit not yet subtracted from final_amount (manual status change)
+                        $paidDeposit = $invoice->deposit_amount;
+                        $displayFinal = max($invoice->final_amount - $invoice->deposit_amount, 0);
+                    } elseif ($invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) == 0) {
+                        // Deposit already subtracted from final_amount (automatic payment)
+                        // final_amount is already the remaining amount
+                        $displayFinal = $invoice->final_amount;
+                    }
+                    ?>
                     <?php if ($invoice->invoice_status === 'pending'): ?>
-                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ باقیمانده (پس از کسر بیعانه)</td><td class="text-start fw-bold fs-5" style="color:#dc3545;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
+                    <?php if ($paidDeposit > 0): ?>
+                    <tr><td class="text-muted"><i class="bi bi-wallet2 me-1"></i>بیعانه پرداخت شده</td><td class="text-start fw-bold text-danger">- <?php echo number_format($paidDeposit); ?> تومان</td></tr>
+                    <?php endif; ?>
+                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ باقیمانده قابل پرداخت</td><td class="text-start fw-bold fs-5" style="color:#dc3545;"><?php echo number_format($displayFinal); ?> تومان</td></tr>
                     <?php else: ?>
-                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ نهایی</td><td class="text-start fw-bold fs-5" style="color:<?php echo $successColor; ?>;"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
+                    <tr class="border-top border-2"><td class="fw-bold fs-6">مبلغ نهایی</td><td class="text-start fw-bold fs-5" style="color:<?php echo $successColor; ?>;"><?php echo number_format($displayFinal); ?> تومان</td></tr>
                     <?php endif; ?>
                 </table>
             </div>
@@ -150,13 +164,19 @@
     <div class="col-12 col-lg-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
+                <?php
+                $sidebarAmount = $invoice->final_amount;
+                if ($invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0) {
+                    $sidebarAmount = max($invoice->final_amount - $invoice->deposit_amount, 0);
+                }
+                ?>
                 <div class="rounded-3 p-4 mb-3" style="background:<?php echo ($invoice->invoice_status === 'pending') ? '#dc3545' : $successColor; ?>18;">
                     <?php if ($invoice->invoice_status === 'pending'): ?>
-                    <small class="text-muted d-block">مبلغ باقیمانده (پس از کسر بیعانه)</small>
-                    <strong style="color:#dc3545;font-size:28px;"><?php echo number_format($invoice->final_amount); ?></strong>
+                    <small class="text-muted d-block">مبلغ باقیمانده قابل پرداخت</small>
+                    <strong style="color:#dc3545;font-size:28px;"><?php echo number_format($sidebarAmount); ?></strong>
                     <?php else: ?>
                     <small class="text-muted d-block">مبلغ نهایی</small>
-                    <strong style="color:<?php echo $successColor; ?>;font-size:28px;"><?php echo number_format($invoice->final_amount); ?></strong>
+                    <strong style="color:<?php echo $successColor; ?>;font-size:28px;"><?php echo number_format($sidebarAmount); ?></strong>
                     <?php endif; ?>
                     <br><small class="text-muted">تومان</small>
                     <?php if (!empty($invoice->invoice_type)): ?>
