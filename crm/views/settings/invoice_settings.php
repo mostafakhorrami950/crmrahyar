@@ -39,6 +39,27 @@
                             <small class="text-muted">آدرس تصویر لوگوی سربرگ فاکتور (اختیاری)</small>
                         </div>
 
+                        <!-- Default Notes -->
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>متن پیش‌فرض «توضیحات»</label>
+                            <textarea name="invoice_notes" class="form-control" rows="3"><?php echo htmlspecialchars($settings['invoice_notes'] ?? ''); ?></textarea>
+                            <small class="text-muted">این متن به صورت پیش‌فرض در فرم ایجاد فاکتور نمایش داده می‌شود.</small>
+                        </div>
+
+                        <!-- Default Payment Terms -->
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-shield-check me-1"></i>متن پیش‌فرض «شرایط پرداخت»</label>
+                            <textarea name="invoice_terms" class="form-control" rows="3"><?php echo htmlspecialchars($settings['invoice_terms'] ?? 'شرایط پرداخت: پرداخت نقدی یا انتقال بانکی.'); ?></textarea>
+                            <small class="text-muted">این متن به صورت پیش‌فرض در فرم ایجاد فاکتور نمایش داده می‌شود.</small>
+                        </div>
+
+                        <!-- Default Footer Text -->
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-file-text me-1"></i>متن پیش‌فرض «متن فوتر فاکتور»</label>
+                            <textarea name="invoice_footer_text" class="form-control" rows="3"><?php echo htmlspecialchars($settings['invoice_footer_text'] ?? 'این فاکتور به صورت الکترونیکی صادر شده است.'); ?></textarea>
+                            <small class="text-muted">این متن در پایین فاکتور چاپی و صفحه پرداخت نمایش داده می‌شود.</small>
+                        </div>
+
                         <!-- Colors -->
                         <div class="col-4">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-palette me-1"></i>رنگ اصلی</label>

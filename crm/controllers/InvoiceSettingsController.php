@@ -38,6 +38,9 @@ class InvoiceSettingsController
             'invoice_primary_color',
             'invoice_secondary_color',
             'invoice_success_color',
+            'invoice_notes',
+            'invoice_terms',
+            'invoice_footer_text',
         ];
 
         foreach ($keys as $key) {
