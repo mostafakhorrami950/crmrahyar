@@ -117,14 +117,11 @@
             <?php if (($invoice->discount_amount ?? 0) > 0): ?>
             <tr><td style="color:#dc3545;">تخفیف:</td><td class="text-start fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->discount_amount); ?> تومان</td></tr>
             <?php endif; ?>
-            <?php if ($invoice->invoice_status === 'pending'): ?>
-            <tr><td style="font-weight:700;font-size:16px;padding-top:8px;border-top:2px solid #333;">مبلغ باقیمانده:</td><td class="text-start fw-bold" style="font-size:18px;color:#dc3545;padding-top:8px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
-            <tr><td colspan="2" style="font-size:11px;color:#999;">بیعانه پرداخت شده و مبلغ نهایی کسر شده است.</td></tr>
+            <?php if ($invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0): ?>
+            <tr><td style="color:#666;"><i class="bi bi-wallet2"></i> بیعانه پرداخت شده:</td><td class="text-start fw-bold text-danger" dir="ltr">- <?php echo number_format($invoice->deposit_amount); ?> تومان</td></tr>
+            <tr><td style="font-weight:700;font-size:16px;padding-top:8px;border-top:2px solid #333;">مبلغ باقیمانده:</td><td class="text-start fw-bold" style="font-size:18px;color:#dc3545;padding-top:8px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</td></tr>
             <?php else: ?>
             <tr><td style="font-weight:700;font-size:16px;padding-top:8px;border-top:2px solid #333;">مبلغ نهایی:</td><td class="text-start fw-bold" style="font-size:18px;color:<?php echo $successColor; ?>;padding-top:8px;border-top:2px solid #333;" dir="ltr"><?php echo number_format($invoice->final_amount); ?> تومان</td></tr>
-            <?php endif; ?>
-            <?php if (($invoice->deposit_amount ?? 0) > 0): ?>
-            <tr><td style="color:#666;"><i class="bi bi-wallet2"></i> بیعانه:</td><td class="text-start fw-bold" dir="ltr"><?php echo number_format($invoice->deposit_amount); ?> تومان</td></tr>
             <?php endif; ?>
         </table>
     </div>
