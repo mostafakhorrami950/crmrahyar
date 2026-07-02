@@ -1,4 +1,4 @@
-<?php $config = $GLOBALS['app_config']; ?>
+﻿<?php $config = $GLOBALS['app_config']; ?>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <h5 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>مدیریت آیتم‌های فاکتور</h5>

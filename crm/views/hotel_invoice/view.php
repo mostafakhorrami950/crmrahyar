@@ -1,4 +1,4 @@
-<?php $config = $GLOBALS['app_config']; ?>
+﻿<?php $config = $GLOBALS['app_config']; ?>
 <?php $invSet = $invoiceSettings ?? []; ?>
 <?php $primaryColor = $invSet['invoice_primary_color'] ?? '#0d6efd'; ?>
 <?php $successColor = $invSet['invoice_success_color'] ?? '#198754'; ?>
@@ -24,7 +24,7 @@
                 <small class="text-muted">شماره فاکتور: <?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></small>
                 <br>
                 <?php
-                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+                $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پرداخت نشده','paid'=>'پرداخت شده'];
                 $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
                 $st = $invoice->invoice_status;
                 ?>
@@ -138,7 +138,7 @@
             <?php endif; ?>
 
             <div class="d-flex gap-2 flex-wrap">
-                <?php if ($invoice->invoice_status !== 'prepaid'): ?><button class="btn btn-sm btn-outline-info" onclick="updateStatus(<?php echo $invoice->id; ?>, 'prepaid')"><i class="bi bi-wallet2 me-1"></i>پیش پرداخت</button><?php endif; ?>
+                <?php if ($invoice->invoice_status !== 'prepaid'): ?><button class="btn btn-sm btn-outline-info" onclick="updateStatus(<?php echo $invoice->id; ?>, 'prepaid')"><i class="bi bi-wallet2 me-1"></i>پرداخت نشده</button><?php endif; ?>
                 <?php if ($invoice->invoice_status !== 'pending'): ?><button class="btn btn-sm btn-outline-warning" onclick="updateStatus(<?php echo $invoice->id; ?>, 'pending')"><i class="bi bi-hourglass-split me-1"></i>مانده دارد</button><?php endif; ?>
                 <?php if ($invoice->invoice_status !== 'paid'): ?><button class="btn btn-sm btn-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'paid')"><i class="bi bi-check-circle me-1"></i>پرداخت شده</button><?php endif; ?>
                 <?php if ($invoice->invoice_status !== 'settled'): ?><button class="btn btn-sm btn-outline-success" onclick="updateStatus(<?php echo $invoice->id; ?>, 'settled')"><i class="bi bi-check-all me-1"></i>تسویه شده</button><?php endif; ?>
@@ -195,7 +195,7 @@
 function updateStatus(id, status) {
     var msgs = {
         'settled': 'آیا فاکتور را تسویه شده می‌کنید؟',
-        'prepaid': 'آیا فاکتور را پیش پرداخت می‌کنید؟',
+        'prepaid': 'آیا فاکتور را پرداخت نشده می‌کنید؟',
         'pending': 'آیا فاکتور را مانده دارد می‌کنید؟',
         'paid': 'آیا فاکتور را پرداخت شده می‌کنید؟'
     };

@@ -1,4 +1,4 @@
-<?php $config = $GLOBALS['app_config']; ?>
+﻿<?php $config = $GLOBALS['app_config']; ?>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <h5 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>لیست فاکتورهای هتل</h5>
@@ -18,7 +18,7 @@
                 <select name="status" class="form-select">
                     <option value="">همه وضعیت‌ها</option>
                     <option value="pending" <?php echo $status==='pending'?'selected':''; ?>>مانده دارد</option>
-                    <option value="prepaid" <?php echo $status==='prepaid'?'selected':''; ?>>پیش پرداخت</option>
+                    <option value="prepaid" <?php echo $status==='prepaid'?'selected':''; ?>>پرداخت نشده</option>
                     <option value="paid" <?php echo $status==='paid'?'selected':''; ?>>پرداخت شده</option>
                     <option value="settled" <?php echo $status==='settled'?'selected':''; ?>>تسویه شده</option>
                 </select>
@@ -72,7 +72,7 @@
                         <td><strong class="text-success"><?php echo number_format($inv->final_amount); ?> تومان</strong></td>
                         <td>
                             <?php
-                            $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش پرداخت','paid'=>'پرداخت شده'];
+                            $statusLabels = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پرداخت نشده','paid'=>'پرداخت شده'];
                             $statusColors = ['pending'=>'bg-warning text-dark','settled'=>'bg-success','prepaid'=>'bg-info','paid'=>'bg-success'];
                             $st = $inv->invoice_status;
                             ?>
