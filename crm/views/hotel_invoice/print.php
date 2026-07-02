@@ -36,95 +36,92 @@
     <style>
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { margin: 0; padding: 0; background: #fff !important; }
+            body { margin: 0; padding: 0; background: #fff !important; font-size: 8pt !important; }
             .no-print { display: none !important; }
-            .inv-wrap { padding: 6mm; max-width: 100%; border: none; box-shadow: none; margin: 0; border-radius: 0; }
-            @page { margin: 6mm; size: A4; }
+            .inv-wrap { padding: 4mm; max-width: 100%; border: none; box-shadow: none; margin: 0; border-radius: 0; }
+            @page { margin: 5mm; size: A4; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Vazirmatn, Tahoma, sans-serif; background: #e8e8e8; color: #1a1a1a; font-size: 10pt; line-height: 1.6; }
+        body { font-family: Vazirmatn, Tahoma, sans-serif; background: #e8e8e8; color: #1a1a1a; font-size: 8pt; line-height: 1.3; }
         .inv-wrap { max-width: 750px; margin: 10px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); overflow: hidden; }
 
         /* Print/Close buttons */
-        .action-bar { background: #333; padding: 10px; text-align: center; }
-        .action-bar button { padding: 8px 28px; border: 2px solid #fff; border-radius: 6px; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer; margin: 0 6px; transition: all 0.2s; }
+        .action-bar { background: #333; padding: 8px; text-align: center; }
+        .action-bar button { padding: 6px 24px; border: 2px solid #fff; border-radius: 6px; font-family: inherit; font-weight: 700; font-size: 11px; cursor: pointer; margin: 0 4px; }
         .btn-print { background: #fff; color: #333; }
-        .btn-print:hover { background: #333; color: #fff; }
         .btn-close { background: transparent; color: #fff; }
-        .btn-close:hover { background: rgba(255,255,255,0.2); }
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 3px solid #1a1a1a; }
+        /* Header - compact */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 8px; border-bottom: 2px solid #1a1a1a; }
         .header-right { text-align: right; }
-        .header-right .logo { max-height: 45px; margin-bottom: 6px; }
-        .header-right .title { font-size: 16pt; font-weight: 800; color: #1a1a1a; margin: 0; }
-        .header-right .inv-number { font-size: 9pt; color: #666; margin-top: 4px; }
+        .header-right .logo { max-height: 30px; margin-bottom: 2px; }
+        .header-right .title { font-size: 11pt; font-weight: 800; color: #1a1a1a; margin: 0; }
+        .header-right .inv-number { font-size: 7pt; color: #666; margin-top: 2px; }
         .header-left { text-align: left; }
-        .header-left .company { font-size: 14pt; font-weight: 700; color: #1a1a1a; }
-        .header-left .subtitle { font-size: 9pt; color: #666; }
+        .header-left .company { font-size: 10pt; font-weight: 700; color: #1a1a1a; }
+        .header-left .subtitle { font-size: 7pt; color: #666; }
 
-        /* Status & Type badges */
-        .badges { padding: 10px 24px; display: flex; gap: 8px; align-items: center; background: #f5f5f5; }
-        .badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.3px; }
-        .badge-status { background: #fff; color: #333; border: 2px solid #333; }
+        /* Badges - compact */
+        .badges { padding: 4px 16px; display: flex; gap: 6px; align-items: center; background: #f5f5f5; font-size: 7pt; }
+        .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 7pt; font-weight: 700; }
+        .badge-status { background: #fff; color: #333; border: 1.5px solid #333; }
         .badge-type { background: #fff; color: #555; border: 1px solid #999; }
-        .creator-info { margin-left: auto; font-size: 8pt; color: #888; }
+        .creator-info { margin-left: auto; font-size: 7pt; color: #888; }
 
-        /* Info Cards */
-        .info-section { padding: 16px 24px; }
-        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .info-card { background: #fafafa; border-radius: 6px; padding: 8px 10px; border: 1px solid #ddd; }
-        .info-card .label { font-size: 7pt; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-        .info-card .value { font-size: 9pt; font-weight: 700; color: #1a1a1a; }
+        /* Info Cards - very compact */
+        .info-section { padding: 6px 16px; }
+        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .info-card { background: #fafafa; border-radius: 3px; padding: 4px 6px; border: 1px solid #ddd; }
+        .info-card .label { font-size: 5.5pt; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
+        .info-card .value { font-size: 7.5pt; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
         .info-card .value.accent { color: #000; text-decoration: underline; }
 
-        /* Divider */
-        .section-title { padding: 0 24px; margin: 12px 0 8px; display: flex; align-items: center; gap: 8px; }
-        .section-title .line { flex: 1; height: 2px; background: #1a1a1a; }
-        .section-title span { font-size: 9pt; font-weight: 800; color: #1a1a1a; white-space: nowrap; text-transform: uppercase; letter-spacing: 1px; }
+        /* Divider - compact */
+        .section-title { padding: 0 16px; margin: 4px 0 3px; display: flex; align-items: center; gap: 6px; }
+        .section-title .line { flex: 1; height: 1px; background: #999; }
+        .section-title span { font-size: 7pt; font-weight: 800; color: #1a1a1a; white-space: nowrap; }
 
-        /* Items Table - B&W optimized */
-        .items-section { padding: 0 24px; }
-        .items-table { width: 100%; border-collapse: collapse; font-size: 9pt; border: 2px solid #1a1a1a; }
-        .items-table thead th { background: #1a1a1a; color: #fff; padding: 8px 10px; font-weight: 700; font-size: 8pt; text-align: right; }
-        .items-table tbody td { padding: 7px 10px; border-bottom: 1px solid #ddd; }
+        /* Items Table - very compact */
+        .items-section { padding: 0 16px; }
+        .items-table { width: 100%; border-collapse: collapse; font-size: 7.5pt; border: 1.5px solid #1a1a1a; }
+        .items-table thead th { background: #1a1a1a; color: #fff; padding: 4px 6px; font-weight: 700; font-size: 6.5pt; text-align: right; }
+        .items-table tbody td { padding: 3px 6px; border-bottom: 1px solid #ddd; line-height: 1.2; }
         .items-table tbody tr:nth-child(even) { background: #f8f8f8; }
-        .items-table tbody tr:last-child td { border-bottom: 2px solid #1a1a1a; }
+        .items-table tbody tr:last-child td { border-bottom: 1.5px solid #1a1a1a; }
         .items-table .num { text-align: center; font-weight: 700; }
-        .items-table .price { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 9pt; }
-        .items-table .total { text-align: left; direction: ltr; font-weight: 800; font-family: 'Courier New', monospace; }
-        .item-cat { display: inline-block; background: #fff; color: #555; font-size: 7pt; padding: 1px 6px; border: 1px solid #999; border-radius: 3px; margin-top: 2px; }
+        .items-table .price { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 7pt; }
+        .items-table .total { text-align: left; direction: ltr; font-weight: 800; font-family: 'Courier New', monospace; font-size: 7pt; }
+        .item-cat { display: inline-block; background: #fff; color: #555; font-size: 5.5pt; padding: 0px 4px; border: 1px solid #999; border-radius: 2px; margin-top: 1px; }
 
-        /* Financial Summary - B&W optimized */
-        .summary-section { padding: 0 24px 16px; }
-        .summary-box { max-width: 320px; margin-right: auto; background: #fafafa; border-radius: 8px; padding: 12px 16px; border: 2px solid #1a1a1a; }
-        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 9pt; }
+        /* Financial Summary - compact */
+        .summary-section { padding: 0 16px 6px; }
+        .summary-box { max-width: 260px; margin-right: auto; background: #fafafa; border-radius: 4px; padding: 6px 10px; border: 1.5px solid #1a1a1a; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 0; font-size: 7.5pt; }
         .summary-row .lbl { color: #555; }
-        .summary-row .val { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; }
+        .summary-row .val { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; font-size: 7.5pt; }
         .summary-row .val.red { color: #333; font-weight: 800; text-decoration: underline; }
-        .summary-row .val.green { color: #000; font-weight: 800; }
-        .summary-divider { border: none; border-top: 2px dashed #333; margin: 8px 0; }
-        .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 0; font-size: 11pt; font-weight: 900; }
+        .summary-divider { border: none; border-top: 1.5px dashed #333; margin: 3px 0; }
+        .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 3px 0 0; font-size: 9pt; font-weight: 900; }
         .summary-total .lbl { color: #000; text-transform: uppercase; }
         .summary-total .val { font-family: 'Courier New', monospace; direction: ltr; }
-        .summary-total .val.remaining { color: #000; font-size: 13pt; background: #000; color: #fff; padding: 2px 10px; border-radius: 4px; }
-        .summary-total .val.final { color: #000; font-size: 13pt; border: 3px solid #000; padding: 2px 10px; border-radius: 4px; }
+        .summary-total .val.remaining { color: #fff; font-size: 10pt; background: #000; padding: 1px 8px; border-radius: 3px; }
+        .summary-total .val.final { color: #000; font-size: 10pt; border: 2px solid #000; padding: 1px 8px; border-radius: 3px; }
 
-        /* Notes & Terms - B&W optimized */
-        .notes-section { padding: 0 24px 16px; }
-        .note-box { background: #fafafa; border-radius: 6px; padding: 10px 14px; border-right: 4px solid #555; font-size: 8.5pt; color: #333; margin-bottom: 8px; }
-        .note-box .note-title { font-weight: 800; color: #333; margin-bottom: 4px; font-size: 8pt; text-transform: uppercase; }
-        .terms-box { background: #fafafa; border-radius: 6px; padding: 10px 14px; border-right: 4px solid #1a1a1a; font-size: 8.5pt; color: #333; }
-        .terms-box .terms-title { font-weight: 800; color: #1a1a1a; margin-bottom: 4px; font-size: 8pt; text-transform: uppercase; }
+        /* Notes & Terms - compact */
+        .notes-section { padding: 0 16px 6px; }
+        .note-box { background: #fafafa; border-radius: 3px; padding: 4px 8px; border-right: 3px solid #555; font-size: 7pt; color: #333; margin-bottom: 4px; line-height: 1.3; }
+        .note-box .note-title { font-weight: 800; color: #333; margin-bottom: 1px; font-size: 6.5pt; text-transform: uppercase; }
+        .terms-box { background: #fafafa; border-radius: 3px; padding: 4px 8px; border-right: 3px solid #1a1a1a; font-size: 7pt; color: #333; line-height: 1.3; }
+        .terms-box .terms-title { font-weight: 800; color: #1a1a1a; margin-bottom: 1px; font-size: 6.5pt; text-transform: uppercase; }
 
-        /* Signature */
-        .signature-section { padding: 16px 24px; display: flex; justify-content: space-between; gap: 40px; }
-        .sig-box { flex: 1; text-align: center; padding-top: 40px; border-top: 2px solid #1a1a1a; font-size: 8pt; color: #555; font-weight: 600; }
+        /* Signature - compact */
+        .signature-section { padding: 8px 16px; display: flex; justify-content: space-between; gap: 30px; }
+        .sig-box { flex: 1; text-align: center; padding-top: 24px; border-top: 1.5px solid #1a1a1a; font-size: 7pt; color: #555; font-weight: 600; }
 
-        /* Footer */
-        .invoice-footer { background: #f5f5f5; padding: 12px 24px; text-align: center; border-top: 2px solid #1a1a1a; }
-        .invoice-footer p { font-size: 8pt; color: #555; margin-bottom: 4px; font-weight: 600; }
-        .invoice-footer .company-line { font-size: 7.5pt; color: #888; }
+        /* Footer - compact */
+        .invoice-footer { background: #f5f5f5; padding: 6px 16px; text-align: center; border-top: 1.5px solid #1a1a1a; }
+        .invoice-footer p { font-size: 6.5pt; color: #555; margin-bottom: 2px; font-weight: 600; }
+        .invoice-footer .company-line { font-size: 6pt; color: #888; }
     </style>
 </head>
 <body>
