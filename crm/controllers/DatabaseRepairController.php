@@ -244,6 +244,10 @@ class DatabaseRepairController
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'default_price', 'DECIMAL(15,2) NOT NULL DEFAULT 0');
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'room_type', 'VARCHAR(100) NULL');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'is_half_price', 'TINYINT(1) DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'half_price_rate', 'DECIMAL(15,2) DEFAULT 0');
                 if ($result) {
                     $repairs[] = $result;
                     // Update existing items: set default_price = unit_price

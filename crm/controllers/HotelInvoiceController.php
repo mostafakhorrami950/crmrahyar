@@ -72,6 +72,8 @@ class HotelInvoiceController
         $newPrices    = $post['item_new_price'] ?? [];
         $categories   = $post['item_category'] ?? [];
         $roomTypes    = $post['item_room_type'] ?? [];
+        $halfPrices   = $post['item_half_price'] ?? [];
+        $halfRates    = $post['item_half_rate'] ?? [];
 
         $items = [];
         $subtotal = 0;
