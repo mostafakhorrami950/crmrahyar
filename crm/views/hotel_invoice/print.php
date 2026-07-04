@@ -35,11 +35,10 @@
     ?>
         <?php
     $wmText = '';
-    if ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
-    elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
+    if ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
     elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
     elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
-    elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پیش فاکتور';
+    elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
     ?>
     <style>
         @media print {
