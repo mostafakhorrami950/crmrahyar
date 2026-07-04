@@ -230,6 +230,9 @@ class DatabaseRepairController
             
             // Check hotel_invoices new columns
             try {
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'agency_name', 'VARCHAR(255) NULL');
+                if ($result) $repairs[] = $result;
+
                 $result = $this->ensureColumn($db, 'hotel_invoices', 'guest_address', 'TEXT NULL');
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoices', 'ps_note', 'TEXT NULL');
