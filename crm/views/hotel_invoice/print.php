@@ -33,6 +33,14 @@
     $hasDiscount = $itemsDiscount > 0 || ($invoice->discount_amount ?? 0) > 0;
     $isPending = $invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0;
     ?>
+        <?php
+    $wmText = '';
+    if ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
+    elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
+    elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
+    elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
+    elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+    ?>
     <style>
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -43,28 +51,31 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Vazirmatn, Tahoma, sans-serif; background: #e8e8e8; color: #1a1a1a; font-size: 8pt; line-height: 1.3; }
+        /* Watermark */
+        .inv-wrap { position: relative; overflow: hidden; }
+        .inv-wrap::after { content: attr(data-wm); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 72px; font-weight: 900; color: rgba(0,0,0,0.04); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 10px; }
         .inv-wrap { max-width: 750px; margin: 10px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); overflow: hidden; }
 
         /* Print/Close buttons */
-        .action-bar { background: #333; padding: 8px; text-align: center; }
+        .action-bar { background: <?php echo $pc; ?>; padding: 8px; text-align: center; }
         .action-bar button { padding: 6px 24px; border: 2px solid #fff; border-radius: 6px; font-family: inherit; font-weight: 700; font-size: 11px; cursor: pointer; margin: 0 4px; }
-        .btn-print { background: #fff; color: #333; }
+        .btn-print { background: #fff; color: <?php echo $pc; ?>; }
         .btn-close { background: transparent; color: #fff; }
 
         /* Header - compact */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 8px; border-bottom: 2px solid #1a1a1a; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 10px; border-bottom: 3px solid <?php echo $pc; ?>; }
         .header-right { text-align: right; }
         .header-right .logo { max-height: 30px; margin-bottom: 2px; }
         .header-right .title { font-size: 11pt; font-weight: 800; color: #1a1a1a; margin: 0; }
         .header-right .inv-number { font-size: 7pt; color: #666; margin-top: 2px; }
         .header-left { text-align: left; }
-        .header-left .company { font-size: 10pt; font-weight: 700; color: #1a1a1a; }
+        .header-left .company { font-size: 10pt; font-weight: 700; color: <?php echo $pc; ?>; }
         .header-left .subtitle { font-size: 7pt; color: #666; }
 
         /* Badges - compact */
-        .badges { padding: 4px 16px; display: flex; gap: 6px; align-items: center; background: #f5f5f5; font-size: 7pt; }
+        .badges { padding: 5px 16px; display: flex; gap: 6px; align-items: center; background: <?php echo $pc; ?>0D; font-size: 7pt; border-bottom: 2px solid <?php echo $pc; ?>33; }
         .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 7pt; font-weight: 700; }
-        .badge-status { background: #fff; color: #333; border: 1.5px solid #333; }
+        .badge-status { background: <?php echo $pc; ?>; color: #fff; border: 1.5px solid <?php echo $pc; ?>; }
         .badge-type { background: #fff; color: #555; border: 1px solid #999; }
         .creator-info { margin-left: auto; font-size: 7pt; color: #888; }
 
@@ -78,13 +89,13 @@
 
         /* Divider - compact */
         .section-title { padding: 0 16px; margin: 4px 0 3px; display: flex; align-items: center; gap: 6px; }
-        .section-title .line { flex: 1; height: 1px; background: #999; }
+        .section-title .line { flex: 1; height: 2px; background: <?php echo $pc; ?>33; }
         .section-title span { font-size: 7pt; font-weight: 800; color: #1a1a1a; white-space: nowrap; }
 
         /* Items Table - very compact */
         .items-section { padding: 0 16px; }
         .items-table { width: 100%; border-collapse: collapse; font-size: 7.5pt; border: 1.5px solid #1a1a1a; }
-        .items-table thead th { background: #1a1a1a; color: #fff; padding: 4px 6px; font-weight: 700; font-size: 6.5pt; text-align: right; }
+        .items-table thead th { background: <?php echo $pc; ?>; color: #fff; padding: 4px 6px; font-weight: 700; font-size: 6.5pt; text-align: right; }
         .items-table tbody td { padding: 3px 6px; border-bottom: 1px solid #ddd; line-height: 1.2; }
         .items-table tbody tr:nth-child(even) { background: #f8f8f8; }
         .items-table tbody tr:last-child td { border-bottom: 1.5px solid #1a1a1a; }
@@ -95,7 +106,7 @@
 
         /* Financial Summary - compact */
         .summary-section { padding: 0 16px 6px; }
-        .summary-box { max-width: 260px; margin-right: auto; background: #fafafa; border-radius: 4px; padding: 6px 10px; border: 1.5px solid #1a1a1a; }
+        .summary-box { max-width: 260px; margin-right: auto; background: #fafafa; border-radius: 4px; padding: 6px 10px; border: 2px solid <?php echo $pc; ?>; }
         .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 0; font-size: 7.5pt; }
         .summary-row .lbl { color: #555; }
         .summary-row .val { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; font-size: 7.5pt; }
@@ -104,22 +115,22 @@
         .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 3px 0 0; font-size: 9pt; font-weight: 900; }
         .summary-total .lbl { color: #000; text-transform: uppercase; }
         .summary-total .val { font-family: 'Courier New', monospace; direction: ltr; }
-        .summary-total .val.remaining { color: #fff; font-size: 10pt; background: #000; padding: 1px 8px; border-radius: 3px; }
-        .summary-total .val.final { color: #000; font-size: 10pt; border: 2px solid #000; padding: 1px 8px; border-radius: 3px; }
+        .summary-total .val.remaining { color: #fff; font-size: 10pt; background: <?php echo $stC[$st] ?? '#e67e22'; ?>; padding: 2px 10px; border-radius: 3px; }
+        .summary-total .val.final { color: #fff; font-size: 10pt; background: <?php echo $pc; ?>; padding: 2px 10px; border-radius: 3px; }
 
         /* Notes & Terms - compact */
         .notes-section { padding: 0 16px 6px; }
-        .note-box { background: #fafafa; border-radius: 3px; padding: 4px 8px; border-right: 3px solid #555; font-size: 7pt; color: #333; margin-bottom: 4px; line-height: 1.3; }
+        .note-box { background: #fafafa; border-radius: 3px; padding: 4px 8px; border-right: 3px solid <?php echo $pc; ?>; font-size: 7pt; color: #333; margin-bottom: 4px; line-height: 1.3; }
         .note-box .note-title { font-weight: 800; color: #333; margin-bottom: 1px; font-size: 6.5pt; text-transform: uppercase; }
         .terms-box { background: #fafafa; border-radius: 3px; padding: 4px 8px; border-right: 3px solid #1a1a1a; font-size: 7pt; color: #333; line-height: 1.3; }
         .terms-box .terms-title { font-weight: 800; color: #1a1a1a; margin-bottom: 1px; font-size: 6.5pt; text-transform: uppercase; }
 
         /* Signature - compact */
         .signature-section { padding: 8px 16px; display: flex; justify-content: space-between; gap: 30px; }
-        .sig-box { flex: 1; text-align: center; padding-top: 24px; border-top: 1.5px solid #1a1a1a; font-size: 7pt; color: #555; font-weight: 600; }
+        .sig-box { flex: 1; text-align: center; padding-top: 24px; border-top: 2px solid <?php echo $pc; ?>; font-size: 7pt; color: #555; font-weight: 600; }
 
         /* Footer - compact */
-        .invoice-footer { background: #f5f5f5; padding: 6px 16px; text-align: center; border-top: 1.5px solid #1a1a1a; }
+        .invoice-footer { background: <?php echo $pc; ?>0D; padding: 6px 16px; text-align: center; border-top: 2px solid <?php echo $pc; ?>; }
         .invoice-footer p { font-size: 6.5pt; color: #555; margin-bottom: 2px; font-weight: 600; }
         .invoice-footer .company-line { font-size: 6pt; color: #888; }
     </style>
@@ -130,7 +141,7 @@
         <button class="btn-close" onclick="window.close()"><i class="bi bi-x-lg me-1"></i>بستن</button>
     </div>
 
-    <div class="inv-wrap">
+    <div class="inv-wrap" data-wm="<?php echo htmlspecialchars($wmText); ?>">
         <!-- Header -->
         <div class="header">
             <div class="header-right">
