@@ -214,6 +214,7 @@ class HotelInvoiceController
         $dealId       = (int)($_POST['deal_id'] ?? 0);
         $hotelName    = trim($_POST['hotel_name'] ?? '');
         $guestName    = trim($_POST['guest_name'] ?? '');
+        $agencyName   = trim($_POST['agency_name'] ?? '');
         $guestPhone   = trim($_POST['guest_phone'] ?? '');
         $guestAddress = trim($_POST['guest_address'] ?? '');
         $psNote       = trim($_POST['ps_note'] ?? '');
@@ -269,6 +270,7 @@ class HotelInvoiceController
                 'deal_id'          => $dealId,
                 'hotel_name'       => $hotelName,
                 'guest_name'       => $guestName,
+                'agency_name'      => $agencyName,
                 'guest_phone'      => $guestPhone,
                 'guest_address'    => $guestAddress,
                 'ps_note'          => $psNote,
@@ -395,6 +397,7 @@ class HotelInvoiceController
 
         $hotelName    = trim($_POST['hotel_name'] ?? '');
         $guestName    = trim($_POST['guest_name'] ?? '');
+        $agencyName   = trim($_POST['agency_name'] ?? '');
         $guestPhone   = trim($_POST['guest_phone'] ?? '');
         $guestAddress = trim($_POST['guest_address'] ?? '');
         $psNote       = trim($_POST['ps_note'] ?? '');
@@ -446,6 +449,7 @@ class HotelInvoiceController
             $db->update('hotel_invoices', [
                 'hotel_name'       => $hotelName,
                 'guest_name'       => $guestName,
+                'agency_name'      => $agencyName,
                 'guest_phone'      => $guestPhone,
                 'guest_address'    => $guestAddress,
                 'ps_note'          => $psNote,

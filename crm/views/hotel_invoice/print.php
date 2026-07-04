@@ -39,7 +39,7 @@
     elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
     elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
     elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
-    elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+    elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پیش فاکتور';
     ?>
     <style>
         @media print {

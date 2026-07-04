@@ -34,7 +34,7 @@ elseif ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
 elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
 elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
 elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
-elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پیش فاکتور';
 ?>
         <?php if (!empty($wmText)): ?>
         .inv-box::before {
@@ -202,7 +202,7 @@ elseif ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
 elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
 elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
 elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
-elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پیش فاکتور';
 ?>
         <?php if (!empty($wmText)): ?>
         <div class="text-center p-4 mb-3" style="background:#dc354518;border:2px dashed #dc3545;border-radius:12px;">
