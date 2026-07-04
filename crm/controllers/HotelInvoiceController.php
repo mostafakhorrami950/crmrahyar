@@ -71,6 +71,7 @@ class HotelInvoiceController
         $defaultPrices = $post['item_default_price'] ?? [];
         $newPrices    = $post['item_new_price'] ?? [];
         $categories   = $post['item_category'] ?? [];
+        $roomTypes    = $post['item_room_type'] ?? [];
 
         $items = [];
         $subtotal = 0;
@@ -99,9 +100,12 @@ class HotelInvoiceController
                     $itemsDiscount += $itemDiscount;
                 }
 
+                $roomType = trim($roomTypes[$i] ?? '');
+
                 $items[] = [
                     'description' => $desc,
                     'category'    => $cat,
+                    'room_type'   => $roomType,
                     'quantity'    => $qty,
                     'default_price' => $defPrice,
                     'unit_price'  => $actualPrice,
@@ -211,6 +215,8 @@ class HotelInvoiceController
         $hotelName    = trim($_POST['hotel_name'] ?? '');
         $guestName    = trim($_POST['guest_name'] ?? '');
         $guestPhone   = trim($_POST['guest_phone'] ?? '');
+        $guestAddress = trim($_POST['guest_address'] ?? '');
+        $psNote       = trim($_POST['ps_note'] ?? '');
         $checkInDate  = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
         $extraServices = trim($_POST['extra_services'] ?? '');
@@ -264,6 +270,8 @@ class HotelInvoiceController
                 'hotel_name'       => $hotelName,
                 'guest_name'       => $guestName,
                 'guest_phone'      => $guestPhone,
+                'guest_address'    => $guestAddress,
+                'ps_note'          => $psNote,
                 'check_in_date'    => $checkInDate,
                 'check_out_date'   => $checkOutDate,
                 'nights'           => $nights,
@@ -388,6 +396,8 @@ class HotelInvoiceController
         $hotelName    = trim($_POST['hotel_name'] ?? '');
         $guestName    = trim($_POST['guest_name'] ?? '');
         $guestPhone   = trim($_POST['guest_phone'] ?? '');
+        $guestAddress = trim($_POST['guest_address'] ?? '');
+        $psNote       = trim($_POST['ps_note'] ?? '');
         $checkInDate  = $_POST['check_in_date'] ?? '';
         $checkOutDate = $_POST['check_out_date'] ?? '';
         $extraServices = trim($_POST['extra_services'] ?? '');
@@ -437,6 +447,8 @@ class HotelInvoiceController
                 'hotel_name'       => $hotelName,
                 'guest_name'       => $guestName,
                 'guest_phone'      => $guestPhone,
+                'guest_address'    => $guestAddress,
+                'ps_note'          => $psNote,
                 'check_in_date'    => $checkInDate,
                 'check_out_date'   => $checkOutDate,
                 'nights'           => $nights,

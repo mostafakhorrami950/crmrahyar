@@ -228,9 +228,19 @@ class DatabaseRepairController
                 // hotel_invoices table might not exist yet
             }
             
+            // Check hotel_invoices new columns
+            try {
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'guest_address', 'TEXT NULL');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoices', 'ps_note', 'TEXT NULL');
+                if ($result) $repairs[] = $result;
+            } catch (\Exception $e) {}
+
             // Check hotel_invoice_items table columns
             try {
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'default_price', 'DECIMAL(15,2) NOT NULL DEFAULT 0');
+                if ($result) $repairs[] = $result;
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'room_type', 'VARCHAR(100) NULL');
                 if ($result) {
                     $repairs[] = $result;
                     // Update existing items: set default_price = unit_price
