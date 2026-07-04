@@ -17,7 +17,17 @@
 
 <div class="row g-3">
     <div class="col-12 col-lg-8">
-        <div class="card border-0 shadow-sm mb-3"><div class="card-body">
+        <?php
+$wmText = '';
+if ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
+elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
+elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
+?>
+<style>
+.inv-card { position: relative; overflow: hidden; }
+.inv-card::before { content: '<?php echo $wmText; ?>'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 60px; font-weight: 900; color: rgba(0,0,0,0.06); white-space: nowrap; pointer-events: none; z-index: 1; letter-spacing: 8px; }
+</style>
+<div class="card border-0 shadow-sm mb-3 inv-card"><div class="card-body">
             <div class="text-center mb-4 pb-3 border-bottom">
                 <?php if (!empty($invSet['invoice_logo_url'])): ?><img src="<?php echo htmlspecialchars($invSet['invoice_logo_url']); ?>" alt="لوگو" style="max-height:60px;margin-bottom:10px;"><?php endif; ?>
                 <h4 class="fw-bold mb-1" style="color:<?php echo $primaryColor; ?>;"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></h4>
@@ -39,6 +49,7 @@
                 <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">میهمان</small><strong class="small"><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></strong></div></div>
                 <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">هتل</small><strong class="small"><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div></div>
                 <div class="col-6"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">تلفن</small><strong class="small" dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></strong></div></div>
+                <div class="col-12"><div class="bg-light rounded p-2"><small class="text-muted d-block" style="font-size:11px;">آدرس</small><strong class="small"><?php echo htmlspecialchars($invoice->guest_address ?? '-'); ?></strong></div></div>
             </div>
 
             <div class="row g-2 mb-4">
@@ -70,6 +81,7 @@
                                 <td class="text-center"><?php echo $i + 1; ?></td>
                                 <td>
                                     <?php echo htmlspecialchars($item->description); ?>
+                                    <?php if (!empty($item->room_type)): ?><br><small class="text-muted" style="font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?>
                                     <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
                                     <br><small class="text-muted" style="font-size:10px;">(قیمت هر شب)</small>
                                     <?php endif; ?>
@@ -128,6 +140,10 @@
                     <?php endif; ?>
                 </table>
             </div>
+
+            <?php if (!empty($invoice->ps_note)): ?>
+            <div class="mb-3"><small class="text-muted d-block mb-1" style="font-size:14px;font-weight:700;"><i class="bi bi-pencil-square me-1"></i>پینوشت</small><p class="mb-0" style="font-size:14px;"><?php echo nl2br(htmlspecialchars($invoice->ps_note)); ?></p></div>
+            <?php endif; ?>
 
             <?php if ($invoice->notes): ?>
             <div class="mb-3"><small class="text-muted d-block mb-1"><i class="bi bi-journal-text me-1"></i>توضیحات</small><p class="small mb-0"><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></p></div>

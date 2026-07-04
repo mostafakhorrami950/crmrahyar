@@ -39,6 +39,13 @@
                             <small class="text-muted">آدرس تصویر لوگوی سربرگ فاکتور (اختیاری)</small>
                         </div>
 
+                        <!-- Default PS Note -->
+                        <div class="col-12">
+<label class="form-label text-muted small fw-medium"><i class="bi bi-pencil-square me-1"></i>متن پیش‌فرض «پینوشت»</label>
+                            <textarea name="invoice_ps_note" class="form-control" rows="3"><?php echo htmlspecialchars($settings['invoice_ps_note'] ?? ''); ?></textarea>
+                            <small class="text-muted">این متن به صورت پیش‌فرض در فیلد پینوشت فاکتور نمایش داده می‌شود.</small>
+                        </div>
+
                         <!-- Default Notes -->
                         <div class="col-12">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-journal-text me-1"></i>متن پیش‌فرض «توضیحات»</label>

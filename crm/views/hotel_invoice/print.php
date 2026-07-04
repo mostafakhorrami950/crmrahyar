@@ -216,7 +216,8 @@
                     <tr>
                         <td class="num" style="color:#95a5a6;"><?php echo $i + 1; ?></td>
                         <td>
-                            <div><?php echo htmlspecialchars($item->description); ?></div>
+                            <div><?php echo htmlspecialchars($item->description); ?>
+                                    <?php if (!empty($item->room_type)): ?><br><small class="item-cat"><?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?></div>
                             <?php if (!empty($item->category) && $item->category !== 'general'): ?>
                             <span class="item-cat"><?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
                             <?php endif; ?>
@@ -292,6 +293,13 @@
         <!-- Notes & Terms -->
         <?php if ($terms || $invoice->notes): ?>
         <div class="notes-section">
+            <?php if (!empty($invoice->ps_note)): ?>
+            <div class="note-box">
+                <div class="note-title"><i class="bi bi-pencil-square me-1"></i>پینوشت</div>
+                <?php echo nl2br(htmlspecialchars($invoice->ps_note)); ?>
+            </div>
+            <?php endif; ?>
+
             <?php if ($invoice->notes): ?>
             <div class="note-box">
                 <div class="note-title"><i class="bi bi-journal-text me-1"></i>توضیحات</div>

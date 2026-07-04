@@ -99,6 +99,7 @@
         <div class="col-6"><div class="info-item"><small>هتل</small><strong><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div></div>
         <div class="col-6"><div class="info-item"><small>میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></strong></div></div>
         <div class="col-6"><div class="info-item"><small>تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? '-'); ?></strong></div></div>
+        <div class="col-12"><div class="info-item"><small>آدرس</small><strong><?php echo htmlspecialchars($invoice->guest_address ?? '-'); ?></strong></div></div>
         <div class="col-4"><div class="info-item text-center"><small>ورود</small><strong><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></strong></div></div>
         <div class="col-4"><div class="info-item text-center"><small>خروج</small><strong><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></strong></div></div>
         <div class="col-4"><div class="info-item text-center"><small>شب‌ها</small><strong style="color:<?php echo $primaryColor; ?>;"><?php echo $invoice->nights; ?></strong></div></div>
@@ -156,6 +157,10 @@
             <?php endif; ?>
         </table>
     </div>
+
+    <?php if (!empty($invoice->ps_note)): ?>
+    <div class="mb-3"><small class="text-muted d-block mb-1" style="font-size:14px;font-weight:700;"><i class="bi bi-pencil-square me-1"></i>پینوشت</small><p class="mb-0" style="font-size:14px;"><?php echo nl2br(htmlspecialchars($invoice->ps_note)); ?></p></div>
+    <?php endif; ?>
 
     <?php if ($invoice->notes): ?>
     <div class="mb-3"><small class="text-muted d-block mb-1"><i class="bi bi-journal-text me-1"></i>توضیحات</small><p class="small mb-0"><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></p></div>

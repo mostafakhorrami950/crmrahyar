@@ -64,6 +64,7 @@
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="<?php echo htmlspecialchars($item->description); ?>">
                             <input type="hidden" name="item_category[]" class="item-category" value="<?php echo htmlspecialchars($item->category ?? 'general'); ?>">
                             <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="<?php echo $item->default_price ?? $item->unit_price; ?>">
+                            <input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;" value="<?php echo htmlspecialchars($item->room_type ?? ''); ?>">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
