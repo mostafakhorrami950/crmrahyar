@@ -37,8 +37,9 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-12"><label class="form-label text-muted small fw-medium">نام هتل <span class="text-danger">*</span></label><input type="text" name="hotel_name" class="form-control" placeholder="نام هتل را وارد کنید" required></div>
-                    <div class="col-6"><label class="form-label text-muted small fw-medium">نام میهمان</label><input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>"></div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">آژانس محترم / آقا یا خانم</label><input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($deal->contact_name ?? ''); ?>"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تلفن میهمان</label><input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($deal->contact_phone ?? ''); ?>" dir="ltr" style="text-align:left;"></div>
+                    <div class="col-12"><label class="form-label text-muted small fw-medium">آدرس</label><textarea name="guest_address" class="form-control" rows="2" placeholder="آدرس کامل دریافت‌کننده فاکتور"></textarea></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ ورود <span class="text-danger">*</span></label><input type="date" name="check_in_date" class="form-control" id="checkInDate" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تاریخ خروج <span class="text-danger">*</span></label><input type="date" name="check_out_date" class="form-control" id="checkOutDate" required onchange="recalc()"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">نوع فاکتور</label><select name="invoice_type" class="form-select" id="invoiceType"><option value="proforma">پیش فاکتور</option><option value="confirmed">فاکتور تایید شده</option></select></div>
@@ -67,6 +68,7 @@
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="">
                             <input type="hidden" name="item_category[]" class="item-category" value="">
                             <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">
+                            <input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
@@ -113,6 +115,7 @@
             <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-2" style="color:<?php echo $primaryColor; ?>;"></i>توضیحات و شرایط</h6></div>
             <div class="card-body">
                 <div class="row g-3">
+                    <div class="col-12"><label class="form-label text-muted small fw-medium" style="font-size:14px;font-weight:700;">پینوشت</label><textarea name="ps_note" class="form-control" rows="3" style="font-size:14px;" placeholder="متن پینوشت فاکتور..."></textarea></div>
                     <div class="col-12"><label class="form-label text-muted small fw-medium">توضیحات</label><textarea name="notes" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_notes'] ?? ''); ?></textarea></div>
                     <div class="col-12"><label class="form-label text-muted small fw-medium">شرایط پرداخت</label><textarea name="payment_terms" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_terms'] ?? ''); ?></textarea></div>
                     <div class="col-12"><label class="form-label text-muted small fw-medium">متن فوتر فاکتور</label><textarea name="footer_text" class="form-control" rows="2"><?php echo htmlspecialchars($invSet['invoice_footer_text'] ?? ''); ?></textarea></div>
@@ -270,6 +273,7 @@ function addItem() {
             '<input type="hidden" name="item_description[]" class="item-description-hidden" value="">' +
             '<input type="hidden" name="item_category[]" class="item-category" value="">' +
             '<input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">' +
+            '<input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">' +
             '<div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>' +
         '</div>' +
         '<div class="col-2">' +
