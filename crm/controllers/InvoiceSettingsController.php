@@ -39,6 +39,7 @@ class InvoiceSettingsController
             'invoice_secondary_color',
             'invoice_success_color',
             'invoice_ps_note',
+            'invoice_signature_url',
             'invoice_notes',
             'invoice_terms',
             'invoice_footer_text',

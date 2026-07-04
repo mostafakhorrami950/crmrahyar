@@ -60,6 +60,13 @@
                             <small class="text-muted">این متن به صورت پیش‌فرض در فرم ایجاد فاکتور نمایش داده می‌شود.</small>
                         </div>
 
+                        <!-- Electronic Signature -->
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-medium"><i class="bi bi-pen me-1"></i>آدرس تصویر امضای الکترونیکی (URL)</label>
+                            <input type="url" name="invoice_signature_url" class="form-control" placeholder="https://example.com/signature.png" value="<?php echo htmlspecialchars($settings['invoice_signature_url'] ?? ''); ?>">
+                            <small class="text-muted">آدرس تصویر امضای الکترونیکی برای نمایش در فاکتور چاپی (اختیاری)</small>
+                        </div>
+
                         <!-- Default Footer Text -->
                         <div class="col-12">
                             <label class="form-label text-muted small fw-medium"><i class="bi bi-file-text me-1"></i>متن پیش‌فرض «متن فوتر فاکتور»</label>

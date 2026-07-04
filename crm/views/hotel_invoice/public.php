@@ -125,7 +125,8 @@ elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده
             <?php foreach ($items as $i => $item): ?>
             <tr>
                 <td class="text-center"><?php echo $i + 1; ?></td>
-                <td><?php echo htmlspecialchars($item->description); ?></td>
+                <td><?php echo htmlspecialchars($item->description); ?>
+                    <?php if (!empty($item->room_type)): ?><br><small style="color:#888;font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?></td>
                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
                 <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
@@ -194,7 +195,16 @@ elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده
         <p class="text-muted mb-0">این فاکتور دارای مانده است و در انتظار تسویه نهایی می‌باشد.</p>
     </div>
     <?php elseif ($invoice->invoice_status === 'prepaid'): ?>
-        <?php if ($isExpired): ?>
+        <?php
+$wmText = '';
+if ($isExpired) $wmText = 'اعتبار فاکتور تمام شده';
+elseif ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
+elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
+elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
+elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
+elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+?>
+        <?php if (!empty($wmText)): ?>
         <div class="text-center p-4 mb-3" style="background:#dc354518;border:2px dashed #dc3545;border-radius:12px;">
             <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:40px;"></i>
             <h5 class="mt-2 fw-bold text-danger">اعتبار فاکتور تمام شده</h5>

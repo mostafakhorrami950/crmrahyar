@@ -176,8 +176,12 @@
                     <div class="value"><?php echo htmlspecialchars($invoice->hotel_name); ?></div>
                 </div>
                 <div class="info-card">
+                    <div class="label">نام آژانس</div>
+                    <div class="value"><?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></div>
+                </div>
+                <div class="info-card">
                     <div class="label">نام میهمان</div>
-                    <div class="value"><?php echo htmlspecialchars($invoice->guest_name ?? $invoice->contact_name ?? '-'); ?></div>
+                    <div class="value"><?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></div>
                 </div>
                 <div class="info-card">
                     <div class="label">تلفن</div>
@@ -328,7 +332,12 @@
 
         <!-- Signature -->
         <div class="signature-section">
-            <div class="sig-box">امضای صادرکننده</div>
+            <div class="sig-box">
+                <?php if (!empty($invSet['invoice_signature_url'])): ?>
+                <img src="<?php echo htmlspecialchars($invSet['invoice_signature_url']); ?>" alt="امضا" style="max-height:50px;margin-bottom:4px;"><br>
+                <?php endif; ?>
+                امضای صادرکننده
+            </div>
             <div class="sig-box">امضای تاییدکننده</div>
         </div>
 
