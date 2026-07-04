@@ -27,9 +27,18 @@
     <style>
         body { font-family: Vazirmatn, sans-serif; background: #f5f7fa; }
         .inv-box { max-width: 700px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
-        <?php if ($isExpired): ?>
+        <?php
+$wmText = '';
+if ($isExpired) $wmText = 'اعتبار فاکتور تمام شده';
+elseif ($invoice->invoice_type === 'proforma') $wmText = 'پیش فاکتور';
+elseif ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
+elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
+elseif ($invoice->invoice_status === 'paid') $wmText = 'پرداخت شده';
+elseif ($invoice->invoice_status === 'prepaid') $wmText = 'پرداخت نشده';
+?>
+        <?php if (!empty($wmText)): ?>
         .inv-box::before {
-            content: 'اعتبار فاکتور تمام شده';
+            content: '<?php echo $wmText; ?>';
             position: absolute;
             top: 50%;
             left: 50%;
@@ -97,6 +106,7 @@
     <div class="row g-2 mb-3">
         <div class="col-6"><div class="info-item"><small>شماره فاکتور</small><strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong></div></div>
         <div class="col-6"><div class="info-item"><small>هتل</small><strong><?php echo htmlspecialchars($invoice->hotel_name); ?></strong></div></div>
+        <div class="col-6"><div class="info-item"><small>نام آژانس</small><strong><?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></strong></div></div>
         <div class="col-6"><div class="info-item"><small>میهمان</small><strong><?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></strong></div></div>
         <div class="col-6"><div class="info-item"><small>تلفن</small><strong dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? '-'); ?></strong></div></div>
         <div class="col-12"><div class="info-item"><small>آدرس</small><strong><?php echo htmlspecialchars($invoice->guest_address ?? '-'); ?></strong></div></div>

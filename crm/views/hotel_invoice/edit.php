@@ -32,6 +32,7 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-12"><label class="form-label text-muted small fw-medium">نام هتل <span class="text-danger">*</span></label><input type="text" name="hotel_name" class="form-control" value="<?php echo htmlspecialchars($invoice->hotel_name); ?>" required></div>
+                    <div class="col-6"><label class="form-label text-muted small fw-medium">نام آژانس</label><input type="text" name="agency_name" class="form-control" value="<?php echo htmlspecialchars($invoice->agency_name ?? ''); ?>"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">نام میهمان</label><input type="text" name="guest_name" class="form-control" value="<?php echo htmlspecialchars($invoice->guest_name ?? ''); ?>"></div>
                     <div class="col-6"><label class="form-label text-muted small fw-medium">تلفن میهمان</label><input type="text" name="guest_phone" class="form-control" value="<?php echo htmlspecialchars($invoice->guest_phone ?? ''); ?>" dir="ltr" style="text-align:left;"></div>
                     <div class="col-12"><label class="form-label text-muted small fw-medium">آدرس</label><textarea name="guest_address" class="form-control" rows="2" placeholder="آدرس کامل دریافت‌کننده فاکتور"><?php echo htmlspecialchars($invoice->guest_address ?? ''); ?></textarea></div>
