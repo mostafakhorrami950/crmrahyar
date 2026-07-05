@@ -16,12 +16,10 @@
     $footer = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
     $terms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
 
-    // Status labels
     $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پرداخت نشده','paid'=>'پرداخت شده'];
     $stC = ['pending'=>'#e67e22','settled'=>'#27ae60','prepaid'=>'#3498db','paid'=>'#27ae60'];
     $st = $invoice->invoice_status;
 
-    // Calculate items discount
     $itemsDiscount = 0;
     foreach ($items as $itm) {
         $defP = $itm->default_price ?? $itm->unit_price;
@@ -32,8 +30,7 @@
     }
     $hasDiscount = $itemsDiscount > 0 || ($invoice->discount_amount ?? 0) > 0;
     $isPending = $invoice->invoice_status === 'pending' && ($invoice->deposit_amount ?? 0) > 0;
-    ?>
-    <?php
+
     $wmText = '';
     if ($invoice->invoice_status === 'pending') $wmText = 'مانده دارد';
     elseif ($invoice->invoice_status === 'settled') $wmText = 'تسویه شده';
@@ -46,110 +43,115 @@
             body { margin: 0; padding: 0; background: #fff !important; }
             .no-print { display: none !important; }
             .page { padding: 0; max-width: 100%; box-shadow: none; margin: 0; border-radius: 0; }
-            @page { margin: 8mm; size: A4; }
+            @page { margin: 6mm; size: A4; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Vazirmatn, Tahoma, sans-serif; background: #f0f2f5; color: #2d3436; font-size: 9pt; line-height: 1.5; }
+        body { font-family: Vazirmatn, Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #2d3436; font-size: 9pt; line-height: 1.5; min-height: 100vh; padding: 20px 0; }
 
-        /* Page Container */
-        .page { max-width: 780px; margin: 20px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); overflow: hidden; position: relative; }
+        .page { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 0; box-shadow: 0 20px 80px rgba(0,0,0,0.3); overflow: hidden; position: relative; }
 
         /* Watermark */
-        .page::after { content: attr(data-wm); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-40deg); font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.03); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 12px; text-transform: uppercase; }
+        .page::after { content: attr(data-wm); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-40deg); font-size: 90px; font-weight: 900; color: rgba(0,0,0,0.025); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 15px; }
+
+        /* Top Accent Bar */
+        .top-bar { height: 6px; background: linear-gradient(90deg, <?php echo $pc; ?>, <?php echo $sc; ?>, <?php echo $pc; ?>); }
 
         /* Action Bar */
-        .action-bar { background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $pc; ?>dd); padding: 10px 20px; display: flex; justify-content: center; gap: 12px; }
-        .action-bar button { padding: 8px 28px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-        .btn-print { background: #fff; color: <?php echo $pc; ?>; }
-        .btn-print:hover { background: rgba(255,255,255,0.9); transform: translateY(-1px); }
+        .action-bar { background: linear-gradient(135deg, #2d3436, #636e72); padding: 12px 24px; display: flex; justify-content: center; gap: 12px; }
+        .action-bar button { padding: 8px 32px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }
+        .btn-print { background: #fff; color: #2d3436; }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .btn-close { background: transparent; color: #fff; }
-        .btn-close:hover { background: rgba(255,255,255,0.15); }
+        .btn-close:hover { background: rgba(255,255,255,0.1); }
 
         /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 24px 30px 20px; position: relative; }
-        .header::after { content: ''; position: absolute; bottom: 0; left: 30px; right: 30px; height: 3px; background: linear-gradient(90deg, <?php echo $pc; ?>, <?php echo $pc; ?>88, transparent); border-radius: 2px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 28px 36px 24px; background: linear-gradient(135deg, #fafbfc, #fff); }
         .header-right { text-align: right; }
-        .header-right .logo { max-height: 40px; margin-bottom: 6px; }
-        .header-right .title { font-size: 16pt; font-weight: 900; color: #2d3436; margin: 0; letter-spacing: -0.5px; }
-        .header-right .inv-meta { font-size: 8pt; color: #636e72; margin-top: 6px; display: flex; gap: 16px; align-items: center; }
-        .header-right .inv-meta strong { color: <?php echo $pc; ?>; }
+        .header-right .logo { max-height: 45px; margin-bottom: 8px; }
+        .header-right .title { font-size: 20pt; font-weight: 900; color: #1a1a2e; margin: 0; letter-spacing: -1px; }
+        .header-right .inv-meta { font-size: 8pt; color: #636e72; margin-top: 8px; display: flex; gap: 20px; align-items: center; }
+        .header-right .inv-meta span { display: flex; align-items: center; gap: 4px; }
+        .header-right .inv-meta strong { color: <?php echo $pc; ?>; font-weight: 800; }
         .header-left { text-align: left; }
-        .header-left .company { font-size: 13pt; font-weight: 800; color: <?php echo $pc; ?>; letter-spacing: -0.3px; }
-        .header-left .subtitle { font-size: 8pt; color: #636e72; margin-top: 2px; }
+        .header-left .company { font-size: 15pt; font-weight: 900; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $sc; ?>); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .header-left .subtitle { font-size: 9pt; color: #636e72; margin-top: 4px; }
 
         /* Status Bar */
-        .status-bar { padding: 10px 30px; display: flex; gap: 10px; align-items: center; background: linear-gradient(135deg, #f8f9fa, #fff); border-bottom: 1px solid #eee; }
-        .status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 14px; border-radius: 20px; font-size: 8pt; font-weight: 700; }
-        .status-pill.active { background: <?php echo $pc; ?>; color: #fff; }
+        .status-bar { padding: 12px 36px; display: flex; gap: 10px; align-items: center; background: #f8f9fa; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 16px; border-radius: 20px; font-size: 8pt; font-weight: 700; }
+        .status-pill.active { background: <?php echo $pc; ?>; color: #fff; box-shadow: 0 2px 8px <?php echo $pc; ?>44; }
         .status-pill.type { background: #fff; color: #555; border: 1.5px solid #ddd; }
         .creator-info { margin-right: auto; font-size: 7.5pt; color: #999; }
 
-        /* Info Grid */
-        .info-section { padding: 16px 30px; }
-        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .info-card { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 8px; padding: 10px 12px; border: 1px solid #eef0f2; transition: all 0.2s; }
-        .info-card:hover { border-color: <?php echo $pc; ?>33; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .info-card .ic-icon { width: 28px; height: 28px; border-radius: 6px; background: <?php echo $pc; ?>12; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; color: <?php echo $pc; ?>; font-size: 12px; }
-        .info-card .label { font-size: 7pt; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; }
-        .info-card .value { font-size: 8.5pt; font-weight: 700; color: #2d3436; line-height: 1.3; }
-        .info-card .value.accent { color: <?php echo $pc; ?>; }
+        /* Info Cards */
+        .info-section { padding: 20px 36px; }
+        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .info-card { background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #eef0f2; position: relative; overflow: hidden; }
+        .info-card::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: <?php echo $pc; ?>; border-radius: 0 10px 10px 0; opacity: 0.5; }
+        .info-card .ic-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, <?php echo $pc; ?>18, <?php echo $pc; ?>08); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: <?php echo $pc; ?>; font-size: 14px; }
+        .info-card .label { font-size: 7pt; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600; }
+        .info-card .value { font-size: 9pt; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
+        .info-card .value.accent { color: <?php echo $pc; ?>; font-size: 11pt; }
 
         /* Section Divider */
-        .section-divider { padding: 0 30px; margin: 12px 0 8px; display: flex; align-items: center; gap: 10px; }
-        .section-divider .icon { width: 28px; height: 28px; border-radius: 6px; background: <?php echo $pc; ?>; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-        .section-divider .text { font-size: 9pt; font-weight: 800; color: #2d3436; white-space: nowrap; }
-        .section-divider .line { flex: 1; height: 1px; background: linear-gradient(90deg, #ddd, transparent); }
+        .section-divider { padding: 0 36px; margin: 16px 0 10px; display: flex; align-items: center; gap: 12px; }
+        .section-divider .icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $pc; ?>cc); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; box-shadow: 0 3px 10px <?php echo $pc; ?>33; }
+        .section-divider .text { font-size: 10pt; font-weight: 800; color: #1a1a2e; white-space: nowrap; }
+        .section-divider .line { flex: 1; height: 2px; background: linear-gradient(90deg, <?php echo $pc; ?>33, transparent); }
 
         /* Items Table */
-        .items-section { padding: 0 30px; }
-        .items-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 8pt; border-radius: 8px; overflow: hidden; border: 1px solid #e8ecef; }
-        .items-table thead th { background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $pc; ?>dd); color: #fff; padding: 10px 12px; font-weight: 700; font-size: 7.5pt; text-align: right; letter-spacing: 0.3px; }
-        .items-table tbody td { padding: 10px 12px; border-bottom: 1px solid #f0f2f5; line-height: 1.4; vertical-align: middle; }
+        .items-section { padding: 0 36px; }
+        .items-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 8pt; border-radius: 10px; overflow: hidden; border: 1px solid #e8ecef; }
+        .items-table thead th { background: linear-gradient(135deg, #1a1a2e, #2d3436); color: #fff; padding: 12px 14px; font-weight: 700; font-size: 8pt; text-align: right; letter-spacing: 0.3px; }
+        .items-table tbody td { padding: 12px 14px; border-bottom: 1px solid #f0f2f5; line-height: 1.5; vertical-align: middle; }
         .items-table tbody tr:last-child td { border-bottom: none; }
-        .items-table tbody tr:hover { background: <?php echo $pc; ?>08; }
+        .items-table tbody tr:hover { background: <?php echo $pc; ?>06; }
         .items-table .num { text-align: center; font-weight: 700; }
-        .items-table .price { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 7.5pt; }
-        .items-table .total { text-align: left; direction: ltr; font-weight: 800; font-family: 'Courier New', monospace; font-size: 8pt; color: <?php echo $pc; ?>; }
-        .item-tag { display: inline-flex; align-items: center; gap: 3px; background: <?php echo $pc; ?>12; color: <?php echo $pc; ?>; font-size: 6.5pt; padding: 2px 8px; border-radius: 10px; margin-top: 3px; font-weight: 600; }
+        .items-table .price { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 8pt; }
+        .items-table .total { text-align: left; direction: ltr; font-weight: 900; font-family: 'Courier New', monospace; font-size: 9pt; color: <?php echo $pc; ?>; }
+        .item-tag { display: inline-flex; align-items: center; gap: 4px; background: <?php echo $pc; ?>12; color: <?php echo $pc; ?>; font-size: 8pt; padding: 3px 10px; border-radius: 12px; margin-top: 4px; font-weight: 700; }
+        .item-tag i { font-size: 10px; }
+        .half-price-tag { display: inline-flex; align-items: center; gap: 4px; background: #e67e22; color: #fff; font-size: 7.5pt; padding: 3px 10px; border-radius: 12px; margin-top: 4px; font-weight: 700; margin-right: 4px; }
+        .half-price-tag i { font-size: 10px; }
+        .room-type-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; font-size: 9pt; padding: 4px 14px; border-radius: 15px; margin-top: 5px; font-weight: 800; letter-spacing: 0.3px; box-shadow: 0 2px 8px #6c5ce733; }
+        .room-type-badge i { font-size: 12px; }
 
         /* Financial Summary */
-        .summary-section { padding: 0 30px 16px; }
-        .summary-box { max-width: 300px; margin-right: auto; background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 10px; padding: 16px 20px; border: 2px solid <?php echo $pc; ?>22; position: relative; overflow: hidden; }
-        .summary-box::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: <?php echo $pc; ?>; border-radius: 0 10px 10px 0; }
-        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 8pt; }
-        .summary-row .lbl { color: #636e72; display: flex; align-items: center; gap: 4px; }
-        .summary-row .val { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; font-size: 8pt; }
+        .summary-section { padding: 0 36px 20px; }
+        .summary-box { max-width: 320px; margin-right: auto; background: #fff; border-radius: 12px; padding: 20px 24px; border: 2px solid <?php echo $pc; ?>22; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .summary-box::before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; background: linear-gradient(180deg, <?php echo $pc; ?>, <?php echo $sc; ?>); border-radius: 0 12px 12px 0; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 8.5pt; }
+        .summary-row .lbl { color: #636e72; display: flex; align-items: center; gap: 5px; }
+        .summary-row .val { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; font-size: 8.5pt; }
         .summary-row .val.red { color: #e74c3c; font-weight: 800; }
-        .summary-divider { border: none; border-top: 2px dashed #e0e0e0; margin: 8px 0; }
-        .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 0; font-size: 10pt; font-weight: 900; }
-        .summary-total .lbl { color: #2d3436; }
+        .summary-divider { border: none; border-top: 2px dashed #e0e0e0; margin: 10px 0; }
+        .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 0; font-size: 11pt; font-weight: 900; }
+        .summary-total .lbl { color: #1a1a2e; }
         .summary-total .val { font-family: 'Courier New', monospace; direction: ltr; }
-        .summary-total .val.remaining { color: #fff; font-size: 11pt; background: linear-gradient(135deg, <?php echo $stC[$st] ?? '#e67e22'; ?>, <?php echo $stC[$st] ?? '#e67e22'; ?>dd); padding: 6px 16px; border-radius: 8px; box-shadow: 0 4px 12px <?php echo $stC[$st] ?? '#e67e22'; ?>33; }
-        .summary-total .val.final { color: #fff; font-size: 11pt; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $pc; ?>dd); padding: 6px 16px; border-radius: 8px; box-shadow: 0 4px 12px <?php echo $pc; ?>33; }
+        .summary-total .val.remaining { color: #fff; font-size: 12pt; background: linear-gradient(135deg, <?php echo $stC[$st] ?? '#e67e22'; ?>, <?php echo $stC[$st] ?? '#e67e22'; ?>cc); padding: 8px 20px; border-radius: 10px; box-shadow: 0 4px 15px <?php echo $stC[$st] ?? '#e67e22'; ?>44; }
+        .summary-total .val.final { color: #fff; font-size: 12pt; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $sc; ?>); padding: 8px 20px; border-radius: 10px; box-shadow: 0 4px 15px <?php echo $pc; ?>44; }
 
         /* Notes & Terms */
-        .notes-section { padding: 0 30px 16px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .note-card { flex: 1; min-width: 200px; background: #f8f9fa; border-radius: 8px; padding: 12px 14px; border-right: 4px solid <?php echo $pc; ?>; }
-        .note-card .note-title { font-weight: 800; color: <?php echo $pc; ?>; margin-bottom: 6px; font-size: 7.5pt; display: flex; align-items: center; gap: 4px; }
-        .note-card .note-body { font-size: 7.5pt; color: #555; line-height: 1.5; }
-        .terms-card { flex: 1; min-width: 200px; background: #f8f9fa; border-radius: 8px; padding: 12px 14px; border-right: 4px solid #2d3436; }
-        .terms-card .terms-title { font-weight: 800; color: #2d3436; margin-bottom: 6px; font-size: 7.5pt; display: flex; align-items: center; gap: 4px; }
-        .terms-card .terms-body { font-size: 7.5pt; color: #555; line-height: 1.5; }
+        .notes-section { padding: 0 36px 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .note-card { flex: 1; min-width: 200px; background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #eef0f2; border-right: 4px solid <?php echo $pc; ?>; }
+        .note-card .note-title { font-weight: 800; color: <?php echo $pc; ?>; margin-bottom: 8px; font-size: 8pt; display: flex; align-items: center; gap: 5px; }
+        .note-card .note-body { font-size: 8pt; color: #555; line-height: 1.6; }
+        .terms-card { flex: 1; min-width: 200px; background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #eef0f2; border-right: 4px solid #1a1a2e; }
+        .terms-card .terms-title { font-weight: 800; color: #1a1a2e; margin-bottom: 8px; font-size: 8pt; display: flex; align-items: center; gap: 5px; }
+        .terms-card .terms-body { font-size: 8pt; color: #555; line-height: 1.6; }
 
         /* Signature */
-        .signature-section { padding: 16px 30px; display: flex; justify-content: space-between; gap: 40px; }
-        .sig-box { flex: 1; text-align: center; padding-top: 30px; border-top: 2px solid <?php echo $pc; ?>33; position: relative; }
-        .sig-box::before { content: ''; position: absolute; top: -2px; right: 50%; transform: translateX(50%); width: 40px; height: 2px; background: <?php echo $pc; ?>; }
-        .sig-box .sig-label { font-size: 7.5pt; color: #999; font-weight: 600; }
-        .sig-box .sig-img { max-height: 50px; margin-bottom: 4px; }
+        .signature-section { padding: 20px 36px; display: flex; justify-content: space-between; gap: 40px; }
+        .sig-box { flex: 1; text-align: center; padding-top: 35px; border-top: 2px solid #eef0f2; position: relative; }
+        .sig-box::before { content: ''; position: absolute; top: -2px; right: 50%; transform: translateX(50%); width: 50px; height: 3px; background: linear-gradient(90deg, <?php echo $pc; ?>, <?php echo $sc; ?>); border-radius: 2px; }
+        .sig-box .sig-label { font-size: 8pt; color: #999; font-weight: 600; }
+        .sig-box .sig-img { max-height: 55px; margin-bottom: 6px; }
 
         /* Footer */
-        .invoice-footer { background: linear-gradient(135deg, #f8f9fa, #fff); padding: 14px 30px; text-align: center; border-top: 2px solid <?php echo $pc; ?>22; }
-        .invoice-footer p { font-size: 7.5pt; color: #636e72; margin-bottom: 4px; font-weight: 600; }
-        .invoice-footer .company-line { font-size: 7pt; color: #b2bec3; }
-
-        /* Decorative Elements */
-        .accent-line { height: 4px; background: linear-gradient(90deg, <?php echo $pc; ?>, <?php echo $sc; ?>, <?php echo $pc; ?>); }
+        .invoice-footer { background: linear-gradient(135deg, #f8f9fa, #fff); padding: 18px 36px; text-align: center; border-top: 2px solid #eef0f2; }
+        .invoice-footer p { font-size: 8pt; color: #636e72; margin-bottom: 6px; font-weight: 600; }
+        .invoice-footer .company-line { font-size: 7.5pt; color: #b2bec3; }
+        .invoice-footer .powered { font-size: 6.5pt; color: #ddd; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -159,8 +161,8 @@
     </div>
 
     <div class="page" data-wm="<?php echo htmlspecialchars($wmText); ?>">
-        <!-- Accent Line -->
-        <div class="accent-line"></div>
+        <!-- Top Accent Bar -->
+        <div class="top-bar"></div>
 
         <!-- Header -->
         <div class="header">
@@ -168,8 +170,8 @@
                 <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" class="logo" alt="لوگو"><?php endif; ?>
                 <h1 class="title"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></h1>
                 <div class="inv-meta">
-                    <span>شماره: <strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong></span>
-                    <span>تاریخ: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></span>
+                    <span><i class="bi bi-hash"></i> شماره: <strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong></span>
+                    <span><i class="bi bi-calendar3"></i> تاریخ: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></span>
                 </div>
             </div>
             <div class="header-left">
@@ -180,11 +182,11 @@
 
         <!-- Status Bar -->
         <div class="status-bar">
-            <span class="status-pill active"><?php echo $stL[$st] ?? $st; ?></span>
+            <span class="status-pill active"><i class="bi bi-circle-fill" style="font-size:6px;"></i> <?php echo $stL[$st] ?? $st; ?></span>
             <?php if ($invoice->invoice_type): ?>
-            <span class="status-pill type"><?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span>
+            <span class="status-pill type"><i class="bi bi-file-earmark-text"></i> <?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span>
             <?php endif; ?>
-            <span class="creator-info">صادر شده توسط: <strong><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></span>
+            <span class="creator-info"><i class="bi bi-person-badge"></i> صادر شده توسط: <strong><?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></strong></span>
         </div>
 
         <!-- Info Cards -->
@@ -257,13 +259,20 @@
                 <tbody>
                     <?php foreach ($items as $i => $item): ?>
                     <tr>
-                        <td class="num" style="color:#b2bec3;"><?php echo $i + 1; ?></td>
+                        <td class="num" style="color:#b2bec3;font-size:10pt;"><?php echo $i + 1; ?></td>
                         <td>
-                            <div style="font-weight:600;"><?php echo htmlspecialchars($item->description); ?></div>
-                            <?php if (!empty($item->room_type)): ?><span class="item-tag"><i class="bi bi-door-open" style="font-size:8px;"></i><?php echo htmlspecialchars($item->room_type); ?></span><?php endif; ?>
-                            <?php if (!empty($item->category) && $item->category !== 'general'): ?>
-                            <span class="item-tag"><?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
+                            <div style="font-weight:700;font-size:9pt;color:#1a1a2e;"><?php echo htmlspecialchars($item->description); ?></div>
+                            <?php if (!empty($item->room_type)): ?>
+                            <span class="room-type-badge"><i class="bi bi-door-open"></i> <?php echo htmlspecialchars($item->room_type); ?></span>
                             <?php endif; ?>
+                            <div style="margin-top:4px;">
+                                <?php if (!empty($item->category) && $item->category !== 'general'): ?>
+                                <span class="item-tag"><i class="bi bi-tag"></i> <?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($item->is_half_price)): ?>
+                                <span class="half-price-tag"><i class="bi bi-percent"></i> نیم بها<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span>
+                                <?php endif; ?>
+                            </div>
                         </td>
                         <td class="num"><?php echo number_format((int)$item->quantity); ?></td>
                         <td class="price"><?php echo number_format($item->unit_price); ?></td>
