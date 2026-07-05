@@ -63,28 +63,31 @@
             <div class="card-body">
                 <div id="itemsContainer">
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
-                        <div class="col-4">
+                        <div class="col-3">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="">
                             <input type="hidden" name="item_category[]" class="item-category" value="">
                             <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">
                             <input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">
-                            <div class="input-group input-group-sm mt-1"><span class="input-group-text" style="font-size:10px;background:#fff3e0;color:#e67e22;">نیم بها</span><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;" onchange="recalc()"></div>
-                            <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ نیم بها (اختیاری)" style="font-size:11px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت اصلی</label>
                             <input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;">
                         </div>
-                        <div class="col-2">
+                        <div class="col-1">
                             <label class="form-label text-muted small">قیمت جدید</label>
                             <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>
                             <input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label text-muted small" style="color:#e67e22;"><i class="bi bi-percent"></i> نیم بها</label>
+                            <input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;border-color:#e67e22;" onchange="recalc()">
+                            <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ سفارشی" style="font-size:10px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">کل</label>
@@ -271,24 +274,26 @@ function addItem() {
     var row = document.createElement('div');
     row.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
     row.innerHTML =
-        '<div class="col-4">' +
+        '<div class="col-3">' +
             '<input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off">' +
             '<input type="hidden" name="item_description[]" class="item-description-hidden" value="">' +
             '<input type="hidden" name="item_category[]" class="item-category" value="">' +
             '<input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">' +
-            '<input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">
-                            <div class="input-group input-group-sm mt-1"><span class="input-group-text" style="font-size:10px;background:#fff3e0;color:#e67e22;">نیم بها</span><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;" onchange="recalc()"></div>
-                            <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ نیم بها (اختیاری)" style="font-size:11px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">' +
+            '<input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">' +
             '<div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>' +
         '</div>' +
         '<div class="col-2">' +
             '<input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;">' +
         '</div>' +
-        '<div class="col-2">' +
+        '<div class="col-1">' +
             '<input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">' +
         '</div>' +
         '<div class="col-1">' +
             '<input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()">' +
+        '</div>' +
+        '<div class="col-2">' +
+            '<input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;border-color:#e67e22;" onchange="recalc()">' +
+            '<input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ سفارشی" style="font-size:10px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">' +
         '</div>' +
         '<div class="col-1">' +
             '<div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div>' +

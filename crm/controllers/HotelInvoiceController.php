@@ -9,10 +9,40 @@ use Core\ActivityLog;
 
 class HotelInvoiceController
 {
+    /**
+     * Self-heal: ensure half_price_qty column is INT not TINYINT
+     * Runs once per request via static flag
+     */
+    private function ensureHalfPriceColumn(): void
+    {
+        static $done = false;
+        if ($done) return;
+        $done = true;
+        try {
+            $db = Database::getInstance();
+            $col = $db->fetch("SHOW COLUMNS FROM hotel_invoice_items WHERE Field = 'half_price_qty'");
+            if ($col && stripos($col->Type ?? '', 'tinyint') !== false) {
+                $db->query("ALTER TABLE hotel_invoice_items MODIFY COLUMN `half_price_qty` INT DEFAULT 0");
+            } elseif (!$col) {
+                // Column doesn't exist, check for old is_half_price
+                $oldCol = $db->fetch("SHOW COLUMNS FROM hotel_invoice_items WHERE Field = 'is_half_price'");
+                if ($oldCol) {
+                    $db->query("ALTER TABLE hotel_invoice_items CHANGE COLUMN `is_half_price` `half_price_qty` INT DEFAULT 0");
+                } else {
+                    $db->query("ALTER TABLE hotel_invoice_items ADD COLUMN `half_price_qty` INT DEFAULT 0");
+                }
+            }
+        } catch (\Exception $e) {
+            error_log('ensureHalfPriceColumn: ' . $e->getMessage());
+        }
+    }
+
     private function getSettings(): array
     {
         try {
             $db = Database::getInstance();
+            // Self-heal half_price_qty column on every request
+            $this->ensureHalfPriceColumn();
             $settings = $db->fetchAll("SELECT setting_key, setting_value FROM invoice_settings");
             $map = [];
             foreach ($settings as $s) {

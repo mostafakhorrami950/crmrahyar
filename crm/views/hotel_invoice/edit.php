@@ -60,28 +60,31 @@
                     <?php if (!empty($items)): ?>
                     <?php foreach ($items as $item): ?>
                     <div class="item-row row g-2 mb-2 pb-2 border-bottom">
-                        <div class="col-4">
+                        <div class="col-3">
                             <label class="form-label text-muted small">شرح <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." value="<?php echo htmlspecialchars($item->description); ?>" oninput="filterItems(this)" autocomplete="off">
                             <input type="hidden" name="item_description[]" class="item-description-hidden" value="<?php echo htmlspecialchars($item->description); ?>">
                             <input type="hidden" name="item_category[]" class="item-category" value="<?php echo htmlspecialchars($item->category ?? 'general'); ?>">
                             <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="<?php echo $item->default_price ?? $item->unit_price; ?>">
                             <input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;" value="<?php echo htmlspecialchars($item->room_type ?? ''); ?>">
-                            <div class="input-group input-group-sm mt-1"><span class="input-group-text" style="font-size:10px;background:#fff3e0;color:#e67e22;">نیم بها</span><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="<?php echo (int)($item->half_price_qty ?? 0); ?>" min="0" style="font-size:11px;" onchange="recalc()"></div>
-                            <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ نیم بها (اختیاری)" style="font-size:11px;<?php echo empty($item->half_price_qty) ? 'display:none;' : ''; ?>" value="<?php echo !empty($item->half_price_rate) && $item->half_price_rate > 0 ? number_format($item->half_price_rate) : ''; ?>" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
                         <div class="col-2">
                             <label class="form-label text-muted small">قیمت اصلی</label>
                             <input type="text" class="form-control form-control-sm item-default-price bg-light" value="<?php echo number_format($item->default_price ?? $item->unit_price); ?>" readonly dir="ltr" style="text-align:left;font-size:12px;">
                         </div>
-                        <div class="col-2">
+                        <div class="col-1">
                             <label class="form-label text-muted small">قیمت جدید</label>
                             <input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="<?php echo ($item->unit_price != ($item->default_price ?? $item->unit_price)) ? $item->unit_price : ''; ?>" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">تعداد</label>
                             <input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="<?php echo (int)$item->quantity; ?>" min="1" onchange="recalc()">
+                        </div>
+                        <div class="col-2">
+                            <label class="form-label text-muted small" style="color:#e67e22;"><i class="bi bi-percent"></i> نیم بها</label>
+                            <input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="<?php echo (int)($item->half_price_qty ?? 0); ?>" min="0" style="font-size:11px;border-color:#e67e22;" onchange="recalc()">
+                            <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ سفارشی" style="font-size:10px;<?php echo empty($item->half_price_qty) ? 'display:none;' : ''; ?>" value="<?php echo !empty($item->half_price_rate) && $item->half_price_rate > 0 ? number_format($item->half_price_rate) : ''; ?>" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">
                         </div>
                         <div class="col-1">
                             <label class="form-label text-muted small">کل</label>
@@ -248,7 +251,7 @@ function addItem() {
     var c = document.getElementById('itemsContainer');
     var r = document.createElement('div');
     r.className = 'item-row row g-2 mb-2 pb-2 border-bottom';
-    r.innerHTML = '<div class="col-4"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off"><input type="hidden" name="item_description[]" class="item-description-hidden" value=""><input type="hidden" name="item_category[]" class="item-category" value=""><input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0"><div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div></div><div class="col-2"><input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;"></div><div class="col-2"><input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-1"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-1"><div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
+    r.innerHTML = '<div class="col-3"><input type="text" class="form-control form-control-sm item-search-input" placeholder="🔍 جستجو یا تایپ نام آیتم..." oninput="filterItems(this)" autocomplete="off"><input type="hidden" name="item_description[]" class="item-description-hidden" value=""><input type="hidden" name="item_category[]" class="item-category" value=""><input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0"><input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;"><div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div></div><div class="col-2"><input type="text" class="form-control form-control-sm item-default-price bg-light" value="0" readonly dir="ltr" style="text-align:left;font-size:12px;"></div><div class="col-1"><input type="number" name="item_new_price[]" class="form-control form-control-sm item-new-price" value="" min="0" placeholder="اختیاری" onchange="recalc()" dir="ltr" style="text-align:left;"></div><div class="col-1"><input type="number" name="item_quantity[]" class="form-control form-control-sm item-qty" value="1" min="1" onchange="recalc()"></div><div class="col-2"><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;border-color:#e67e22;" onchange="recalc()"><input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ سفارشی" style="font-size:10px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()"></div><div class="col-1"><div class="form-control form-control-sm bg-light item-line-total text-center" style="font-size:11px;font-weight:bold;direction:ltr;">0</div></div><div class="col-2 d-flex align-items-end"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem(this)"><i class="bi bi-trash"></i></button></div>';
     c.appendChild(r);
     recalc();
 }
