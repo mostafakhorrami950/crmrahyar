@@ -41,7 +41,7 @@
             body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
             .no-print { display: none !important; }
             .page { box-shadow: none !important; margin: 0 !important; padding: 12px !important; max-width: 100% !important; border-radius: 0 !important; }
-            @page { margin: 4mm; size: A5 landscape; }
+            @page { margin: 4mm; size: A5 portrait; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Vazirmatn, Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #2d3436; font-size: 7pt; line-height: 1.3; min-height: 100vh; padding: 10px; }
@@ -85,7 +85,7 @@
         .tbl .total { font-weight: 900; color: <?php echo $pc; ?>; }
         .tbl tbody tr:nth-child(even) { background: #fafbfc; }
         .tbl tbody tr:last-child td { border-bottom: 2px solid <?php echo $pc; ?>; }
-        .half-badge { display: inline-flex; align-items: center; gap: 2px; background: linear-gradient(135deg, #e67e22, #f39c12); color: #fff; font-size: 5pt; padding: 1px 5px; border-radius: 8px; font-weight: 800; }
+        .half-badge { display: inline-flex; align-items: center; gap: 2px; background: linear-gradient(135deg, #e67e22, #f39c12); color: #fff; font-size: 5.5pt; padding: 1px 5px; border-radius: 8px; font-weight: 800; }
 
         /* Summary + Notes */
         .bottom-section { display: flex; gap: 10px; align-items: flex-start; margin-top: 2px; }
@@ -169,7 +169,7 @@
                     <td style="font-weight:700;"><?php echo htmlspecialchars($item->description); ?></td>
                     <td class="c"><?php echo !empty($item->room_type) ? htmlspecialchars($item->room_type) : '-'; ?></td>
                     <td class="c" style="font-weight:700;"><?php echo number_format((int)$item->quantity); ?></td>
-                    <td class="c"><?php echo !empty($item->half_price_qty) && $item->half_price_qty > 0 ? '<span class="half-badge"><i class="bi bi-percent"></i>' . $item->half_price_qty . '</span>' : '-'; ?></td>
+                    <td class="c"><?php echo !empty($item->half_price_qty) && $item->half_price_qty > 0 ? '<span class="half-badge">' . $item->half_price_qty . '</span>' : '-'; ?></td>
                     <td class="r"><?php echo number_format($item->unit_price); ?></td>
                     <td class="c"><?php echo $invoice->nights; ?></td>
                     <td class="r total"><?php echo number_format($item->total_price); ?></td>
