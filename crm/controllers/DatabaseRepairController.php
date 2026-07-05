@@ -21,7 +21,7 @@ class DatabaseRepairController
             'payments', 'sms_history', 'settings',
             'custom_fields', 'custom_field_values', 'db_repair_log',
             'change_logs', 'phone_lines', 'phone_assignments',
-            'hotel_rate_list'
+            'hotel_rate_hotels', 'hotel_rate_list'
         ];
         
         // Get actual tables

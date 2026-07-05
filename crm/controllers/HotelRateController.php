@@ -20,7 +20,7 @@ class HotelRateController
         $params = [];
 
         if ($hotelFilter) {
-            $where .= " AND r.hotel_name LIKE :hotel";
+            $where .= " AND h.hotel_name LIKE :hotel";
             $params[':hotel'] = '%' . $hotelFilter . '%';
         }
         if ($dateFrom) {
@@ -32,16 +32,21 @@ class HotelRateController
             $params[':date_to'] = $dateTo;
         }
 
-        $rates = $db->fetchAll(
-            "SELECT r.*, u.full_name as creator_name
-             FROM hotel_rate_list r
-             LEFT JOIN users u ON r.created_by = u.id
-             {$where}
-             ORDER BY r.date_from DESC, r.hotel_name ASC, r.room_type ASC",
-            $params
-        );
+        try {
+            $rates = $db->fetchAll(
+                "SELECT r.*, h.hotel_name, h.description as hotel_desc, h.facilities, h.star_rating, h.city, u.full_name as creator_name
+                 FROM hotel_rate_list r
+                 JOIN hotel_rate_hotels h ON r.hotel_id = h.id
+                 LEFT JOIN users u ON r.created_by = u.id
+                 {$where}
+                 ORDER BY h.hotel_name ASC, r.date_from DESC, r.room_type ASC",
+                $params
+            );
+        } catch (\Exception $e) {
+            $rates = [];
+        }
 
-        $hotels = $db->fetchAll("SELECT DISTINCT hotel_name FROM hotel_rate_list WHERE is_active = 1 ORDER BY hotel_name");
+        $hotels = $db->fetchAll("SELECT * FROM hotel_rate_hotels WHERE is_active = 1 ORDER BY hotel_name");
 
         View::render('hotel_rate/index', [
             'title' => 'نرخنامه هتل‌ها',
@@ -53,13 +58,92 @@ class HotelRateController
         ]);
     }
 
-    public function store(): void
+    // ===== HOTEL CRUD =====
+    public function storeHotel(): void
     {
         Auth::requireAuth();
         $db = Database::getInstance();
 
         $data = [
             'hotel_name' => trim($_POST['hotel_name'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'facilities' => trim($_POST['facilities'] ?? ''),
+            'star_rating' => !empty($_POST['star_rating']) ? (int)$_POST['star_rating'] : null,
+            'city' => trim($_POST['city'] ?? ''),
+            'created_by' => Auth::id(),
+        ];
+
+        if (empty($data['hotel_name'])) {
+            $_SESSION['error'] = 'نام هتل الزامی است.';
+            View::redirect('/hotel-rates');
+            return;
+        }
+
+        try {
+            $db->insert('hotel_rate_hotels', $data);
+            $_SESSION['success'] = 'هتل با موفقیت ثبت شد.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
+        }
+        View::redirect('/hotel-rates');
+    }
+
+    public function updateHotel(array $params): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+
+        $data = [
+            'hotel_name' => trim($_POST['hotel_name'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'facilities' => trim($_POST['facilities'] ?? ''),
+            'star_rating' => !empty($_POST['star_rating']) ? (int)$_POST['star_rating'] : null,
+            'city' => trim($_POST['city'] ?? ''),
+        ];
+
+        try {
+            $db->update('hotel_rate_hotels', $data, 'id = :id', [':id' => $id]);
+            $_SESSION['success'] = 'هتل بروزرسانی شد.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
+        }
+        View::redirect('/hotel-rates');
+    }
+
+    public function deleteHotel(array $params): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+        try {
+            $db->update('hotel_rate_hotels', ['is_active' => 0], 'id = :id', [':id' => $id]);
+            $_SESSION['success'] = 'هتل حذف شد.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
+        }
+        View::redirect('/hotel-rates');
+    }
+
+    public function getHotelData(array $params): void
+    {
+        Auth::requireAuth();
+        header('Content-Type: application/json; charset=utf-8');
+        $db = Database::getInstance();
+        $id = (int)$params['id'];
+        $hotel = $db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id", [':id' => $id]);
+        echo json_encode($hotel ?: []);
+        exit;
+    }
+
+    // ===== RATE CRUD =====
+    public function store(): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+
+        $data = [
+            'hotel_id' => (int)($_POST['hotel_id'] ?? 0),
             'room_type' => trim($_POST['room_type'] ?? ''),
             'date_from' => $_POST['date_from'] ?? date('Y-m-d'),
             'date_to' => $_POST['date_to'] ?? date('Y-m-d'),
@@ -73,8 +157,8 @@ class HotelRateController
             'created_by' => Auth::id(),
         ];
 
-        if (empty($data['hotel_name']) || empty($data['room_type'])) {
-            $_SESSION['error'] = 'نام هتل و نوع اتاق الزامی است.';
+        if (empty($data['hotel_id']) || empty($data['room_type'])) {
+            $_SESSION['error'] = 'هتل و نوع اتاق الزامی است.';
             View::redirect('/hotel-rates');
             return;
         }
@@ -83,9 +167,8 @@ class HotelRateController
             $db->insert('hotel_rate_list', $data);
             $_SESSION['success'] = 'نرخ با موفقیت ثبت شد.';
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'خطا در ثبت: ' . $e->getMessage();
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
         }
-
         View::redirect('/hotel-rates');
     }
 
@@ -93,11 +176,10 @@ class HotelRateController
     {
         Auth::requireAuth();
         $db = Database::getInstance();
-
         $id = (int)$params['id'];
 
         $data = [
-            'hotel_name' => trim($_POST['hotel_name'] ?? ''),
+            'hotel_id' => (int)($_POST['hotel_id'] ?? 0),
             'room_type' => trim($_POST['room_type'] ?? ''),
             'date_from' => $_POST['date_from'] ?? date('Y-m-d'),
             'date_to' => $_POST['date_to'] ?? date('Y-m-d'),
@@ -112,11 +194,10 @@ class HotelRateController
 
         try {
             $db->update('hotel_rate_list', $data, 'id = :id', [':id' => $id]);
-            $_SESSION['success'] = 'نرخ با موفقیت بروزرسانی شد.';
+            $_SESSION['success'] = 'نرخ بروزرسانی شد.';
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'خطا در بروزرسانی: ' . $e->getMessage();
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
         }
-
         View::redirect('/hotel-rates');
     }
 
@@ -129,7 +210,7 @@ class HotelRateController
             $db->update('hotel_rate_list', ['is_active' => 0], 'id = :id', [':id' => $id]);
             $_SESSION['success'] = 'نرخ حذف شد.';
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'خطا در حذف: ' . $e->getMessage();
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
         }
         View::redirect('/hotel-rates');
     }
@@ -137,37 +218,50 @@ class HotelRateController
     public function getData(array $params): void
     {
         Auth::requireAuth();
-        $db = Database::getInstance();
         header('Content-Type: application/json; charset=utf-8');
+        $db = Database::getInstance();
         $id = (int)$params['id'];
         $rate = $db->fetch("SELECT * FROM hotel_rate_list WHERE id = :id", [':id' => $id]);
         echo json_encode($rate ?: []);
         exit;
     }
 
+    // ===== PUBLIC DISPLAY =====
     public function display(): void
     {
         $db = Database::getInstance();
         $hotelFilter = trim($_GET['hotel'] ?? '');
 
-        $where = "WHERE is_active = 1";
-        $params = [];
-        if ($hotelFilter) {
-            $where .= " AND hotel_name LIKE :hotel";
-            $params[':hotel'] = '%' . $hotelFilter . '%';
+        $hotels = [];
+        $ratesByHotel = [];
+
+        try {
+            $whereHotel = "WHERE h.is_active = 1";
+            $params = [];
+            if ($hotelFilter) {
+                $whereHotel .= " AND h.hotel_name LIKE :hotel";
+                $params[':hotel'] = '%' . $hotelFilter . '%';
+            }
+
+            $hotels = $db->fetchAll(
+                "SELECT h.* FROM hotel_rate_hotels h {$whereHotel} ORDER BY h.hotel_name ASC",
+                $params
+            );
+
+            foreach ($hotels as $hotel) {
+                $ratesByHotel[$hotel->id] = $db->fetchAll(
+                    "SELECT * FROM hotel_rate_list WHERE hotel_id = :hid AND is_active = 1 ORDER BY room_type ASC, date_from DESC",
+                    [':hid' => $hotel->id]
+                );
+            }
+        } catch (\Exception $e) {
+            // Tables might not exist yet
         }
 
-        $rates = $db->fetchAll(
-            "SELECT * FROM hotel_rate_list {$where} ORDER BY hotel_name ASC, room_type ASC, date_from DESC",
-            $params
-        );
-
-        $grouped = [];
-        foreach ($rates as $r) {
-            $grouped[$r->hotel_name][] = $r;
-        }
-
-        $hotels = $db->fetchAll("SELECT DISTINCT hotel_name FROM hotel_rate_list WHERE is_active = 1 ORDER BY hotel_name");
+        $allHotels = [];
+        try {
+            $allHotels = $db->fetchAll("SELECT DISTINCT h.hotel_name FROM hotel_rate_hotels h WHERE h.is_active = 1 ORDER BY h.hotel_name");
+        } catch (\Exception $e) {}
 
         $invoiceSettings = [];
         try {
@@ -179,8 +273,9 @@ class HotelRateController
 
         View::render('hotel_rate/display', [
             'title' => 'نرخنامه هتل‌ها',
-            'grouped' => $grouped,
             'hotels' => $hotels,
+            'ratesByHotel' => $ratesByHotel,
+            'allHotels' => $allHotels,
             'hotelFilter' => $hotelFilter,
             'invoiceSettings' => $invoiceSettings,
         ]);

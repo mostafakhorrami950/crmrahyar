@@ -335,10 +335,17 @@ Router::get('/hi/{code}', [HotelInvoiceController::class, 'publicViewByShortCode
 // Hotel Rate List
 Router::group('/hotel-rates', function() {
     Router::get('', [HotelRateController::class, 'index'], 'deals.view');
+    // Hotel CRUD
+    Router::post('/hotel/store', [HotelRateController::class, 'storeHotel'], 'deals.edit');
+    Router::post('/hotel/update/{id}', [HotelRateController::class, 'updateHotel'], 'deals.edit');
+    Router::post('/hotel/delete/{id}', [HotelRateController::class, 'deleteHotel'], 'deals.edit');
+    Router::get('/hotel/data/{id}', [HotelRateController::class, 'getHotelData'], 'deals.view');
+    // Rate CRUD
     Router::post('/store', [HotelRateController::class, 'store'], 'deals.edit');
     Router::post('/update/{id}', [HotelRateController::class, 'update'], 'deals.edit');
     Router::post('/delete/{id}', [HotelRateController::class, 'delete'], 'deals.edit');
     Router::get('/data/{id}', [HotelRateController::class, 'getData'], 'deals.view');
+    // Public display
     Router::get('/display', [HotelRateController::class, 'display']);
 });
 
