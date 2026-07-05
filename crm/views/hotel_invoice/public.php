@@ -18,10 +18,12 @@
     $footerText = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
     ?>
     <?php
-    // Check if invoice validity has expired
+    // Check if invoice validity has expired (only for prepaid/unpaid invoices)
     $isExpired = false;
-    if ($invoice && $invoice->invoice_status === 'prepaid' && !empty($invoice->valid_until)) {
-        $isExpired = strtotime($invoice->valid_until) < time();
+    if ($invoice && in_array($invoice->invoice_status, ['prepaid']) && !empty($invoice->valid_until)) {
+        $validUntilTs = strtotime($invoice->valid_until);
+        // Only consider expired if valid_until is at least 1 day in the past
+        $isExpired = $validUntilTs && ($validUntilTs + 86400) < time();
     }
     ?>
     <style>
@@ -196,7 +198,7 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
         <p class="text-muted mb-0">این فاکتور دارای مانده است و در انتظار تسویه نهایی می‌باشد.</p>
     </div>
     <?php elseif ($invoice->invoice_status === 'prepaid'): ?>
-        <?php if (!empty($wmText)): ?>
+        <?php if ($isExpired): ?>
         <div class="text-center p-4 mb-3" style="background:#dc354518;border:2px dashed #dc3545;border-radius:12px;">
             <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:40px;"></i>
             <h5 class="mt-2 fw-bold text-danger">اعتبار فاکتور تمام شده</h5>
