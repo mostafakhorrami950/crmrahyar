@@ -153,6 +153,46 @@ class ReportController
              ORDER BY deals_count DESC LIMIT 10"
         );
 
+        // Hotel Invoice Stats
+        $hotelInvoiceStats = null;
+        $hotelInvoiceByStatus = [];
+        $hotelInvoiceByHotel = [];
+        $hotelInvoiceMonthly = [];
+        try {
+            $hotelInvoiceStats = $db->fetch(
+                "SELECT COUNT(*) as total, 
+                        COALESCE(SUM(final_amount),0) as total_amount,
+                        COALESCE(SUM(deposit_amount),0) as total_deposit,
+                        COALESCE(SUM(discount_amount),0) as total_discount,
+                        SUM(CASE WHEN invoice_status='paid' THEN 1 ELSE 0 END) as paid_count,
+                        SUM(CASE WHEN invoice_status='paid' THEN final_amount ELSE 0 END) as paid_amount,
+                        SUM(CASE WHEN invoice_status='pending' THEN 1 ELSE 0 END) as pending_count,
+                        SUM(CASE WHEN invoice_status='pending' THEN final_amount ELSE 0 END) as pending_amount,
+                        SUM(CASE WHEN invoice_status='prepaid' THEN 1 ELSE 0 END) as prepaid_count,
+                        SUM(CASE WHEN invoice_status='prepaid' THEN final_amount ELSE 0 END) as prepaid_amount,
+                        SUM(CASE WHEN invoice_status='settled' THEN 1 ELSE 0 END) as settled_count,
+                        SUM(CASE WHEN invoice_status='settled' THEN final_amount ELSE 0 END) as settled_amount
+                 FROM hotel_invoices"
+            );
+            $hotelInvoiceByStatus = $db->fetchAll(
+                "SELECT invoice_status, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot
+                 FROM hotel_invoices GROUP BY invoice_status"
+            );
+            $hotelInvoiceByHotel = $db->fetchAll(
+                "SELECT hotel_name, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot,
+                        SUM(CASE WHEN invoice_status='paid' OR invoice_status='settled' THEN 1 ELSE 0 END) as paid
+                 FROM hotel_invoices GROUP BY hotel_name ORDER BY tot DESC LIMIT 10"
+            );
+            $hotelInvoiceMonthly = $db->fetchAll(
+                "SELECT DATE_FORMAT(created_at, '%Y-%m') as month,
+                        COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot,
+                        SUM(CASE WHEN invoice_status='paid' OR invoice_status='settled' THEN final_amount ELSE 0 END) as paid_tot
+                 FROM hotel_invoices
+                 WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                 GROUP BY DATE_FORMAT(created_at, '%Y-%m') ORDER BY month"
+            );
+        } catch (\Exception $e) {}
+
         View::render('reports/index', [
             'title' => 'گزارشات و تحلیل‌ها',
             'totalDeals' => $totalDeals,
@@ -178,6 +218,10 @@ class ReportController
             'avgDealAmount' => $avgDealAmount,
             'dealsByMonth' => $dealsByMonth,
             'topContacts' => $topContacts,
+            'hotelInvoiceStats' => $hotelInvoiceStats,
+            'hotelInvoiceByStatus' => $hotelInvoiceByStatus,
+            'hotelInvoiceByHotel' => $hotelInvoiceByHotel,
+            'hotelInvoiceMonthly' => $hotelInvoiceMonthly,
         ]);
     }
 

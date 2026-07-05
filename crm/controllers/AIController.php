@@ -340,16 +340,19 @@ class AIController
                                 COALESCE(SUM(final_amount),0) as total_amount,
                                 COALESCE(SUM(discount_amount),0) as total_discount,
                                 COALESCE(SUM(deposit_amount),0) as total_deposit,
-                                SUM(CASE WHEN invoice_status='paid' THEN 1 ELSE 0 END) as paid_count,
-                                SUM(CASE WHEN invoice_status='paid' THEN final_amount ELSE 0 END) as paid_amount,
-                                SUM(CASE WHEN invoice_status='draft' THEN 1 ELSE 0 END) as draft_count,
-                                SUM(CASE WHEN invoice_status='final' THEN 1 ELSE 0 END) as final_count,
-                                SUM(CASE WHEN invoice_status='cancelled' THEN 1 ELSE 0 END) as cancelled_count
+                                SUM(CASE WHEN invoice_status='paid' OR invoice_status='settled' THEN 1 ELSE 0 END) as paid_count,
+                                SUM(CASE WHEN invoice_status='paid' OR invoice_status='settled' THEN final_amount ELSE 0 END) as paid_amount,
+                                SUM(CASE WHEN invoice_status='prepaid' THEN 1 ELSE 0 END) as unpaid_count,
+                                SUM(CASE WHEN invoice_status='prepaid' THEN final_amount ELSE 0 END) as unpaid_amount,
+                                SUM(CASE WHEN invoice_status='pending' THEN 1 ELSE 0 END) as pending_count,
+                                SUM(CASE WHEN invoice_status='pending' THEN final_amount ELSE 0 END) as pending_amount,
+                                SUM(CASE WHEN invoice_status='pending' THEN deposit_amount ELSE 0 END) as pending_deposit
                          FROM hotel_invoices"
                     );
                     $hotelInvoiceByHotel = $db->fetchAll(
                         "SELECT hotel_name, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot,
-                                SUM(CASE WHEN invoice_status='paid' THEN 1 ELSE 0 END) as paid
+                                SUM(CASE WHEN invoice_status='paid' OR invoice_status='settled' THEN 1 ELSE 0 END) as paid,
+                                SUM(CASE WHEN invoice_status='pending' THEN 1 ELSE 0 END) as has_remainder
                          FROM hotel_invoices GROUP BY hotel_name ORDER BY tot DESC LIMIT 10"
                     );
                     $hotelInvoiceByType = $db->fetchAll(
@@ -360,33 +363,44 @@ class AIController
                         "SELECT invoice_status, COUNT(*) as cnt, COALESCE(SUM(final_amount),0) as tot
                          FROM hotel_invoices GROUP BY invoice_status"
                     );
-                    $p .= "== فاکتورهای هتل ==\n";
-                    $p .= "کل فاکتورها: {$hotelInvoiceStats->total}\n";
-                    $p .= "مجموع مبلغ: " . number_format($hotelInvoiceStats->total_amount) . " تومان\n";
-                    $p .= "مجموع تخفیف: " . number_format($hotelInvoiceStats->total_discount) . " تومان\n";
-                    $p .= "پرداخت شده: {$hotelInvoiceStats->paid_count} (" . number_format($hotelInvoiceStats->paid_amount) . " ت)\n";
-                    $p .= "پیش‌نویس: {$hotelInvoiceStats->draft_count}\n";
-                    $p .= "نهایی: {$hotelInvoiceStats->final_count}\n";
-                    $p .= "لغو شده: {$hotelInvoiceStats->cancelled_count}\n\n";
-                    
-                    $p .= "بر اساس هتل:\n";
+                    // Calculate collection rate
+                    $collectRate = $hotelInvoiceStats->total_amount > 0 ? round(($hotelInvoiceStats->paid_amount / $hotelInvoiceStats->total_amount) * 100, 1) : 0;
+                    $remainderAmount = $hotelInvoiceStats->pending_amount - $hotelInvoiceStats->pending_deposit;
+
+                    $p .= "═══════════════════════════════════════\n";
+                    $p .= "🏨 بخش ۱۱: تحلیل فاکتورهای هتل\n";
+                    $p .= "═══════════════════════════════════════\n";
+                    $p .= "▸ کل فاکتورها: {$hotelInvoiceStats->total}\n";
+                    $p .= "▸ مجموع مبلغ فاکتورها: " . number_format($hotelInvoiceStats->total_amount) . " تومان\n";
+                    $p .= "▸ مجموع تخفیف‌ها: " . number_format($hotelInvoiceStats->total_discount) . " تومان\n";
+                    $p .= "▸ مجموع بیعانه‌ها: " . number_format($hotelInvoiceStats->total_deposit) . " تومان\n";
+                    $p .= "▸ پرداخت شده/تسویه شده: {$hotelInvoiceStats->paid_count} فاکتور (" . number_format($hotelInvoiceStats->paid_amount) . " تومان)\n";
+                    $p .= "▸ پرداخت نشده (پیش فاکتور): {$hotelInvoiceStats->unpaid_count} فاکتور (" . number_format($hotelInvoiceStats->unpaid_amount) . " تومان)\n";
+                    $p .= "▸ مانده دارد (بیعانه واریز شده): {$hotelInvoiceStats->pending_count} فاکتور (" . number_format($hotelInvoiceStats->pending_amount) . " تومان)\n";
+                    $p .= "  └─ بیعانه دریافتی: " . number_format($hotelInvoiceStats->pending_deposit) . " تومان\n";
+                    $p .= "  └─ مانده قابل وصول: " . number_format($remainderAmount) . " تومان\n";
+                    $p .= "▸ نرخ وصول مطالبات: {$collectRate}%\n\n";
+
+                    $p .= "🔹 عملکرد بر اساس هتل:\n";
                     foreach ($hotelInvoiceByHotel as $h) {
-                        $p .= "- {$h->hotel_name}: {$h->cnt} فاکتور (" . number_format($h->tot) . " ت) | پرداخت شده: {$h->paid}\n";
+                        $hCollectRate = $h->tot > 0 ? round(($h->tot * ($h->paid / max($h->cnt,1))) / $h->tot * 100, 0) : 0;
+                        $p .= "  ▸ {$h->hotel_name}: {$h->cnt} فاکتور (" . number_format($h->tot) . " ت)\n";
+                        $p .= "    پرداخت شده: {$h->paid} | مانده دارد: {$h->has_remainder}\n";
                     }
                     $p .= "\n";
-                    
-                    $p .= "بر اساس نوع:\n";
+
+                    $p .= "🔹 بر اساس نوع:\n";
                     foreach ($hotelInvoiceByType as $t) {
-                        $typeLabel = $t->invoice_type === 'confirmed' ? 'تایید شده' : 'پیش فاکتور';
-                        $p .= "- {$typeLabel}: {$t->cnt} (" . number_format($t->tot) . " ت)\n";
+                        $typeLabel = $t->invoice_type === 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور';
+                        $p .= "  ▸ {$typeLabel}: {$t->cnt} فاکتور (" . number_format($t->tot) . " ت)\n";
                     }
                     $p .= "\n";
-                    
-                    $p .= "بر اساس وضعیت:\n";
+
+                    $p .= "🔹 بر اساس وضعیت:\n";
                     foreach ($hotelInvoiceByStatus as $s) {
-                        $statusLabels = ['draft'=>'پیش‌نویس','final'=>'نهایی','paid'=>'پرداخت شده','cancelled'=>'لغو شده'];
+                        $statusLabels = ['prepaid'=>'پرداخت نشده','pending'=>'مانده دارد','paid'=>'پرداخت شده','settled'=>'تسویه شده'];
                         $statusLabel = $statusLabels[$s->invoice_status] ?? $s->invoice_status;
-                        $p .= "- {$statusLabel}: {$s->cnt} (" . number_format($s->tot) . " ت)\n";
+                        $p .= "  ▸ {$statusLabel}: {$s->cnt} فاکتور (" . number_format($s->tot) . " ت)\n";
                     }
                     $p .= "\n";
                 } catch (\Exception $e) {

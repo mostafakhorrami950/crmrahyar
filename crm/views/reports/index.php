@@ -344,6 +344,51 @@
     </div>
 </div>
 
+<!-- Hotel Invoice Summary -->
+<?php if ($hotelInvoiceStats && $hotelInvoiceStats->total > 0): ?>
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom"><h6 class="fw-bold mb-0"><i class="bi bi-building me-2" style="color:#e67e22;"></i>فاکتورهای هتل</h6></div>
+            <div class="card-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light rounded p-3 text-center">
+                            <small class="text-muted d-block" style="font-size:11px;">کل فاکتورها</small>
+                            <strong class="fs-5 text-primary"><?php echo number_format($hotelInvoiceStats->total); ?></strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light rounded p-3 text-center">
+                            <small class="text-muted d-block" style="font-size:11px;">مبلغ کل</small>
+                            <strong class="fs-5" style="font-size:13px;"><?php echo number_format($hotelInvoiceStats->total_amount); ?> ت</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light rounded p-3 text-center">
+                            <small class="text-muted d-block" style="font-size:11px;">پرداخت شده</small>
+                            <strong class="fs-5 text-success"><?php echo number_format($hotelInvoiceStats->paid_amount); ?> ت</strong>
+                            <br><small class="text-muted"><?php echo $hotelInvoiceStats->paid_count; ?> فاکتور</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="bg-light rounded p-3 text-center">
+                            <small class="text-muted d-block" style="font-size:11px;">مانده دارد</small>
+                            <strong class="fs-5 text-warning"><?php echo number_format($hotelInvoiceStats->pending_amount); ?> ت</strong>
+                            <br><small class="text-muted"><?php echo $hotelInvoiceStats->pending_count; ?> فاکتور</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6"><canvas id="hotelStatusChart" style="max-height:220px;"></canvas></div>
+                    <div class="col-12 col-md-6"><canvas id="hotelMonthlyChart" style="max-height:220px;"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Lost Reasons -->
 <?php if (!empty($lostReasons)): ?>
 <div class="row g-3 mb-4">
@@ -479,6 +524,43 @@ new Chart(document.getElementById('activityChart'), {
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
 });
+
+// ===== HOTEL INVOICE CHARTS =====
+<?php if ($hotelInvoiceStats && $hotelInvoiceStats->total > 0): ?>
+// Hotel Status Doughnut
+<?php
+$hotelStLabels = ''; $hotelStData = ''; $hotelStColors = '';
+$stColorMap = ['prepaid'=>'#3498db','pending'=>'#e67e22','paid'=>'#27ae60','settled'=>'#2ecc71'];
+$stLabelMap = ['prepaid'=>'پرداخت نشده','pending'=>'مانده دارد','paid'=>'پرداخت شده','settled'=>'تسویه شده'];
+foreach ($hotelInvoiceByStatus as $hs) {
+    $hotelStLabels .= "'" . ($stLabelMap[$hs->invoice_status] ?? $hs->invoice_status) . "',";
+    $hotelStData .= $hs->cnt . ',';
+    $hotelStColors .= "'" . ($stColorMap[$hs->invoice_status] ?? '#999') . "',";
+}
+?>
+new Chart(document.getElementById('hotelStatusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: [<?php echo $hotelStLabels; ?>],
+        datasets: [{ data: [<?php echo $hotelStData; ?>], backgroundColor: [<?php echo $hotelStColors; ?>], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+});
+
+// Hotel Monthly Revenue
+<?php $hmLabels = ''; $hmTot = ''; $hmPaid = ''; foreach ($hotelInvoiceMonthly as $hm) { $hmLabels .= "'" . $hm->month . "',"; $hmTot .= $hm->tot . ','; $hmPaid .= $hm->paid_tot . ','; } ?>
+new Chart(document.getElementById('hotelMonthlyChart'), {
+    type: 'bar',
+    data: {
+        labels: [<?php echo $hmLabels ?: "''"; ?>],
+        datasets: [
+            { label: 'کل فاکتورها', data: [<?php echo $hmTot ?: '0'; ?>], backgroundColor: '#e67e22', borderRadius: 4 },
+            { label: 'پرداخت شده', data: [<?php echo $hmPaid ?: '0'; ?>], backgroundColor: '#27ae60', borderRadius: 4 }
+        ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+});
+<?php endif; ?>
 
 // ===== AI ANALYSIS =====
 function runAIAnalysis() {
