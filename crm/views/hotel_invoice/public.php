@@ -118,17 +118,17 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
     <?php if (!empty($items)): ?>
     <table class="item-tbl mb-3">
         <thead>
-            <tr><th style="width:5%">#</th><th style="width:45%">شرح</th><th style="width:10%" class="text-center">تعداد</th><th style="width:20%" class="text-center">قیمت واحد</th><th style="width:20%" class="text-center">مبلغ کل</th></tr>
+            <tr><th style="width:5%">ردیف</th><th style="width:30%">شرح</th><th style="width:14%">نوع اتاق</th><th style="width:8%" class="text-center">تعداد</th><th style="width:10%" class="text-center">نیم بها</th><th style="width:8%" class="text-center">شب</th><th style="width:15%" class="text-center">مبلغ کل</th></tr>
         </thead>
         <tbody>
             <?php foreach ($items as $i => $item): ?>
             <tr>
                 <td class="text-center"><?php echo $i + 1; ?></td>
-                <td><?php echo htmlspecialchars($item->description); ?>
-                    <?php if (!empty($item->room_type)): ?><br><small style="color:#888;font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?>
-                    <?php if (!empty($item->half_price_qty) && $item->half_price_qty > 0): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#e67e22;color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-percent"></i> نیم بها: <?php echo $item->half_price_qty; ?> نفر<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span><?php endif; ?></td>
+                <td><?php echo htmlspecialchars($item->description); ?></td>
+                <td><?php echo !empty($item->room_type) ? htmlspecialchars($item->room_type) : '-'; ?></td>
                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
-                <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
+                <td class="text-center"><?php echo (!empty($item->half_price_qty) && $item->half_price_qty > 0) ? '<span style="color:#e67e22;font-weight:700;">'.$item->half_price_qty.'</span>' : '-'; ?></td>
+                <td class="text-center"><?php echo ($item->category === 'hotel') ? $invoice->nights : '-'; ?></td>
                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
             </tr>
             <?php endforeach; ?>

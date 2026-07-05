@@ -67,13 +67,13 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
                     <table class="table table-bordered table-sm mb-0">
                         <thead>
                             <tr>
-                                <th style="width:4%">#</th>
-                                <th style="width:32%">شرح</th>
+                                <th style="width:5%">ردیف</th>
+                                <th style="width:28%">شرح</th>
+                                <th style="width:14%">نوع اتاق</th>
                                 <th style="width:8%" class="text-center">تعداد</th>
-                                <th style="width:12%" class="text-center">قیمت اصلی</th>
-                                <th style="width:12%" class="text-center">قیمت واحد</th>
-                                <th style="width:8%" class="text-center">شب‌ها</th>
-                                <th style="width:14%" class="text-center">مبلغ کل</th>
+                                <th style="width:10%" class="text-center">نیم بها</th>
+                                <th style="width:8%" class="text-center">شب</th>
+                                <th style="width:15%" class="text-center">مبلغ کل</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -82,26 +82,20 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
                                 <td class="text-center"><?php echo $i + 1; ?></td>
                                 <td>
                                     <?php echo htmlspecialchars($item->description); ?>
-                                    <?php if (!empty($item->room_type)): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#6c5ce7;color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-door-open" style="font-size:10px;"></i> <?php echo htmlspecialchars($item->room_type); ?></span><?php endif; ?>
-                                    <?php if (!empty($item->half_price_qty) && $item->half_price_qty > 0): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#e67e22;color:#fff;font-size:8px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-percent"></i> نیم بها: <?php echo $item->half_price_qty; ?> نفر<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span><?php endif; ?>
-                                    <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
-                                    <br><small class="text-muted" style="font-size:10px;">(قیمت هر شب)</small>
+                                    <?php if (!empty($item->category) && $item->category !== 'general'): ?>
+                                    <br><span style="display:inline-flex;align-items:center;gap:3px;background:<?php echo $primaryColor; ?>18;color:<?php echo $primaryColor; ?>;font-size:8px;padding:2px 6px;border-radius:8px;font-weight:700;"><i class="bi bi-tag"></i> <?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
                                     <?php endif; ?>
                                 </td>
+                                <td><?php echo !empty($item->room_type) ? '<span style="display:inline-flex;align-items:center;gap:3px;background:#6c5ce7;color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-door-open" style="font-size:10px;"></i> '.htmlspecialchars($item->room_type).'</span>' : '<span class="text-muted">-</span>'; ?></td>
                                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
-                                <td class="text-center text-muted" dir="ltr"><?php echo number_format($item->default_price ?? $item->unit_price); ?></td>
-                                <td class="text-center fw-bold" dir="ltr" <?php echo ($item->unit_price < ($item->default_price ?? $item->unit_price)) ? 'style="color:#dc3545;"' : ''; ?>><?php echo number_format($item->unit_price); ?></td>
-                                <td class="text-center"><?php echo $invoice->nights; ?></td>
+                                <td class="text-center"><?php echo (!empty($item->half_price_qty) && $item->half_price_qty > 0) ? '<span style="color:#e67e22;font-weight:700;">'.$item->half_price_qty.'</span>' : '<span class="text-muted">-</span>'; ?></td>
+                                <td class="text-center"><?php echo ($item->category === 'hotel') ? $invoice->nights : '-'; ?></td>
                                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-                <small class="text-muted d-block mt-1">
-                    <i class="bi bi-info-circle me-1"></i>
-                    اقلام هتل: <?php echo $invoice->nights; ?> شب × قیمت هر شب = مبلغ کل
-                </small>
             </div>
             <?php endif; ?>
 

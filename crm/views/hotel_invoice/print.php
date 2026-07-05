@@ -248,10 +248,11 @@
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th style="width:4%">#</th>
-                        <th style="width:36%">شرح</th>
+                        <th style="width:5%">ردیف</th>
+                        <th style="width:30%">شرح</th>
+                        <th style="width:14%">نوع اتاق</th>
                         <th style="width:8%" class="num">تعداد</th>
-                        <th style="width:14%" class="price">قیمت واحد</th>
+                        <th style="width:10%" class="num">نیم بها</th>
                         <th style="width:8%" class="num">شب</th>
                         <th style="width:15%" class="total">مبلغ کل</th>
                     </tr>
@@ -262,21 +263,14 @@
                         <td class="num" style="color:#b2bec3;font-size:10pt;"><?php echo $i + 1; ?></td>
                         <td>
                             <div style="font-weight:700;font-size:9pt;color:#1a1a2e;"><?php echo htmlspecialchars($item->description); ?></div>
-                            <?php if (!empty($item->room_type)): ?>
-                            <span class="room-type-badge"><i class="bi bi-door-open"></i> <?php echo htmlspecialchars($item->room_type); ?></span>
+                            <?php if (!empty($item->category) && $item->category !== 'general'): ?>
+                            <span class="item-tag"><i class="bi bi-tag"></i> <?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
                             <?php endif; ?>
-                            <div style="margin-top:4px;">
-                                <?php if (!empty($item->category) && $item->category !== 'general'): ?>
-                                <span class="item-tag"><i class="bi bi-tag"></i> <?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
-                                <?php endif; ?>
-                                <?php if (!empty($item->half_price_qty) && $item->half_price_qty > 0): ?>
-                                <span class="half-price-tag"><i class="bi bi-percent"></i> نیم بها: <?php echo $item->half_price_qty; ?> نفر<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span>
-                                <?php endif; ?>
-                            </div>
                         </td>
+                        <td><?php echo !empty($item->room_type) ? '<span class="room-type-badge"><i class="bi bi-door-open"></i> '.htmlspecialchars($item->room_type).'</span>' : '<span style="color:#ccc;">-</span>'; ?></td>
                         <td class="num"><?php echo number_format((int)$item->quantity); ?></td>
-                        <td class="price"><?php echo number_format($item->unit_price); ?></td>
-                        <td class="num"><?php echo $invoice->nights; ?></td>
+                        <td class="num"><?php echo (!empty($item->half_price_qty) && $item->half_price_qty > 0) ? '<span style="color:#e67e22;font-weight:700;">'.$item->half_price_qty.'</span>' : '<span style="color:#ccc;">-</span>'; ?></td>
+                        <td class="num"><?php echo ($item->category === 'hotel') ? $invoice->nights : '-'; ?></td>
                         <td class="total"><?php echo number_format($item->total_price); ?></td>
                     </tr>
                     <?php endforeach; ?>
