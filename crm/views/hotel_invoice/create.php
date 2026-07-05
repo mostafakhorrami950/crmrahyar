@@ -344,7 +344,19 @@ function recalc() {
         var lineTotalEl = row.querySelector('.item-line-total');
 
         var actualPrice = (newPrice > 0) ? newPrice : defPrice;
-        var lineTotal = (cat === 'hotel' && nights > 0) ? qty * actualPrice * nights : qty * actualPrice;
+        var halfQtyInput = row.querySelector('[name="item_half_qty[]"]');
+        var halfQty = halfQtyInput ? parseInt(halfQtyInput.value) || 0 : 0;
+        var halfRateInput = row.querySelector('[name="item_half_rate[]"]');
+        var halfRate = halfRateInput ? parseFormattedNumber(halfRateInput.value) : 0;
+        // Show/hide half-rate input
+        if (halfRateInput) halfRateInput.style.display = halfQty > 0 ? 'block' : 'none';
+        if (halfQty > 0) {
+            var halfUnit = (halfRate > 0) ? halfRate : actualPrice / 2;
+            var fullQty = Math.max(0, qty - halfQty);
+            var lineTotal = (cat === 'hotel' && nights > 0) ? (fullQty * actualPrice * nights + halfQty * halfUnit * nights) : (fullQty * actualPrice + halfQty * halfUnit);
+        } else {
+            var lineTotal = (cat === 'hotel' && nights > 0) ? qty * actualPrice * nights : qty * actualPrice;
+        }
         subtotal += lineTotal;
         itemCount++;
 
