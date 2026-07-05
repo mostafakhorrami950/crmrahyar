@@ -245,6 +245,14 @@ class DatabaseRepairController
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'room_type', 'VARCHAR(100) NULL');
                 if ($result) $repairs[] = $result;
+                // Migrate from is_half_price (TINYINT) to half_price_qty (INT)
+                try {
+                    $col = $db->fetch("SHOW COLUMNS FROM hotel_invoice_items WHERE Field = 'is_half_price'");
+                    if ($col) {
+                        $db->query("ALTER TABLE hotel_invoice_items CHANGE COLUMN `is_half_price` `half_price_qty` INT DEFAULT 0");
+                        $repairs[] = 'hotel_invoice_items: is_half_price → half_price_qty (INT)';
+                    }
+                } catch (\Exception $e) {}
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'half_price_qty', 'INT DEFAULT 0');
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'half_price_rate', 'DECIMAL(15,2) DEFAULT 0');
