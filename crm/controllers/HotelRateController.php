@@ -46,7 +46,12 @@ class HotelRateController
             $rates = [];
         }
 
-        $hotels = $db->fetchAll("SELECT * FROM hotel_rate_hotels WHERE is_active = 1 ORDER BY hotel_name");
+        $hotels = [];
+        try {
+            $hotels = $db->fetchAll("SELECT * FROM hotel_rate_hotels WHERE is_active = 1 ORDER BY hotel_name");
+        } catch (\Exception $e) {
+            // Table might not exist yet
+        }
 
         View::render('hotel_rate/index', [
             'title' => 'نرخنامه هتل‌ها',
