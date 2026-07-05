@@ -308,8 +308,8 @@
 
             <?php if (!empty($hotel->description) || !empty($hotel->facilities)): ?>
             <div class="hotel-desc">
-                <?php if (!empty($hotel->description)): ?><strong>ℹ️ توضیحات:</strong> <?php echo htmlspecialchars($hotel->description); ?><?php endif; ?>
-                <?php if (!empty($hotel->facilities)): ?> | <strong>🎯 امکانات:</strong> <?php echo htmlspecialchars($hotel->facilities); ?><?php endif; ?>
+                <?php if (!empty($hotel->description)): ?><strong>ℹ️ توضیحات:</strong> <?php echo \Controllers\HotelRateController::md($hotel->description); ?><?php endif; ?>
+                <?php if (!empty($hotel->facilities)): ?> <strong>🎯 امکانات:</strong> <?php echo \Controllers\HotelRateController::md($hotel->facilities); ?><?php endif; ?>
             </div>
             <?php endif; ?>
 

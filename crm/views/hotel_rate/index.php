@@ -29,8 +29,8 @@
                     <td><strong><?php echo htmlspecialchars($h->hotel_name); ?></strong></td>
                     <td><?php echo htmlspecialchars($h->city ?? '-'); ?></td>
                     <td><?php echo $h->star_rating ? str_repeat('⭐', $h->star_rating) : '-'; ?></td>
-                    <td><small><?php echo htmlspecialchars(mb_substr($h->description ?? '', 0, 50)); ?></small></td>
-                    <td><small><?php echo htmlspecialchars(mb_substr($h->facilities ?? '', 0, 50)); ?></small></td>
+                    <td><small><?php echo htmlspecialchars(mb_substr(strip_tags(\Controllers\HotelRateController::md($h->description ?? '')), 0, 50)); ?></small></td>
+                    <td><small><?php echo htmlspecialchars(mb_substr(strip_tags(\Controllers\HotelRateController::md($h->facilities ?? '')), 0, 50)); ?></small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-primary" onclick="editHotel(<?php echo $h->id; ?>)" title="ویرایش"><i class="bi bi-pencil"></i></button>

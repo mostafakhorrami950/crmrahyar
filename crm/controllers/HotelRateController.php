@@ -236,6 +236,7 @@ class HotelRateController
     {
         $db = Database::getInstance();
         $hotelFilter = trim($_GET['hotel'] ?? '');
+        $config = $GLOBALS['app_config'];
 
         $hotels = [];
         $ratesByHotel = [];
@@ -276,13 +277,30 @@ class HotelRateController
             }
         } catch (\Exception $e) {}
 
-        View::render('hotel_rate/display', [
-            'title' => 'نرخنامه هتل‌ها',
-            'hotels' => $hotels,
-            'ratesByHotel' => $ratesByHotel,
-            'allHotels' => $allHotels,
-            'hotelFilter' => $hotelFilter,
-            'invoiceSettings' => $invoiceSettings,
-        ]);
+        // Render standalone (no layout/sidebar)
+        $title = 'نرخنامه هتل‌ها';
+        $invoiceSettings = $invoiceSettings;
+        $allHotels = $allHotels;
+        $hotels = $hotels;
+        $ratesByHotel = $ratesByHotel;
+        $hotelFilter = $hotelFilter;
+        require __DIR__ . '/../views/hotel_rate/display.php';
+        exit;
+    }
+
+    // Simple markdown to HTML converter
+    public static function md(string $text): string
+    {
+        $text = htmlspecialchars($text);
+        // Bold: **text**
+        $text = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
+        // Italic: *text*
+        $text = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $text);
+        // Line breaks
+        $text = nl2br($text);
+        // List items: - item
+        $text = preg_replace('/^- (.+)/m', '<li>$1</li>', $text);
+        $text = preg_replace('/(<li>.*<\/li>)/s', '<ul>$1</ul>', $text);
+        return $text;
     }
 }
