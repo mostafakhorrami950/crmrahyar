@@ -46,7 +46,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Vazirmatn, Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #2d3436; font-size: 7pt; line-height: 1.3; min-height: 100vh; padding: 10px; }
         .page { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 14px 18px; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-        .page::after { content: '<?php echo $wmText; ?>'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 50px; font-weight: 900; color: rgba(0,0,0,0.02); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 8px; }
+        .page::after { content: '<?php echo $wmText; ?>'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 50px; font-weight: 900; color: rgba(0,0,0,0.08); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 8px; border: 8px solid rgba(0,0,0,0.06); padding: 10px 40px; }
 
         /* Action Bar */
         .action-bar { background: linear-gradient(135deg, #2d3436, #636e72); padding: 8px 16px; display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; border-radius: 8px; }
@@ -203,13 +203,13 @@
             <?php if (!empty($invoice->ps_note) || !empty($invoice->notes) || !empty($terms)): ?>
             <div class="notes-area">
                 <?php if (!empty($invoice->ps_note)): ?>
-                <div class="note-card"><div class="nt"><i class="bi bi-pencil-square"></i> پینوشت</div><?php echo nl2br(htmlspecialchars(mb_strimwidth($invoice->ps_note, 0, 150, '...'))); ?></div>
+                <div class="note-card"><div class="nt"><i class="bi bi-pencil-square"></i> پینوشت</div><?php echo nl2br(htmlspecialchars($invoice->ps_note)); ?></div>
                 <?php endif; ?>
                 <?php if (!empty($invoice->notes)): ?>
-                <div class="note-card"><div class="nt"><i class="bi bi-journal-text"></i> توضیحات</div><?php echo nl2br(htmlspecialchars(mb_strimwidth($invoice->notes, 0, 150, '...'))); ?></div>
+                <div class="note-card"><div class="nt"><i class="bi bi-journal-text"></i> توضیحات</div><?php echo nl2br(htmlspecialchars($invoice->notes)); ?></div>
                 <?php endif; ?>
                 <?php if (!empty($terms)): ?>
-                <div class="note-card dark"><div class="nt"><i class="bi bi-shield-check"></i> شرایط پرداخت</div><?php echo nl2br(htmlspecialchars(mb_strimwidth($terms, 0, 150, '...'))); ?></div>
+                <div class="note-card dark"><div class="nt"><i class="bi bi-shield-check"></i> شرایط پرداخت</div><?php echo nl2br(htmlspecialchars($terms)); ?></div>
                 <?php endif; ?>
             </div>
             <?php endif; ?>
