@@ -37,14 +37,14 @@
                     <th>#</th>
                     <th>هتل</th>
                     <th>نوع اتاق</th>
-                    <th>تاریخ</th>
+                    <th>از تاریخ</th>
+                    <th>تا تاریخ</th>
                     <th>فصل</th>
                     <th class="text-center">اقامت</th>
                     <th class="text-center">اقامت+صبحانه</th>
                     <th class="text-center">اقامت+صبحانه+ناهار</th>
-                    <th class="text-center">فولبرد</th>
                     <th class="text-center">فولبرد انتخابی</th>
-                    <th class="text-center">بوفه</th>
+                    <th class="text-center">فولبرد بوفه</th>
                     <th>ثبت کننده</th>
                     <th>عملیات</th>
                 </tr>
@@ -58,14 +58,14 @@
                     <td class="text-muted"><?php echo $i + 1; ?></td>
                     <td><strong><?php echo htmlspecialchars($r->hotel_name); ?></strong></td>
                     <td><?php echo htmlspecialchars($r->room_type); ?></td>
-                    <td dir="ltr"><?php echo \Core\JDate::displayDate($r->rate_date); ?></td>
+                    <td dir="ltr"><?php echo \Core\JDate::displayDate($r->date_from); ?></td>
+                    <td dir="ltr"><?php echo \Core\JDate::displayDate($r->date_to); ?></td>
                     <td><small><?php echo htmlspecialchars($r->season_label ?? '-'); ?></small></td>
                     <td class="text-center" dir="ltr"><?php echo $r->price_ekht > 0 ? number_format($r->price_ekht) : '-'; ?></td>
                     <td class="text-center" dir="ltr"><?php echo $r->price_sobhaneh > 0 ? number_format($r->price_sobhaneh) : '-'; ?></td>
                     <td class="text-center" dir="ltr"><?php echo $r->price_nahar > 0 ? number_format($r->price_nahar) : '-'; ?></td>
-                    <td class="text-center" dir="ltr"><?php echo $r->price_fulboard > 0 ? number_format($r->price_fulboard) : '-'; ?></td>
                     <td class="text-center" dir="ltr"><?php echo $r->price_entekhabifulboard > 0 ? number_format($r->price_entekhabifulboard) : '-'; ?></td>
-                    <td class="text-center" dir="ltr"><?php echo $r->price_boufeh > 0 ? number_format($r->price_boufeh) : '-'; ?></td>
+                    <td class="text-center" dir="ltr"><?php echo $r->price_fulboard_boufeh > 0 ? number_format($r->price_fulboard_boufeh) : '-'; ?></td>
                     <td><small class="text-muted"><?php echo htmlspecialchars($r->creator_name ?? '-'); ?></small></td>
                     <td>
                         <div class="btn-group btn-group-sm">
@@ -107,10 +107,16 @@
                             <input type="text" name="room_type" id="f_room_type" class="form-control" required placeholder="مثال: یک تخته، دو تخته، سوئیت">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label fw-bold">تاریخ</label>
-                            <input type="date" name="rate_date" id="f_rate_date" class="form-control" value="<?php echo date('Y-m-d'); ?>">
+                            <label class="form-label fw-bold">از تاریخ</label>
+                            <input type="date" name="date_from" id="f_date_from" class="form-control" value="<?php echo date('Y-m-d'); ?>">
                         </div>
                         <div class="col-md-2">
+                            <label class="form-label fw-bold">تا تاریخ</label>
+                            <input type="date" name="date_to" id="f_date_to" class="form-control" value="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">فصل/دوره</label>
                             <input type="text" name="season_label" id="f_season_label" class="form-control" placeholder="لو سیزن">
                         </div>
@@ -131,16 +137,12 @@
                             <input type="number" name="price_nahar" id="f_price_nahar" class="form-control" min="0" value="0">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">فولبرد</label>
-                            <input type="number" name="price_fulboard" id="f_price_fulboard" class="form-control" min="0" value="0">
-                        </div>
-                        <div class="col-md-4">
                             <label class="form-label">فولبرد انتخابی</label>
                             <input type="number" name="price_entekhabifulboard" id="f_price_entekhabifulboard" class="form-control" min="0" value="0">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">بوفه</label>
-                            <input type="number" name="price_boufeh" id="f_price_boufeh" class="form-control" min="0" value="0">
+                            <label class="form-label">فولبرد بوفه</label>
+                            <input type="number" name="price_fulboard_boufeh" id="f_price_fulboard_boufeh" class="form-control" min="0" value="0">
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -173,7 +175,8 @@ function openAddModal() {
     document.getElementById('rateForm').reset();
     document.getElementById('rate_id').value = '';
     document.getElementById('rateForm').action = '<?php echo $config['url']; ?>/hotel-rates/store';
-    document.getElementById('f_rate_date').value = '<?php echo date('Y-m-d'); ?>';
+    document.getElementById('f_date_from').value = '<?php echo date('Y-m-d'); ?>';
+    document.getElementById('f_date_to').value = '<?php echo date('Y-m-d'); ?>';
     modal.show();
 }
 
@@ -186,14 +189,14 @@ function editRate(id) {
             document.getElementById('rate_id').value = d.id;
             document.getElementById('f_hotel_name').value = d.hotel_name;
             document.getElementById('f_room_type').value = d.room_type;
-            document.getElementById('f_rate_date').value = d.rate_date;
+            document.getElementById('f_date_from').value = d.date_from;
+            document.getElementById('f_date_to').value = d.date_to;
             document.getElementById('f_season_label').value = d.season_label || '';
             document.getElementById('f_price_ekht').value = d.price_ekht;
             document.getElementById('f_price_sobhaneh').value = d.price_sobhaneh;
             document.getElementById('f_price_nahar').value = d.price_nahar;
-            document.getElementById('f_price_fulboard').value = d.price_fulboard;
             document.getElementById('f_price_entekhabifulboard').value = d.price_entekhabifulboard;
-            document.getElementById('f_price_boufeh').value = d.price_boufeh;
+            document.getElementById('f_price_fulboard_boufeh').value = d.price_fulboard_boufeh;
             document.getElementById('f_notes').value = d.notes || '';
             document.getElementById('rateForm').action = '<?php echo $config['url']; ?>/hotel-rates/update/' + id;
             modal.show();
