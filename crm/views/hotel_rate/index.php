@@ -135,8 +135,8 @@
             </div>
             <div class="col-md-3"><label class="form-label fw-bold">نوع اتاق <span class="text-danger">*</span></label><input type="text" name="room_type" id="f_room_type" class="form-control" required placeholder="یک تخته، دو تخته..."></div>
             <div class="col-md-3"><label class="form-label fw-bold">فصل/دوره</label><input type="text" name="season_label" id="f_season_label" class="form-control" placeholder="لو سیزن"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">از تاریخ</label><input type="date" name="date_from" id="f_date_from" class="form-control" value="<?php echo date('Y-m-d'); ?>"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">تا تاریخ</label><input type="date" name="date_to" id="f_date_to" class="form-control" value="<?php echo date('Y-m-d'); ?>"></div>
+            <div class="col-md-3"><label class="form-label fw-bold">از تاریخ</label><input type="text" name="date_from" id="f_date_from" class="form-control" placeholder="2025-01-01" value="<?php echo date('Y-m-d'); ?>" autocomplete="off"></div>
+            <div class="col-md-3"><label class="form-label fw-bold">تا تاریخ</label><input type="text" name="date_to" id="f_date_to" class="form-control" placeholder="2025-01-30" value="<?php echo date('Y-m-d'); ?>" autocomplete="off"></div>
         </div>
         <hr><h6 class="fw-bold mb-3"><i class="bi bi-cash me-1"></i>قیمت‌ها (تومان)</h6>
         <div class="row g-3">

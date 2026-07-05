@@ -20,12 +20,12 @@ ALTER TABLE `hotel_rate_list` ADD COLUMN `hotel_id` INT NOT NULL DEFAULT 0 COMME
 ALTER TABLE `hotel_rate_list` ADD COLUMN `date_from` DATE NULL COMMENT 'تاریخ شروع' AFTER `room_type`;
 ALTER TABLE `hotel_rate_list` ADD COLUMN `date_to` DATE NULL COMMENT 'تاریخ پایان' AFTER `date_from`;
 
--- Add price_fulboard_boufeh if not exists (old table had price_boufeh)
+-- Add price_fulboard_boufeh if not exists
 ALTER TABLE `hotel_rate_list` ADD COLUMN `price_fulboard_boufeh` DECIMAL(15,0) DEFAULT 0 COMMENT 'فولبرد بوفه' AFTER `price_entekhabifulboard`;
 
 -- Add price_entekhabifulboard if not exists
 ALTER TABLE `hotel_rate_list` ADD COLUMN `price_entekhabifulboard` DECIMAL(15,0) DEFAULT 0 COMMENT 'فولبرد انتخابی' AFTER `price_nahar`;
 
--- Add indexes
-ALTER TABLE `hotel_rate_list` ADD INDEX IF NOT EXISTS `idx_date_from` (`date_from`);
-ALTER TABLE `hotel_rate_list` ADD INDEX IF NOT EXISTS `idx_date_to` (`date_to`);
+-- Add indexes (will be ignored if already exist - Duplicate key name is handled)
+ALTER TABLE `hotel_rate_list` ADD INDEX `idx_date_from` (`date_from`);
+ALTER TABLE `hotel_rate_list` ADD INDEX `idx_date_to` (`date_to`);
