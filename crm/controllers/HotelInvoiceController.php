@@ -92,9 +92,6 @@ class HotelInvoiceController
                 // Use new price if provided, otherwise use default price
                 $actualPrice = ($newPrice > 0) ? $newPrice : $defPrice;
 
-                $total   = $this->calcLineTotal($qty, $actualPrice, $cat, $nights);
-                $subtotal += $total;
-
                 // Calculate item-level discount (difference between default and new price)
                 if ($newPrice > 0 && $newPrice < $defPrice) {
                     $diff = $defPrice - $newPrice;
@@ -106,34 +103,23 @@ class HotelInvoiceController
                 $halfQtyVal   = (int)($halfQty[$i] ?? 0);
                 $halfRate = (float)str_replace(',', '', $halfRates[$i] ?? '0');
 
-                // Calculate with half-price qty
+                // Calculate total with half-price qty support
                 if ($halfQtyVal > 0) {
                     $fullQty = $qty - $halfQtyVal;
                     if ($fullQty < 0) { $fullQty = 0; $halfQtyVal = $qty; }
                     $halfUnitPrice = ($halfRate > 0) ? $halfRate : $actualPrice / 2;
                     $total = $this->calcLineTotal($fullQty, $actualPrice, $cat, $nights) + $this->calcLineTotal($halfQtyVal, $halfUnitPrice, $cat, $nights);
-                    $subtotal += $total;
-                    $items[] = [
-                        'description' => $desc,
-                        'category'    => $cat,
-                        'room_type'   => $roomType,
-                        'half_price_qty' => $halfQtyVal,
-                        'half_price_rate' => $halfRate,
-                        'quantity'    => $qty,
-                        'default_price' => $defPrice,
-                        'unit_price'  => $actualPrice,
-                        'total_price' => $total,
-                        'sort_order'  => $i,
-                    ];
-                    continue;
+                } else {
+                    $total = $this->calcLineTotal($qty, $actualPrice, $cat, $nights);
                 }
+                $subtotal += $total;
 
                 $items[] = [
                     'description' => $desc,
                     'category'    => $cat,
                     'room_type'   => $roomType,
-                    'half_price_qty' => 0,
-                    'half_price_rate' => 0,
+                    'half_price_qty' => $halfQtyVal,
+                    'half_price_rate' => $halfRate,
                     'quantity'    => $qty,
                     'default_price' => $defPrice,
                     'unit_price'  => $actualPrice,
@@ -327,6 +313,14 @@ class HotelInvoiceController
                 'invoice_number'   => $invoiceNumber,
                 'created_by'       => Auth::id(),
             ]);
+
+            // Ensure half_price_qty column is INT (self-heal)
+            try {
+                $col = $db->fetch("SHOW COLUMNS FROM hotel_invoice_items WHERE Field = 'half_price_qty'");
+                if ($col && stripos($col->Type ?? '', 'tinyint') !== false) {
+                    $db->query("ALTER TABLE hotel_invoice_items MODIFY COLUMN `half_price_qty` INT DEFAULT 0");
+                }
+            } catch (\Exception $e) {}
 
             // Insert line items with category
             foreach ($items as $item) {

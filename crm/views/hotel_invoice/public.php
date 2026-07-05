@@ -125,7 +125,8 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
             <tr>
                 <td class="text-center"><?php echo $i + 1; ?></td>
                 <td><?php echo htmlspecialchars($item->description); ?>
-                    <?php if (!empty($item->room_type)): ?><br><small style="color:#888;font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?></td>
+                    <?php if (!empty($item->room_type)): ?><br><small style="color:#888;font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?>
+                    <?php if (!empty($item->half_price_qty) && $item->half_price_qty > 0): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#e67e22;color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-percent"></i> نیم بها: <?php echo $item->half_price_qty; ?> نفر<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span><?php endif; ?></td>
                 <td class="text-center"><?php echo number_format((int)$item->quantity); ?></td>
                 <td class="text-center" dir="ltr"><?php echo number_format($item->unit_price); ?></td>
                 <td class="text-center fw-bold" dir="ltr"><?php echo number_format($item->total_price); ?></td>

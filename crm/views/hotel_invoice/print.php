@@ -269,8 +269,8 @@
                                 <?php if (!empty($item->category) && $item->category !== 'general'): ?>
                                 <span class="item-tag"><i class="bi bi-tag"></i> <?php echo $item->category === 'hotel' ? 'هتل' : ($item->category === 'transfer' ? 'ترانسفر' : $item->category); ?></span>
                                 <?php endif; ?>
-                                <?php if (!empty($item->is_half_price)): ?>
-                                <span class="half-price-tag"><i class="bi bi-percent"></i> نیم بها<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span>
+                                <?php if (!empty($item->half_price_qty) && $item->half_price_qty > 0): ?>
+                                <span class="half-price-tag"><i class="bi bi-percent"></i> نیم بها: <?php echo $item->half_price_qty; ?> نفر<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span>
                                 <?php endif; ?>
                             </div>
                         </td>
