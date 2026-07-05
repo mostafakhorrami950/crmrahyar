@@ -82,7 +82,8 @@ elseif ($invoice->invoice_status === 'prepaid' || $invoice->invoice_type === 'pr
                                 <td class="text-center"><?php echo $i + 1; ?></td>
                                 <td>
                                     <?php echo htmlspecialchars($item->description); ?>
-                                    <?php if (!empty($item->room_type)): ?><br><small class="text-muted" style="font-size:10px;">اتاق: <?php echo htmlspecialchars($item->room_type); ?></small><?php endif; ?>
+                                    <?php if (!empty($item->room_type)): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#6c5ce7;color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-door-open" style="font-size:10px;"></i> <?php echo htmlspecialchars($item->room_type); ?></span><?php endif; ?>
+                                    <?php if (!empty($item->is_half_price)): ?><br><span style="display:inline-flex;align-items:center;gap:3px;background:#e67e22;color:#fff;font-size:8px;padding:2px 8px;border-radius:10px;font-weight:700;"><i class="bi bi-percent"></i> نیم بها<?php if (!empty($item->half_price_rate) && $item->half_price_rate > 0): ?> (<?php echo number_format($item->half_price_rate); ?> ت)<?php endif; ?></span><?php endif; ?>
                                     <?php if (!empty($item->category) && $item->category === 'hotel'): ?>
                                     <br><small class="text-muted" style="font-size:10px;">(قیمت هر شب)</small>
                                     <?php endif; ?>
