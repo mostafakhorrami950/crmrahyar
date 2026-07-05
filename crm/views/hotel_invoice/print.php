@@ -137,11 +137,11 @@
         <div class="info-bar">
             <span class="chip status"><i class="bi bi-circle-fill" style="font-size:4px;"></i> <?php echo $stL[$st] ?? $st; ?></span>
             <?php if ($invoice->invoice_type): ?><span class="chip type"><?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span><?php endif; ?>
-            <span class="chip"><i class="bi bi-building"></i> <b><?php echo htmlspecialchars($invoice->hotel_name); ?></b></span>
-            <span class="chip"><i class="bi bi-briefcase"></i> <?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></span>
-            <span class="chip"><i class="bi bi-person"></i> <?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></span>
-            <span class="chip"><i class="bi bi-telephone"></i> <b dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></b></span>
-            <span class="chip nights"><i class="bi bi-moon-stars"></i> <?php echo $invoice->nights; ?> شب</span>
+            <span class="chip"><i class="bi bi-building"></i> هتل : <b><?php echo htmlspecialchars($invoice->hotel_name); ?></b></span>
+            <span class="chip"><i class="bi bi-briefcase"></i> آژانس محترم : <?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></span>
+            <span class="chip"><i class="bi bi-person"></i> نام میهمان : <?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></span>
+            <span class="chip"><i class="bi bi-telephone"></i> <b dir="ltr">شماره تماس میهمان : <?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></b></span>
+            <span class="chip nights"><i class="bi bi-moon-stars"></i> تعداد شب اقامت :<?php echo $invoice->nights; ?> شب</span>
             <span class="chip"><i class="bi bi-calendar-check"></i> ورود: <b><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></b></span>
             <span class="chip"><i class="bi bi-calendar-x"></i> خروج: <b><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></b></span>
             <?php if ($invoice->valid_until): ?><span class="chip"><i class="bi bi-clock-history"></i> اعتبار: <b><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></b></span><?php endif; ?>
