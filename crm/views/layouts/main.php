@@ -55,6 +55,9 @@
                 <a href="<?php echo $config['url']; ?>/hotel-invoice" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/hotel-invoice') !== false ? 'active' : ''; ?>">
                     <i class="bi bi-building"></i> <span>فاکتورهای هتل</span>
                 </a>
+                <a href="<?php echo $config['url']; ?>/hotel-rates" class="<?php echo strpos($_SERVER['REQUEST_URI'], '/hotel-rates') !== false ? 'active' : ''; ?>">
+                    <i class="bi bi-cash-coin"></i> <span>نرخنامه هتل‌ها</span>
+                </a>
                 <?php endif; ?>
                 
                 <?php if (\Core\Auth::hasPermission('contacts.view')): ?>

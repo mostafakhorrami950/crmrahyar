@@ -34,6 +34,7 @@ use Controllers\BackupController;
 use Controllers\AIController;
 use Controllers\AuditController;
 use Controllers\HotelInvoiceController;
+use Controllers\HotelRateController;
 use Controllers\InvoiceSettingsController;
 // Landing page - redirect to main site URL
 Router::get('/', function() {
@@ -330,6 +331,16 @@ Router::get('/hotel-pay/result', [HotelInvoiceController::class, 'paymentResult'
 Router::post('/hotel-pay/submit', [HotelInvoiceController::class, 'publicPay']);
 Router::get('/hotel-pay/{token}', [HotelInvoiceController::class, 'publicView']);
 Router::get('/hi/{code}', [HotelInvoiceController::class, 'publicViewByShortCode']);
+
+// Hotel Rate List
+Router::group('/hotel-rates', function() {
+    Router::get('', [HotelRateController::class, 'index'], 'deals.view');
+    Router::post('/store', [HotelRateController::class, 'store'], 'deals.edit');
+    Router::post('/update/{id}', [HotelRateController::class, 'update'], 'deals.edit');
+    Router::post('/delete/{id}', [HotelRateController::class, 'delete'], 'deals.edit');
+    Router::get('/data/{id}', [HotelRateController::class, 'getData'], 'deals.view');
+    Router::get('/display', [HotelRateController::class, 'display']);
+});
 
 // Invoice Settings
 Router::get('/settings/invoice', [InvoiceSettingsController::class, 'index'], 'settings.manage');
