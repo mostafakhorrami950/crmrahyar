@@ -245,7 +245,7 @@ class DatabaseRepairController
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'room_type', 'VARCHAR(100) NULL');
                 if ($result) $repairs[] = $result;
-                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'is_half_price', 'TINYINT(1) DEFAULT 0');
+                $result = $this->ensureColumn($db, 'hotel_invoice_items', 'half_price_qty', 'INT DEFAULT 0');
                 if ($result) $repairs[] = $result;
                 $result = $this->ensureColumn($db, 'hotel_invoice_items', 'half_price_rate', 'DECIMAL(15,2) DEFAULT 0');
                 if ($result) {

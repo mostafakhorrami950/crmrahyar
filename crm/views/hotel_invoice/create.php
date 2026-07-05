@@ -70,7 +70,7 @@
                             <input type="hidden" name="item_category[]" class="item-category" value="">
                             <input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">
                             <input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">
-                            <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="item_half_price[]" value="1" style="font-size:11px;" onchange="toggleHalfPrice(this)"><label class="form-check-label" style="font-size:10px;color:#e67e22;">نیم بها</label></div>
+                            <div class="input-group input-group-sm mt-1"><span class="input-group-text" style="font-size:10px;background:#fff3e0;color:#e67e22;">نیم بها</span><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;" onchange="recalc()"></div>
                             <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ نیم بها (اختیاری)" style="font-size:11px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">
                             <div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
                         </div>
@@ -277,7 +277,7 @@ function addItem() {
             '<input type="hidden" name="item_category[]" class="item-category" value="">' +
             '<input type="hidden" name="item_default_price[]" class="item-default-price-hidden" value="0">' +
             '<input type="text" name="item_room_type[]" class="form-control form-control-sm mt-1" placeholder="نوع اتاق (اختیاری)" style="font-size:11px;">
-                            <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="item_half_price[]" value="1" style="font-size:11px;" onchange="toggleHalfPrice(this)"><label class="form-check-label" style="font-size:10px;color:#e67e22;">نیم بها</label></div>
+                            <div class="input-group input-group-sm mt-1"><span class="input-group-text" style="font-size:10px;background:#fff3e0;color:#e67e22;">نیم بها</span><input type="number" name="item_half_qty[]" class="form-control form-control-sm" value="0" min="0" style="font-size:11px;" onchange="recalc()"></div>
                             <input type="text" name="item_half_rate[]" class="form-control form-control-sm half-rate-input mt-1" placeholder="نرخ نیم بها (اختیاری)" style="font-size:11px;display:none;" onkeyup="formatInput(this);recalc()" onblur="formatInput(this);recalc()">' +
             '<div class="item-dropdown mt-1" style="display:none;position:absolute;z-index:1000;background:#fff;border:1px solid #ddd;border-radius:4px;max-height:200px;overflow-y:auto;width:calc(100% - 10px);box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>' +
         '</div>' +
