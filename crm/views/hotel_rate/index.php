@@ -73,7 +73,7 @@
             <thead class="bg-light">
                 <tr>
                     <th>#</th><th>هتل</th><th>نوع اتاق</th><th>از تاریخ</th><th>تا تاریخ</th><th>فصل</th>
-                    <th class="text-center">اقامت</th><th class="text-center">اقامت+صبحانه</th><th class="text-center">اقامت+صبحانه+ناهار</th>
+                    <th class="text-center">اقامت</th><th class="text-center">اقامت+صبحانه</th><th class="text-center">هافبرد</th>
                     <th class="text-center">فولبرد انتخابی</th><th class="text-center">فولبرد بوفه</th><th>عملیات</th>
                 </tr>
             </thead>
