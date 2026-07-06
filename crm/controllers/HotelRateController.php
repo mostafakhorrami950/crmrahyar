@@ -147,6 +147,9 @@ class HotelRateController
         Auth::requireAuth();
         $db = Database::getInstance();
 
+        // Ensure table has required columns
+        $this->ensureRateTableColumns($db);
+
         $data = [
             'hotel_id' => (int)($_POST['hotel_id'] ?? 0),
             'room_type' => trim($_POST['room_type'] ?? ''),
@@ -172,9 +175,37 @@ class HotelRateController
             $db->insert('hotel_rate_list', $data);
             $_SESSION['success'] = 'نرخ با موفقیت ثبت شد.';
         } catch (\Exception $e) {
-            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
+            $_SESSION['error'] = 'خطا در ثبت نرخ: ' . $e->getMessage();
         }
         View::redirect('/hotel-rates');
+    }
+
+    private function ensureRateTableColumns(Database $db): void
+    {
+        $requiredColumns = [
+            'hotel_id' => "INT NOT NULL DEFAULT 0",
+            'date_from' => "DATE NULL",
+            'date_to' => "DATE NULL",
+            'price_fulboard_boufeh' => "DECIMAL(15,0) DEFAULT 0",
+            'price_entekhabifulboard' => "DECIMAL(15,0) DEFAULT 0",
+        ];
+
+        try {
+            $existing = $db->fetchAll("SHOW COLUMNS FROM hotel_rate_list");
+            $existingNames = array_map(function($c) { return $c->Field; }, $existing);
+
+            foreach ($requiredColumns as $col => $def) {
+                if (!in_array($col, $existingNames)) {
+                    try {
+                        $db->query("ALTER TABLE hotel_rate_list ADD COLUMN `{$col}` {$def}");
+                    } catch (\Exception $e) {
+                        // Column might already exist, ignore
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Table might not exist, ignore
+        }
     }
 
     public function update(array $params): void
