@@ -37,7 +37,8 @@
             @page { margin: 2mm; size: A4 landscape; }
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Vazirmatn, Tahoma, sans-serif; min-height: 100vh; overflow-x: hidden; background: #0a0a1a; }
+        html, body { font-family: Vazirmatn, Tahoma, sans-serif; height: 100%; overflow-x: hidden; background: #0a0a1a; }
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
 
         /* ===== COSMIC BACKGROUND ===== */
         .cosmos { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3; background: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, #0a1628 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, #0f1a2e 0%, transparent 50%), #060612; }
@@ -51,7 +52,7 @@
         @keyframes orbFloat { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(40px, -30px); } 66% { transform: translate(-20px, 20px); } }
 
         /* ===== WRAPPER ===== */
-        .wrapper { max-width: 1100px; margin: 20px auto; background: rgba(255,255,255,0.98); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,0.5), 0 0 60px rgba(99,102,241,0.08); position: relative; z-index: 1; animation: slideUp 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .wrapper { max-width: 1100px; width: 100%; margin: 0 auto; background: rgba(255,255,255,0.98); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,0.5), 0 0 60px rgba(99,102,241,0.08); position: relative; z-index: 1; animation: slideUp 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(80px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
         /* ===== HEADER ===== */
@@ -191,7 +192,7 @@
                     <tr>
                         <th>نوع اتاق</th>
                         <th>بازه تاریخ</th>
-                        <th>فصل</th>
+                        <th>وضعیت</th>
                         <th>🛏️ اقامت</th>
                         <th>🍳 اقامت+صبحانه</th>
                         <th>🥗 هافبرد</th>

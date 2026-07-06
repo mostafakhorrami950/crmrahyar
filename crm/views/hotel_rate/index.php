@@ -72,7 +72,7 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
                 <tr>
-                    <th>#</th><th>هتل</th><th>نوع اتاق</th><th>از تاریخ</th><th>تا تاریخ</th><th>فصل</th>
+                    <th>#</th><th>هتل</th><th>نوع اتاق</th><th>از تاریخ</th><th>تا تاریخ</th><th>وضعیت</th>
                     <th class="text-center">اقامت</th><th class="text-center">اقامت+صبحانه</th><th class="text-center">هافبرد</th>
                     <th class="text-center">فولبرد انتخابی</th><th class="text-center">فولبرد بوفه</th><th>عملیات</th>
                 </tr>
