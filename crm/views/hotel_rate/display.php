@@ -5,179 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نرخنامه هتل‌ها</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <?php
     $invSet = $invoiceSettings ?? [];
-    $pc = $invSet['invoice_primary_color'] ?? '#1e40af';
-    $sc = $invSet['invoice_success_color'] ?? '#059669';
     $company = $invSet['invoice_company_name'] ?? 'علاءالدین سفیر اسمان';
     $sub = $invSet['invoice_subtitle'] ?? 'آژانس مسافرتی';
     $logo = $invSet['invoice_logo_url'] ?? '';
+    $pc = $invSet['invoice_primary_color'] ?? '#4f46e5';
     ?>
     <style>
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-            .no-print, .orb, .stars, .glow-line { display: none !important; }
-            .wrapper { box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
-            .header { padding: 6px 0 !important; }
-            .header h1 { font-size: 11pt !important; }
-            .header p { font-size: 6pt !important; }
-            .h-card { margin-bottom: 3px !important; border-radius: 4px !important; }
-            .h-card .h-top { padding: 3px 8px !important; font-size: 8pt !important; }
-            .h-card .tags { padding: 2px 4px !important; }
-            .h-card .tags span { font-size: 5pt !important; padding: 1px 3px !important; }
-            .tbl th { padding: 2px 4px !important; font-size: 5pt !important; }
-            .tbl td { padding: 2px 4px !important; font-size: 5pt !important; }
-            .tbl .rb { font-size: 5pt !important; padding: 0 3px !important; }
-            .tbl .dr { font-size: 4pt !important; }
-            .tbl .st { font-size: 4pt !important; }
-            .tbl .pc { font-size: 5pt !important; }
-            .ft { font-size: 4pt !important; padding: 2px 0 !important; }
-            @page { margin: 2mm; size: A4 landscape; }
+            body { background: #fff !important; }
+            .no-print, .bg-mesh, .bg-grid { display: none !important; }
+            .page { box-shadow: none !important; max-width: 100% !important; border-radius: 0 !important; }
+            @page { margin: 3mm; size: A4 landscape; }
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { font-family: Vazirmatn, Tahoma, sans-serif; height: 100%; overflow-x: hidden; background: #0a0a1a; }
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        html { height: 100%; }
+        body {
+            font-family: Vazirmatn, 'Plus Jakarta Sans', Tahoma, sans-serif;
+            min-height: 100vh;
+            background: #f0f2f5;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            position: relative; overflow-x: hidden;
+        }
 
-        /* ===== COSMIC BACKGROUND ===== */
-        .cosmos { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3; background: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, #0a1628 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, #0f1a2e 0%, transparent 50%), #060612; }
-        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
-        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle ease-in-out infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
-        .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; animation: orbFloat 20s ease-in-out infinite; }
-        .orb-1 { width: 400px; height: 400px; background: rgba(99,102,241,0.15); top: -100px; right: -100px; }
-        .orb-2 { width: 300px; height: 300px; background: rgba(245,158,11,0.1); bottom: -50px; left: -50px; animation-delay: -7s; }
-        .orb-3 { width: 250px; height: 250px; background: rgba(16,185,129,0.08); top: 40%; left: 20%; animation-delay: -14s; }
-        @keyframes orbFloat { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(40px, -30px); } 66% { transform: translate(-20px, 20px); } }
+        /* ===== BACKGROUND ===== */
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: -2;
+            background:
+                radial-gradient(at 0% 0%, rgba(79,70,229,0.08) 0%, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236,72,153,0.06) 0%, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16,185,129,0.06) 0%, transparent 50%),
+                #f0f2f5;
+        }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: -1;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
 
-        /* ===== WRAPPER ===== */
-        .wrapper { max-width: 1100px; width: 100%; margin: 0 auto; background: rgba(255,255,255,0.98); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,0.5), 0 0 60px rgba(99,102,241,0.08); position: relative; z-index: 1; animation: slideUp 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(80px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        /* ===== PAGE ===== */
+        .page {
+            max-width: 960px; width: 100%;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 10px 40px rgba(0,0,0,0.08);
+            animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } }
 
-        /* ===== HEADER ===== */
-        .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); padding: 28px 30px; text-align: center; position: relative; overflow: hidden; }
-        .header::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.15), rgba(236,72,153,0.1)); }
-        .header h1 { color: #fff; font-size: 26px; font-weight: 900; position: relative; z-index: 2; letter-spacing: -0.5px; }
-        .header h1 i { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header p { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 4px; position: relative; z-index: 2; }
-        .glow-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #6366f1, #a78bfa, #6366f1, transparent); animation: glowMove 3s linear infinite; background-size: 200% 100%; }
-        @keyframes glowMove { 0% { background-position: -100% 0; } 100% { background-position: 200% 0; } }
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+            padding: 24px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden;
+        }
+        .top-bar::before {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .top-bar .brand { position: relative; z-index: 2; }
+        .top-bar .brand h1 { color: #fff; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .top-bar .brand h1 .ico {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; background: rgba(255,255,255,0.15);
+            border-radius: 10px; font-size: 16px;
+        }
+        .top-bar .brand p { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 2px; }
+        .top-bar .meta { position: relative; z-index: 2; display: flex; gap: 8px; }
+        .top-bar .meta .badge {
+            background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
+            padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+        .glow {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, #818cf8, #a78bfa, #c084fc, #a78bfa, #818cf8);
+            background-size: 200% 100%; animation: glow 4s linear infinite;
+        }
+        @keyframes glow { 0% { background-position: -100% 0; } 100% { background-position: 200% 0; } }
 
         /* ===== FILTER ===== */
-        .filter { background: #f8fafc; padding: 10px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #e2e8f0; }
-        .filter select { padding: 6px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font: inherit; font-size: 12px; background: #fff; transition: all 0.3s; cursor: pointer; }
-        .filter select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
-        .filter .fb { padding: 6px 16px; border-radius: 10px; font: inherit; font-size: 12px; cursor: pointer; border: none; font-weight: 700; transition: all 0.3s; }
-        .filter .fb-prt { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
-        .filter .fb-prt:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
-        .filter .fb-clr { background: #e2e8f0; color: #475569; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
-        .filter .fb-clr:hover { background: #cbd5e1; }
-        .filter .fl { font-size: 12px; color: #64748b; font-weight: 700; }
+        .filter-bar {
+            padding: 12px 24px; background: #fafbfc;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .filter-bar label { font-size: 11px; color: #6b7280; font-weight: 700; }
+        .filter-bar select, .filter-bar input[type="date"] {
+            padding: 6px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+            font: inherit; font-size: 12px; background: #fff; transition: all 0.2s;
+        }
+        .filter-bar select:focus, .filter-bar input[type="date"]:focus {
+            border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.15); outline: none;
+        }
+        .btn-f {
+            padding: 6px 14px; border-radius: 8px; border: none; font: inherit;
+            font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-f:hover { transform: translateY(-1px); }
+        .btn-search { background: #4f46e5; color: #fff; }
+        .btn-search:hover { background: #4338ca; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+        .btn-clear { background: #f3f4f6; color: #6b7280; text-decoration: none; }
+        .btn-clear:hover { background: #e5e7eb; }
+        .btn-print { background: #1e1b4b; color: #fff; margin-right: auto; }
+        .btn-print:hover { background: #312e81; }
 
-        /* ===== HOTEL CARD ===== */
-        .h-card { margin: 16px 20px; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 4px 30px rgba(0,0,0,0.06); animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; transition: all 0.4s; border: 1px solid #f1f5f9; }
-        .h-card:hover { transform: translateY(-5px); box-shadow: 0 15px 50px rgba(0,0,0,0.12); border-color: #e0e7ff; }
-        .h-card:nth-child(2) { animation-delay: 0.15s; }
-        .h-card:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes cardIn { from { opacity: 0; transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        /* ===== HOTEL SECTION ===== */
+        .hotel { padding: 0 24px; }
+        .hotel:first-child { padding-top: 20px; }
+        .hotel + .hotel { border-top: 1px solid #f3f4f6; }
 
-        .h-top { background: linear-gradient(135deg, #0f172a, #1e293b, #334155); padding: 14px 18px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; }
-        .h-top::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.02), transparent); animation: shimmer 4s ease-in-out infinite; }
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .h-ico { width: 46px; height: 46px; background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 15px rgba(245,158,11,0.3); animation: icoBeat 3s ease-in-out infinite; }
-        @keyframes icoBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-        .h-top .inf h3 { color: #fff; font-size: 16px; font-weight: 900; position: relative; z-index: 2; }
-        .h-top .inf small { color: rgba(255,255,255,0.4); font-size: 10px; position: relative; z-index: 2; }
-        .stars-badge { display: inline-flex; gap: 2px; margin-right: 6px; }
-        .stars-badge span { color: #fbbf24; font-size: 11px; }
-        .city-badge { display: inline-flex; align-items: center; gap: 3px; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 8px; font-size: 10px; color: rgba(255,255,255,0.7); margin-right: 8px; }
+        .hotel-head {
+            display: flex; align-items: center; gap: 14px;
+            padding: 18px 0 12px;
+        }
+        .hotel-logo {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 20px; flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(251,191,36,0.3);
+        }
+        .hotel-info h2 { font-size: 17px; font-weight: 800; color: #111827; }
+        .hotel-info .sub-info { display: flex; gap: 12px; margin-top: 2px; }
+        .hotel-info .sub-info span { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 3px; }
+        .hotel-info .sub-info .stars { color: #f59e0b; }
 
         /* Tags */
-        .tags { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border-bottom: 1px solid #bae6fd; }
-        .tags .t { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; transition: all 0.3s; cursor: default; }
-        .tags .t:hover { transform: translateY(-2px); }
-        .tags .t-desc { background: #fff; color: #0c4a6e; border: 1px solid #7dd3fc; }
-        .tags .t-fac { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
-        .tags .t-lbl { font-size: 10px; color: #0369a1; font-weight: 800; margin-left: 4px; }
+        .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+        .tag {
+            padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 3px;
+            transition: all 0.2s; cursor: default;
+        }
+        .tag:hover { transform: translateY(-1px); }
+        .tag-desc { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .tag-fac { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
-        /* ===== TABLE ===== */
-        .tbl { width: 100%; border-collapse: collapse; }
-        .tbl th { background: linear-gradient(135deg, #1e293b, #334155); color: #e2e8f0; padding: 8px 12px; font-size: 10px; font-weight: 700; text-align: center; white-space: nowrap; }
-        .tbl th:first-child { text-align: right; border-radius: 0; }
-        .tbl td { padding: 8px 12px; font-size: 11px; text-align: center; border-bottom: 1px solid #f1f5f9; transition: all 0.2s; }
-        .tbl td:first-child { text-align: right; }
-        .tbl tbody tr { transition: all 0.2s; }
-        .tbl tbody tr:nth-child(even) { background: #fafbfe; }
-        .tbl tbody tr:hover { background: linear-gradient(90deg, #eef2ff, #f5f3ff); }
-        .tbl tbody tr:last-child td { border-bottom: 3px solid #6366f1; }
-        .rb { display: inline-flex; align-items: center; gap: 3px; background: linear-gradient(135deg, #1e293b, #334155); color: #fff; padding: 3px 12px; border-radius: 14px; font-size: 10px; font-weight: 700; transition: all 0.3s; }
-        .rb:hover { transform: scale(1.08); box-shadow: 0 3px 12px rgba(30,41,59,0.3); }
-        .dr { display: inline-flex; align-items: center; gap: 3px; background: #ecfdf5; color: #065f46; padding: 3px 10px; border-radius: 8px; font-size: 10px; font-weight: 600; direction: ltr; }
-        .st { display: inline-flex; align-items: center; gap: 3px; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; padding: 3px 10px; border-radius: 8px; font-size: 9px; font-weight: 700; }
-        .pc { font-family: 'Courier New', monospace; font-weight: 900; color: #1e293b; direction: ltr; font-size: 11px; }
-        .pc-hot { color: #dc2626; font-size: 12px; font-weight: 900; }
-        .pc-best { color: #059669; font-size: 12px; font-weight: 900; }
+        /* ===== RATE CARDS ===== */
+        .rates { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 
-        /* ===== FOOTER ===== */
-        .ft { text-align: center; padding: 16px 20px; color: #94a3b8; font-size: 11px; border-top: 1px solid #f1f5f9; background: linear-gradient(135deg, #f8fafc, #f1f5f9); }
-        .ft a { color: #6366f1; text-decoration: none; }
+        .rate-card {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 0;
+            border: 1.5px solid #f3f4f6;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            background: #fff;
+        }
+        .rate-card:hover {
+            border-color: #c7d2fe;
+            box-shadow: 0 4px 16px rgba(79,70,229,0.08);
+            transform: translateX(-2px);
+        }
+
+        .rate-label {
+            background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+            padding: 12px 14px;
+            display: flex; flex-direction: column; justify-content: center;
+            border-left: 1.5px solid #f3f4f6;
+        }
+        .rate-card:hover .rate-label { border-left-color: #e0e7ff; }
+        .rate-label .room { font-size: 13px; font-weight: 800; color: #1f2937; }
+        .rate-label .season {
+            font-size: 10px; color: #9ca3af; margin-top: 2px;
+            display: flex; align-items: center; gap: 3px;
+        }
+
+        .rate-body { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .price-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px;
+            background: #f9fafb; border: 1px solid #f3f4f6;
+            transition: all 0.2s; font-size: 11px;
+        }
+        .price-item:hover { background: #eef2ff; border-color: #e0e7ff; }
+        .price-item .label { color: #6b7280; font-weight: 500; }
+        .price-item .val { font-weight: 800; color: #111827; font-family: 'Courier New', monospace; direction: ltr; }
+        .price-item .val.hot { color: #dc2626; }
+        .price-item .val.best { color: #059669; }
+        .price-item .date-range {
+            font-size: 9px; color: #9ca3af; direction: ltr; text-align: left;
+            display: flex; align-items: center; gap: 3px;
+        }
 
         /* ===== EMPTY ===== */
-        .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
-        .empty i { font-size: 56px; display: block; margin-bottom: 12px; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: bounce 2.5s ease-in-out infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .empty p { font-size: 14px; }
+        .empty { text-align: center; padding: 60px 20px; }
+        .empty .ico {
+            width: 64px; height: 64px; margin: 0 auto 16px;
+            background: #f3f4f6; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: #9ca3af;
+        }
+        .empty p { color: #9ca3af; font-size: 14px; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            padding: 14px 24px; text-align: center;
+            background: #fafbfc; border-top: 1px solid #f3f4f6;
+            font-size: 10px; color: #9ca3af;
+        }
     </style>
 </head>
 <body>
-    <div class="cosmos"></div>
-    <div class="stars" id="stars"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+    <div class="bg-mesh"></div>
+    <div class="bg-grid"></div>
 
-    <div class="wrapper">
-        <div class="header">
-            <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" style="max-height:36px;filter:brightness(0) invert(1);margin-bottom:6px;" alt="لوگو"><?php endif; ?>
-            <h1><i class="bi bi-stars"></i> نرخنامه هتل‌ها</h1>
-            <p><?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?></p>
-            <div class="glow-line"></div>
+    <div class="page">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="brand">
+                <h1>
+                    <span class="ico">🏨</span>
+                    نرخنامه هتل‌ها
+                </h1>
+                <p><?php echo htmlspecialchars($company); ?> · <?php echo htmlspecialchars($sub); ?></p>
+            </div>
+            <div class="meta no-print">
+                <?php if (!empty($checkin)): ?><span class="badge">📅 ورود: <?php echo htmlspecialchars($checkin); ?></span><?php endif; ?>
+                <?php if (!empty($checkout)): ?><span class="badge">📅 خروج: <?php echo htmlspecialchars($checkout); ?></span><?php endif; ?>
+            </div>
+            <div class="glow"></div>
         </div>
 
-        <div class="filter no-print">
-            <span class="fl"><i class="bi bi-funnel-fill"></i> فیلتر:</span>
-            <form method="get" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <select name="hotel" style="padding:6px 14px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;background:#fff;">
+        <!-- Filter -->
+        <div class="filter-bar no-print">
+            <form method="get" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
+                <label><i class="bi bi-funnel"></i></label>
+                <select name="hotel">
                     <option value="">همه هتل‌ها</option>
                     <?php foreach ($allHotels as $h): ?>
                     <option value="<?php echo htmlspecialchars($h->hotel_name); ?>" <?php echo $hotelFilter === $h->hotel_name ? 'selected' : ''; ?>><?php echo htmlspecialchars($h->hotel_name); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <label style="font-size:11px;color:#64748b;font-weight:600;">ورود:</label>
-                <input type="date" name="checkin" value="<?php echo htmlspecialchars($checkin); ?>" style="padding:5px 10px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;">
-                <label style="font-size:11px;color:#64748b;font-weight:600;">خروج:</label>
-                <input type="date" name="checkout" value="<?php echo htmlspecialchars($checkout); ?>" style="padding:5px 10px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;">
-                <button type="submit" class="fb fb-prt" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="bi bi-search"></i> جستجو</button>
-                <a href="<?php echo $config['url'] ?? ''; ?>/hotel-rates/display" class="fb fb-clr"><i class="bi bi-x-circle"></i> پاک</a>
+                <label>ورود:</label>
+                <input type="date" name="checkin" value="<?php echo htmlspecialchars($checkin); ?>">
+                <label>خروج:</label>
+                <input type="date" name="checkout" value="<?php echo htmlspecialchars($checkout); ?>">
+                <button type="submit" class="btn-f btn-search"><i class="bi bi-search"></i> جستجو</button>
+                <a href="<?php echo $config['url'] ?? ''; ?>/hotel-rates/display" class="btn-f btn-clear"><i class="bi bi-x-circle"></i> پاک</a>
+                <button type="button" class="btn-f btn-print" onclick="window.print()"><i class="bi bi-printer"></i> چاپ</button>
             </form>
-            <button class="fb fb-prt" onclick="window.print()"><i class="bi bi-printer-fill"></i> چاپ</button>
         </div>
 
         <?php if (empty($hotels)): ?>
-        <div class="empty"><i class="bi bi-building"></i><p>نرخنامه‌ای ثبت نشده است</p></div>
+        <div class="empty">
+            <div class="ico">📋</div>
+            <p>نرخنامه‌ای ثبت نشده است</p>
+        </div>
         <?php else: ?>
         <?php foreach ($hotels as $hotel): ?>
-        <div class="h-card">
-            <div class="h-top">
-                <div class="h-ico"><i class="bi bi-building"></i></div>
-                <div class="inf">
-                    <h3>
-                        <?php echo htmlspecialchars($hotel->hotel_name); ?>
-                        <?php if ($hotel->star_rating): ?><span class="stars-badge"><?php for ($i=0;$i<$hotel->star_rating;$i++): ?><span>★</span><?php endfor; ?></span><?php endif; ?>
-                        <?php if ($hotel->city): ?><span class="city-badge">📍 <?php echo htmlspecialchars($hotel->city); ?></span><?php endif; ?>
-                    </h3>
-                    <small><?php echo count($ratesByHotel[$hotel->id] ?? []); ?> نوع اتاق / بازه زمانی</small>
+        <div class="hotel">
+            <div class="hotel-head">
+                <div class="hotel-logo">🏨</div>
+                <div class="hotel-info">
+                    <h2><?php echo htmlspecialchars($hotel->hotel_name); ?></h2>
+                    <div class="sub-info">
+                        <?php if ($hotel->star_rating): ?><span class="stars"><?php echo str_repeat('★', $hotel->star_rating); echo str_repeat('☆', 5 - $hotel->star_rating); ?></span><?php endif; ?>
+                        <?php if ($hotel->city): ?><span>📍 <?php echo htmlspecialchars($hotel->city); ?></span><?php endif; ?>
+                        <span><i class="bi bi-clock"></i> <?php echo count($ratesByHotel[$hotel->id] ?? []); ?> بازه زمانی</span>
+                    </div>
                 </div>
             </div>
 
@@ -186,70 +285,77 @@
             $facTags = !empty($hotel->facilities) ? array_filter(array_map('trim', explode(',', $hotel->facilities))) : [];
             if ($descTags || $facTags):
             ?>
-            <div class="tags">
-                <span class="t-lbl"><i class="bi bi-info-circle"></i></span>
-                <?php foreach ($descTags as $tag): ?><span class="t t-desc"><?php echo htmlspecialchars($tag); ?></span><?php endforeach; ?>
-                <?php foreach ($facTags as $tag): ?><span class="t t-fac"><i class="bi bi-check2-circle"></i> <?php echo htmlspecialchars($tag); ?></span><?php endforeach; ?>
+            <div class="tag-row">
+                <?php foreach ($descTags as $t): ?><span class="tag tag-desc"><?php echo htmlspecialchars($t); ?></span><?php endforeach; ?>
+                <?php foreach ($facTags as $t): ?><span class="tag tag-fac"><i class="bi bi-check2"></i> <?php echo htmlspecialchars($t); ?></span><?php endforeach; ?>
             </div>
             <?php endif; ?>
 
             <?php if (!empty($ratesByHotel[$hotel->id])): ?>
-            <table class="tbl">
-                <thead>
-                    <tr>
-                        <th>نوع اتاق</th>
-                        <th>بازه تاریخ</th>
-                        <th>وضعیت</th>
-                        <th>🛏️ اقامت</th>
-                        <th>🍳 اقامت+صبحانه</th>
-                        <th>🥗 هافبرد</th>
-                        <th>🍽️ فولبرد انتخابی</th>
-                        <th>🥂 فولبرد بوفه</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($ratesByHotel[$hotel->id] as $rate): ?>
-                    <tr>
-                        <td><span class="rb"><?php echo htmlspecialchars($rate->room_type); ?></span></td>
-                        <td><span class="dr"><?php echo \Core\JDate::displayDate($rate->date_from); ?> — <?php echo \Core\JDate::displayDate($rate->date_to); ?></span></td>
-                        <td><?php echo !empty($rate->season_label) ? '<span class="st">☀️ ' . htmlspecialchars($rate->season_label) . '</span>' : '-'; ?></td>
-                        <td class="pc"><?php echo $rate->price_ekht > 0 ? number_format($rate->price_ekht) : '-'; ?></td>
-                        <td class="pc"><?php echo $rate->price_sobhaneh > 0 ? number_format($rate->price_sobhaneh) : '-'; ?></td>
-                        <td class="pc pc-best"><?php echo $rate->price_nahar > 0 ? number_format($rate->price_nahar) : '-'; ?></td>
-                        <td class="pc"><?php echo $rate->price_entekhabifulboard > 0 ? number_format($rate->price_entekhabifulboard) : '-'; ?></td>
-                        <td class="pc pc-hot"><?php echo $rate->price_fulboard_boufeh > 0 ? number_format($rate->price_fulboard_boufeh) : '-'; ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="rates">
+                <?php foreach ($ratesByHotel[$hotel->id] as $rate): ?>
+                <div class="rate-card">
+                    <div class="rate-label">
+                        <div class="room"><?php echo htmlspecialchars($rate->room_type); ?></div>
+                        <?php if (!empty($rate->season_label)): ?><div class="season">☀️ <?php echo htmlspecialchars($rate->season_label); ?></div><?php endif; ?>
+                    </div>
+                    <div class="rate-body">
+                        <div class="price-item">
+                            <span class="label">از</span>
+                            <span class="date-range"><?php echo \Core\JDate::displayDate($rate->date_from); ?></span>
+                            <span class="label">تا</span>
+                            <span class="date-range"><?php echo \Core\JDate::displayDate($rate->date_to); ?></span>
+                        </div>
+                        <?php if ($rate->price_ekht > 0): ?>
+                        <div class="price-item">
+                            <span class="label">🛏️ اقامت:</span>
+                            <span class="val"><?php echo number_format($rate->price_ekht); ?> ت</span>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($rate->price_sobhaneh > 0): ?>
+                        <div class="price-item">
+                            <span class="label">🍳 اقامت+صبحانه:</span>
+                            <span class="val"><?php echo number_format($rate->price_sobhaneh); ?> ت</span>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($rate->price_nahar > 0): ?>
+                        <div class="price-item">
+                            <span class="label">🥗 هافبرد:</span>
+                            <span class="val best"><?php echo number_format($rate->price_nahar); ?> ت</span>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($rate->price_entekhabifulboard > 0): ?>
+                        <div class="price-item">
+                            <span class="label">🍽️ فولبرد انتخابی:</span>
+                            <span class="val"><?php echo number_format($rate->price_entekhabifulboard); ?> ت</span>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($rate->price_fulboard_boufeh > 0): ?>
+                        <div class="price-item">
+                            <span class="label">🥂 فولبرد بوفه:</span>
+                            <span class="val hot"><?php echo number_format($rate->price_fulboard_boufeh); ?> ت</span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
             <?php else: ?>
-            <div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;"><i class="bi bi-inbox"></i> نرخی ثبت نشده</div>
+            <div style="text-align:center;padding:16px;color:#d1d5db;font-size:12px;">
+                <?php if ($checkin || $checkout): ?>
+                نرخی برای بازه زمانی انتخاب شده یافت نشد
+                <?php else: ?>
+                نرخی ثبت نشده
+                <?php endif; ?>
+            </div>
             <?php endif; ?>
         </div>
         <?php endforeach; ?>
         <?php endif; ?>
 
-        <div class="ft">
+        <div class="footer">
             <?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?> — قیمت‌ها به تومان و ممکن است بدون اطلاع قبلی تغییر کند.
         </div>
     </div>
-
-    <script>
-    // Generate stars
-    (function() {
-        var c = document.getElementById('stars');
-        if (!c) return;
-        for (var i = 0; i < 60; i++) {
-            var s = document.createElement('div');
-            s.className = 'star';
-            s.style.left = Math.random() * 100 + '%';
-            s.style.top = Math.random() * 100 + '%';
-            s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
-            s.style.animationDuration = (2 + Math.random() * 4) + 's';
-            s.style.animationDelay = (Math.random() * 5) + 's';
-            c.appendChild(s);
-        }
-    })();
-    </script>
 </body>
 </html>
