@@ -69,12 +69,16 @@ class HotelRateController
         Auth::requireAuth();
         $db = Database::getInstance();
 
+        // Ensure hotel table has sort_order column
+        try { $db->query("ALTER TABLE hotel_rate_hotels ADD COLUMN `sort_order` INT DEFAULT 0"); } catch (\Exception $e) {}
+
         $data = [
             'hotel_name' => trim($_POST['hotel_name'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
             'facilities' => trim($_POST['facilities'] ?? ''),
             'star_rating' => !empty($_POST['star_rating']) ? (int)$_POST['star_rating'] : null,
             'city' => trim($_POST['city'] ?? ''),
+            'sort_order' => (int)($_POST['sort_order'] ?? 0),
             'created_by' => Auth::id(),
         ];
 
@@ -105,6 +109,7 @@ class HotelRateController
             'facilities' => trim($_POST['facilities'] ?? ''),
             'star_rating' => !empty($_POST['star_rating']) ? (int)$_POST['star_rating'] : null,
             'city' => trim($_POST['city'] ?? ''),
+            'sort_order' => (int)($_POST['sort_order'] ?? 0),
         ];
 
         try {
@@ -267,6 +272,8 @@ class HotelRateController
     {
         $db = Database::getInstance();
         $hotelFilter = trim($_GET['hotel'] ?? '');
+        $checkin = trim($_GET['checkin'] ?? '');
+        $checkout = trim($_GET['checkout'] ?? '');
         $config = $GLOBALS['app_config'];
 
         $hotels = [];
@@ -281,14 +288,27 @@ class HotelRateController
             }
 
             $hotels = $db->fetchAll(
-                "SELECT h.* FROM hotel_rate_hotels h {$whereHotel} ORDER BY h.hotel_name ASC",
+                "SELECT h.* FROM hotel_rate_hotels h {$whereHotel} ORDER BY h.sort_order ASC, h.hotel_name ASC",
                 $params
             );
 
             foreach ($hotels as $hotel) {
+                $rateWhere = "WHERE hotel_id = :hid AND is_active = 1";
+                $rateParams = [':hid' => $hotel->id];
+
+                // Date filter: only show rates that overlap with requested dates
+                if ($checkin) {
+                    $rateWhere .= " AND date_to >= :checkin";
+                    $rateParams[':checkin'] = $checkin;
+                }
+                if ($checkout) {
+                    $rateWhere .= " AND date_from <= :checkout";
+                    $rateParams[':checkout'] = $checkout;
+                }
+
                 $ratesByHotel[$hotel->id] = $db->fetchAll(
-                    "SELECT * FROM hotel_rate_list WHERE hotel_id = :hid AND is_active = 1 ORDER BY room_type ASC, date_from DESC",
-                    [':hid' => $hotel->id]
+                    "SELECT * FROM hotel_rate_list {$rateWhere} ORDER BY date_from ASC, room_type ASC",
+                    $rateParams
                 );
             }
         } catch (\Exception $e) {
@@ -315,8 +335,28 @@ class HotelRateController
         $hotels = $hotels;
         $ratesByHotel = $ratesByHotel;
         $hotelFilter = $hotelFilter;
+        $checkin = $checkin;
+        $checkout = $checkout;
         require __DIR__ . '/../views/hotel_rate/display.php';
         exit;
+    }
+
+    // ===== SORT ORDER =====
+    public function updateSortOrder(): void
+    {
+        Auth::requireAuth();
+        $db = Database::getInstance();
+        $orders = $_POST['sort_order'] ?? [];
+
+        try {
+            foreach ($orders as $id => $order) {
+                $db->update('hotel_rate_hotels', ['sort_order' => (int)$order], 'id = :id', [':id' => (int)$id]);
+            }
+            $_SESSION['success'] = 'ترتیب نمایش بروزرسانی شد.';
+        } catch (\Exception $e) {
+            $_SESSION['error'] = 'خطا: ' . $e->getMessage();
+        }
+        View::redirect('/hotel-rates');
     }
 
     // Simple markdown to HTML converter

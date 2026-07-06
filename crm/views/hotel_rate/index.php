@@ -114,7 +114,8 @@
         <div class="row g-3">
             <div class="col-md-6"><label class="form-label fw-bold">نام هتل <span class="text-danger">*</span></label><input type="text" name="hotel_name" id="h_hotel_name" class="form-control" required></div>
             <div class="col-md-3"><label class="form-label fw-bold">شهر</label><input type="text" name="city" id="h_city" class="form-control"></div>
-            <div class="col-md-3"><label class="form-label fw-bold">ستاره</label><select name="star_rating" id="h_star_rating" class="form-select"><option value="">-</option><?php for($s=1;$s<=5;$s++): ?><option value="<?php echo $s; ?>"><?php echo str_repeat('⭐',$s); ?></option><?php endfor; ?></select></div>
+            <div class="col-md-2"><label class="form-label fw-bold">ستاره</label><select name="star_rating" id="h_star_rating" class="form-select"><option value="">-</option><?php for($s=1;$s<=5;$s++): ?><option value="<?php echo $s; ?>"><?php echo str_repeat('⭐',$s); ?></option><?php endfor; ?></select></div>
+            <div class="col-md-1"><label class="form-label fw-bold">ترتیب</label><input type="number" name="sort_order" id="h_sort_order" class="form-control" min="0" value="0"></div>
             <div class="col-12"><label class="form-label fw-bold">توضیحات هتل</label><textarea name="description" id="h_description" class="form-control" rows="3" placeholder="درباره هتل، موقعیت مکانی، ویژگی‌ها..."></textarea></div>
             <div class="col-12"><label class="form-label fw-bold">امکانات هتل</label><textarea name="facilities" id="h_facilities" class="form-control" rows="2" placeholder="استخر، رستوران، پارکینگ، اینترنت رایگان..."></textarea></div>
         </div>
@@ -228,6 +229,7 @@ function editHotel(id) {
         document.getElementById('h_star_rating').value = d.star_rating||'';
         document.getElementById('h_description').value = d.description||'';
         document.getElementById('h_facilities').value = d.facilities||'';
+        document.getElementById('h_sort_order').value = d.sort_order||0;
         document.getElementById('hotelForm').action = '<?php echo $config['url']; ?>/hotel-rates/hotel/update/' + id;
         hotelModal.show();
     });

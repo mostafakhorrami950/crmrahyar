@@ -345,6 +345,7 @@ Router::group('/hotel-rates', function() {
     Router::post('/update/{id}', [HotelRateController::class, 'update'], 'deals.edit');
     Router::post('/delete/{id}', [HotelRateController::class, 'delete'], 'deals.edit');
     Router::get('/data/{id}', [HotelRateController::class, 'getData'], 'deals.view');
+    Router::post('/sort-order', [HotelRateController::class, 'updateSortOrder'], 'deals.edit');
     // Public display
     Router::get('/display', [HotelRateController::class, 'display']);
 });

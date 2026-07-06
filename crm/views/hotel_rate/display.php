@@ -147,13 +147,20 @@
 
         <div class="filter no-print">
             <span class="fl"><i class="bi bi-funnel-fill"></i> فیلتر:</span>
-            <select onchange="if(this.value)location.href='?hotel='+encodeURIComponent(this.value);else location.href='<?php echo $config['url'] ?? ''; ?>/hotel-rates/display';">
-                <option value="">همه هتل‌ها</option>
-                <?php foreach ($allHotels as $h): ?>
-                <option value="<?php echo htmlspecialchars($h->hotel_name); ?>" <?php echo $hotelFilter === $h->hotel_name ? 'selected' : ''; ?>><?php echo htmlspecialchars($h->hotel_name); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <?php if ($hotelFilter): ?><a href="<?php echo $config['url'] ?? ''; ?>/hotel-rates/display" class="fb fb-clr"><i class="bi bi-x-circle"></i> نمایش همه</a><?php endif; ?>
+            <form method="get" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <select name="hotel" style="padding:6px 14px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;background:#fff;">
+                    <option value="">همه هتل‌ها</option>
+                    <?php foreach ($allHotels as $h): ?>
+                    <option value="<?php echo htmlspecialchars($h->hotel_name); ?>" <?php echo $hotelFilter === $h->hotel_name ? 'selected' : ''; ?>><?php echo htmlspecialchars($h->hotel_name); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <label style="font-size:11px;color:#64748b;font-weight:600;">ورود:</label>
+                <input type="date" name="checkin" value="<?php echo htmlspecialchars($checkin); ?>" style="padding:5px 10px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;">
+                <label style="font-size:11px;color:#64748b;font-weight:600;">خروج:</label>
+                <input type="date" name="checkout" value="<?php echo htmlspecialchars($checkout); ?>" style="padding:5px 10px;border:2px solid #e2e8f0;border-radius:10px;font:inherit;font-size:12px;">
+                <button type="submit" class="fb fb-prt" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="bi bi-search"></i> جستجو</button>
+                <a href="<?php echo $config['url'] ?? ''; ?>/hotel-rates/display" class="fb fb-clr"><i class="bi bi-x-circle"></i> پاک</a>
+            </form>
             <button class="fb fb-prt" onclick="window.print()"><i class="bi bi-printer-fill"></i> چاپ</button>
         </div>
 
