@@ -142,7 +142,7 @@
         <div class="row g-3">
             <div class="col-md-4"><label class="form-label">اقامت</label><input type="number" name="price_ekht" id="f_price_ekht" class="form-control" min="0" value="0"></div>
             <div class="col-md-4"><label class="form-label">اقامت + صبحانه</label><input type="number" name="price_sobhaneh" id="f_price_sobhaneh" class="form-control" min="0" value="0"></div>
-            <div class="col-md-4"><label class="form-label">اقامت + صبحانه + ناهار</label><input type="number" name="price_nahar" id="f_price_nahar" class="form-control" min="0" value="0"></div>
+            <div class="col-md-4"><label class="form-label">هافبرد</label><input type="number" name="price_nahar" id="f_price_nahar" class="form-control" min="0" value="0"></div>
             <div class="col-md-4"><label class="form-label">فولبرد انتخابی</label><input type="number" name="price_entekhabifulboard" id="f_price_entekhabifulboard" class="form-control" min="0" value="0"></div>
             <div class="col-md-4"><label class="form-label">فولبرد بوفه</label><input type="number" name="price_fulboard_boufeh" id="f_price_fulboard_boufeh" class="form-control" min="0" value="0"></div>
         </div>
@@ -157,6 +157,57 @@ var hotelModal, rateModal;
 document.addEventListener('DOMContentLoaded', function() {
     hotelModal = new bootstrap.Modal(document.getElementById('hotelModal'));
     rateModal = new bootstrap.Modal(document.getElementById('rateModal'));
+
+    // Initialize Jalali datepicker on modal date fields
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.pDatepicker !== 'undefined') {
+        var $df = jQuery('#f_date_from');
+        var $dt = jQuery('#f_date_to');
+        // Convert current Gregorian value to Jalali for display
+        function toJalaliStr(gDate) {
+            try {
+                if (!gDate) return '';
+                var parts = gDate.split('-');
+                if (parts.length !== 3) return gDate;
+                var pd = new persianDate();
+                pd.toCalendar('persian');
+                var j = pd.convert(new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])));
+                return j.year() + '/' + String(j.month()).padStart(2,'0') + '/' + String(j.date()).padStart(2,'0');
+            } catch(e) { return gDate; }
+        }
+        function toGregorianStr(unix) {
+            var d = new Date(unix);
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+        // Set initial Jalali display values
+        $df.val(toJalaliStr($df.val()));
+        $dt.val(toJalaliStr($dt.val()));
+        // Init datepicker on from
+        $df.pDatepicker({
+            format: 'YYYY/MM/DD',
+            initialValue: false,
+            autoClose: true,
+            calendar: { persian: { locale: 'fa' } },
+            onSelect: function(unix) { $df.attr('data-gregorian', toGregorianStr(unix)); }
+        });
+        // Init datepicker on to
+        $dt.pDatepicker({
+            format: 'YYYY/MM/DD',
+            initialValue: false,
+            autoClose: true,
+            calendar: { persian: { locale: 'fa' } },
+            onSelect: function(unix) { $dt.attr('data-gregorian', toGregorianStr(unix)); }
+        });
+        // Before form submit, set Gregorian values in hidden fields
+        var form = document.getElementById('rateForm');
+        if (form) {
+            form.addEventListener('submit', function() {
+                var dg = $df.attr('data-gregorian');
+                var tg = $dt.attr('data-gregorian');
+                if (dg) $df.val(dg);
+                if (tg) $dt.val(tg);
+            });
+        }
+    }
 });
 
 function openHotelModal() {
@@ -195,8 +246,23 @@ function openAddModal() {
     document.getElementById('rateForm').reset();
     document.getElementById('rate_id').value = '';
     document.getElementById('rateForm').action = '<?php echo $config['url']; ?>/hotel-rates/store';
-    document.getElementById('f_date_from').value = '<?php echo date('Y-m-d'); ?>';
-    document.getElementById('f_date_to').value = '<?php echo date('Y-m-d'); ?>';
+    var today = '<?php echo date('Y-m-d'); ?>';
+    document.getElementById('f_date_from').value = today;
+    document.getElementById('f_date_to').value = today;
+    // Re-init Jalali display
+    if (typeof jQuery !== 'undefined' && typeof jQuery.fn.pDatepicker !== 'undefined') {
+        try {
+            var $df = jQuery('#f_date_from');
+            var $dt = jQuery('#f_date_to');
+            var parts = today.split('-');
+            var pd = new persianDate();
+            pd.toCalendar('persian');
+            var j = pd.convert(new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])));
+            var jStr = j.year() + '/' + String(j.month()).padStart(2,'0') + '/' + String(j.date()).padStart(2,'0');
+            $df.val(jStr).attr('data-gregorian', today);
+            $dt.val(jStr).attr('data-gregorian', today);
+        } catch(e) {}
+    }
     rateModal.show();
 }
 
