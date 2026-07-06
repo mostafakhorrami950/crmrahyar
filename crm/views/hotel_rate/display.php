@@ -15,16 +15,68 @@
     $sc = $invSet['invoice_success_color'] ?? '#059669';
     ?>
     <style>
-        /* ===== PRINT ===== */
+        /* ===== PRINT VERSION - Clean & Formal ===== */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: #fff !important; padding: 0 !important; display: block !important; }
+            body { background: #fff !important; padding: 0 !important; display: block !important; font-size: 9pt !important; }
             .no-print, .bg-mesh, .bg-grid { display: none !important; }
             .page { box-shadow: none !important; max-width: 100% !important; border-radius: 0 !important; animation: none !important; }
-            .hotel-section { page-break-inside: avoid !important; break-inside: avoid !important; }
-            .rate-card { page-break-inside: avoid !important; break-inside: avoid !important; }
-            .hotel-section .rates { page-break-inside: avoid !important; }
-            @page { margin: 4mm; size: A4 landscape; }
+
+            /* Simple header */
+            .hdr { background: #fff !important; border-bottom: 2px solid #000 !important; padding: 8mm 0 !important; }
+            .hdr::before { display: none !important; }
+            .hdr-in { display: flex !important; align-items: center !important; justify-content: space-between !important; }
+            .hdr h1 { color: #000 !important; font-size: 14pt !important; font-weight: 900 !important; }
+            .hdr h1 .i { display: none !important; }
+            .hdr p { color: #333 !important; font-size: 9pt !important; }
+            .hdr .badge { display: none !important; }
+            .glow { display: none !important; }
+
+            /* Hotel section - keep together */
+            .hotel-section { page-break-inside: avoid !important; break-inside: avoid !important; padding: 0 !important; margin-bottom: 4mm !important; border-top: 1px solid #ccc !important; }
+            .hotel-head { padding: 3mm 0 2mm !important; }
+            .hotel-ico { display: none !important; }
+            .hotel-info h2 { font-size: 11pt !important; font-weight: 800 !important; color: #000 !important; border-bottom: 1px solid #ddd !important; padding-bottom: 1mm !important; }
+            .hotel-info .si span { font-size: 8pt !important; color: #333 !important; }
+            .hotel-info .si .st { color: #000 !important; }
+
+            /* Tags - simple */
+            .tags { margin-bottom: 2mm !important; }
+            .tag { font-size: 7pt !important; padding: 1mm 3mm !important; border: 1px solid #999 !important; background: #f5f5f5 !important; color: #333 !important; }
+
+            /* Rate cards - table-like for print */
+            .rates { gap: 0 !important; padding-bottom: 2mm !important; page-break-inside: avoid !important; }
+            .rc {
+                display: table !important; width: 100% !important; border: none !important;
+                border-bottom: 1px solid #ddd !important; border-radius: 0 !important;
+                transform: none !important; box-shadow: none !important;
+            }
+            .rl {
+                display: table-cell !important; width: 130px !important;
+                background: #f9f9f9 !important; border-left: none !important;
+                padding: 2mm 3mm !important; vertical-align: middle !important;
+                border-right: 1px solid #ddd !important;
+            }
+            .rl .rm { font-size: 9pt !important; font-weight: 700 !important; color: #000 !important; }
+            .rl .sn { font-size: 7pt !important; color: #555 !important; }
+            .rb { display: table-cell !important; padding: 2mm 3mm !important; vertical-align: middle !important; }
+            .pi {
+                display: inline-flex !important; padding: 1mm 2mm !important;
+                border: none !important; background: none !important;
+                font-size: 8pt !important; margin: 0 2mm !important;
+            }
+            .pi .lb { color: #333 !important; font-weight: 500 !important; }
+            .pi .vl { color: #000 !important; font-weight: 800 !important; }
+            .pi .dr { font-size: 7pt !important; color: #333 !important; }
+
+            /* Empty */
+            .empty { padding: 10mm !important; }
+            .empty .ei { display: none !important; }
+
+            /* Footer */
+            .ft { border-top: 1px solid #000 !important; padding: 3mm 0 !important; font-size: 7pt !important; color: #333 !important; background: none !important; }
+
+            @page { margin: 8mm 10mm; size: A4 landscape; }
         }
 
         /* ===== RESET ===== */
