@@ -15,29 +15,38 @@
     $sc = $invSet['invoice_success_color'] ?? '#059669';
     ?>
     <style>
-        /* ===== PRINT ===== */
+        /* ===== PRINT - Professional Office Style ===== */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            body { background: #fff !important; padding: 0 !important; display: block !important; }
+            body { background: #fff !important; padding: 0 !important; display: block !important; font-size: 8pt !important; }
             .screen-only { display: none !important; }
             .print-only { display: block !important; }
-            .print-wrap { max-width: 100%; margin: 0; padding: 0; }
-            .print-header { text-align: center; border-bottom: 3px double #000; padding: 4mm 0; margin-bottom: 4mm; }
-            .print-header h1 { font-size: 16pt; font-weight: 900; color: #000; margin: 0; }
-            .print-header p { font-size: 10pt; color: #333; margin: 1mm 0 0; }
-            .print-hotel { page-break-inside: avoid; break-inside: avoid; margin-bottom: 5mm; }
-            .print-hotel-name { font-size: 12pt; font-weight: 800; color: #000; border-bottom: 2px solid #000; padding: 2mm 0; margin-bottom: 2mm; }
-            .print-hotel-name small { font-weight: 400; font-size: 9pt; color: #555; }
-            .print-tbl { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 2mm; }
-            .print-tbl th { background: #e5e7eb; color: #000; padding: 2mm 3mm; border: 1px solid #999; font-weight: 700; text-align: center; font-size: 8.5pt; }
-            .print-tbl th:first-child { text-align: right; min-width: 80px; }
-            .print-tbl td { padding: 2mm 3mm; border: 1px solid #bbb; text-align: center; font-size: 9pt; }
+            .print-wrap { max-width: 100%; margin: 0; padding: 4mm; }
+            .print-accent { height: 3px; background: #1e3a5f; margin-bottom: 4mm; }
+            .print-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 3mm; margin-bottom: 3mm; border-bottom: 2px solid #1e3a5f; }
+            .print-header .ph-right h1 { font-size: 14pt; font-weight: 900; color: #1e3a5f; margin: 0; }
+            .print-header .ph-right p { font-size: 8pt; color: #6b7280; margin: 1mm 0 0; }
+            .print-header .ph-left { text-align: left; }
+            .print-header .ph-left .co { font-size: 11pt; font-weight: 900; color: #1e3a5f; }
+            .print-header .ph-left .sub { font-size: 7pt; color: #6b7280; }
+            .print-meta { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 3mm; padding-bottom: 2mm; border-bottom: 1px solid #e5e7eb; }
+            .print-chip { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; border-radius: 2px; font-size: 7pt; font-weight: 600; background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+            .print-hotel { page-break-inside: avoid; break-inside: avoid; margin-bottom: 4mm; }
+            .print-hotel-name { font-size: 11pt; font-weight: 800; color: #1e3a5f; padding: 2mm 0; margin-bottom: 2mm; border-bottom: 1.5px solid #1e3a5f; }
+            .print-hotel-name small { font-weight: 400; font-size: 8pt; color: #6b7280; }
+            .print-tbl { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 2mm; }
+            .print-tbl th { background: #1e3a5f; color: #fff; padding: 2.5mm 3mm; border: 1px solid #1e3a5f; font-weight: 700; text-align: center; font-size: 7.5pt; }
+            .print-tbl th:first-child { text-align: right; min-width: 70px; }
+            .print-tbl td { padding: 2mm 3mm; border: 1px solid #d1d5db; text-align: center; font-size: 8pt; }
             .print-tbl td:first-child { text-align: right; font-weight: 700; }
             .print-tbl tr:nth-child(even) { background: #f9fafb; }
-            .print-tbl .price { font-family: 'Courier New', monospace; font-weight: 700; direction: ltr; }
-            .print-tbl .empty-cell { color: #ccc; }
-            .print-footer { text-align: center; border-top: 1px solid #000; padding: 2mm 0; font-size: 7pt; color: #555; margin-top: 4mm; }
-            @page { margin: 8mm 10mm; size: A4 landscape; }
+            .print-tbl tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
+            .print-tbl .price { font-family: 'Courier New', monospace; font-weight: 800; direction: ltr; color: #111827; }
+            .print-tbl .empty-cell { color: #d1d5db; }
+            .print-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 2mm; }
+            .print-tag { padding: 1px 6px; border-radius: 2px; font-size: 6.5pt; font-weight: 600; border: 1px solid #d1d5db; background: #f9fafb; color: #4b5563; }
+            .print-footer { text-align: center; border-top: 2px solid #1e3a5f; padding-top: 2mm; margin-top: 4mm; font-size: 7pt; color: #9ca3af; }
+            @page { margin: 6mm 8mm; size: A4 landscape; }
         }
 
         /* ===== SCREEN ===== */
