@@ -176,6 +176,12 @@ class HotelInvoiceController
         $where = "WHERE 1=1";
         $params = [];
 
+        // Non-admin users only see their own invoices
+        if (!Auth::isAdmin()) {
+            $where .= " AND hi.created_by = :uid";
+            $params[':uid'] = Auth::id();
+        }
+
         if ($search) {
             $where .= " AND (hi.hotel_name LIKE :search OR hi.invoice_number LIKE :search OR hi.guest_name LIKE :search OR d.title LIKE :search OR c.full_name LIKE :search)";
             $params[':search'] = "%{$search}%";
@@ -286,6 +292,17 @@ class HotelInvoiceController
             View::redirect('/hotel-invoice/create/' . $dealId);
         }
 
+        // One invoice per deal validation (admin can bypass)
+        if (!Auth::isAdmin()) {
+            $existingInvoice = $db->fetch("SELECT id FROM hotel_invoices WHERE deal_id = :deal_id LIMIT 1", [':deal_id' => $dealId]);
+            if ($existingInvoice) {
+                $msg = 'برای این معامله قبلاً فاکتور صادر شده است. هر معامله فقط یک فاکتور می‌تواند داشته باشد.';
+                if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
+                Session::setFlash('danger', $msg);
+                View::redirect('/hotel-invoice/view/' . $existingInvoice->id);
+            }
+        }
+
         $nights = $this->recalcNights($checkInDate, $checkOutDate);
         if ($nights <= 0) {
             $msg = 'تاریخ خروج باید بعد از تاریخ ورود باشد.';
@@ -363,6 +380,22 @@ class HotelInvoiceController
             // Auto-create payment link
             $this->createPaymentLink($invoiceId, $dealId, $finalAmount, $depositAmount);
 
+            // Fire automation trigger
+            try {
+                $deal = $db->fetch("SELECT d.*, c.full_name as contact_name, c.phone as contact_phone FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id WHERE d.id = :id", [':id' => $dealId]);
+                \Controllers\AutomationController::execute('invoice_created', 'hotel_invoice', $invoiceId, [
+                    'deal_id' => $dealId,
+                    'contact_name' => $deal->contact_name ?? '',
+                    'contact_phone' => $deal->contact_phone ?? '',
+                    'title' => $deal->title ?? '',
+                    'amount' => $finalAmount,
+                    'invoice_number' => $invoiceNumber,
+                    'hotel_name' => $hotelName,
+                ]);
+            } catch (\Exception $e) {
+                error_log('Invoice automation failed: ' . $e->getMessage());
+            }
+
             if ($isAjax) {
                 echo json_encode([
                     'success' => true,
@@ -387,6 +420,17 @@ class HotelInvoiceController
     // ============================================================
     // EDIT (show edit form)
     // ============================================================
+    /**
+     * Check if invoice is locked for non-admin users
+     * Locked when status is paid, settled, or pending (with deposit)
+     */
+    private function isInvoiceLocked($invoice): bool
+    {
+        if (Auth::isAdmin()) return false; // Admin can always edit
+        $lockedStatuses = ['paid', 'settled', 'pending'];
+        return in_array($invoice->invoice_status, $lockedStatuses);
+    }
+
     public function edit(array $params): void
     {
         Auth::requireAuth();
@@ -404,6 +448,12 @@ class HotelInvoiceController
         if (!$invoice) {
             Session::setFlash('danger', 'فاکتور مورد نظر یافت نشد.');
             View::redirect('/hotel-invoice');
+        }
+
+        // Lock check for non-admin users
+        if ($this->isInvoiceLocked($invoice)) {
+            Session::setFlash('danger', 'این فاکتور در وضعیت «' . ($invoice->invoice_status === 'paid' ? 'پرداخت شده' : ($invoice->invoice_status === 'settled' ? 'تسویه شده' : 'مانده دارد')) . '» قرار دارد و قابل ویرایش نیست.');
+            View::redirect('/hotel-invoice/view/' . $invoiceId);
         }
 
         $deal = $db->fetch(
@@ -445,6 +495,14 @@ class HotelInvoiceController
             if ($isAjax) { echo json_encode(['success' => false, 'message' => 'فاکتور یافت نشد.']); exit; }
             Session::setFlash('danger', 'فاکتور یافت نشد.');
             View::redirect('/hotel-invoice');
+        }
+
+        // Lock check for non-admin users
+        if ($this->isInvoiceLocked($invoice)) {
+            $msg = 'این فاکتور قابل ویرایش نیست.';
+            if ($isAjax) { echo json_encode(['success' => false, 'message' => $msg]); exit; }
+            Session::setFlash('danger', $msg);
+            View::redirect('/hotel-invoice/view/' . $invoiceId);
         }
 
         $hotelName    = trim($_POST['hotel_name'] ?? '');

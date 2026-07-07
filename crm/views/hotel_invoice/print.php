@@ -7,16 +7,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <?php
     $invSet = $invoiceSettings ?? [];
-    $pc = $invSet['invoice_primary_color'] ?? '#0d6efd';
-    $sc = $invSet['invoice_success_color'] ?? '#198754';
+    $pc = $invSet['invoice_primary_color'] ?? '#1a1a2e';
+    $sc = $invSet['invoice_success_color'] ?? '#16213e';
     $company = $invSet['invoice_company_name'] ?? 'علاءالدین سفیر اسمان';
     $sub = $invSet['invoice_subtitle'] ?? 'آژانس مسافرتی';
     $logo = $invSet['invoice_logo_url'] ?? '';
     $footer = $invoice->footer_text ?? $invSet['invoice_footer_text'] ?? '';
     $terms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
 
-    $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پرداخت نشده','paid'=>'پرداخت شده'];
-    $stC = ['pending'=>'#e67e22','settled'=>'#27ae60','prepaid'=>'#3498db','paid'=>'#27ae60'];
+    $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش فاکتور','paid'=>'پرداخت شده'];
+    $stC = ['pending'=>'#d97706','settled'=>'#059669','prepaid'=>'#2563eb','paid'=>'#059669'];
     $st = $invoice->invoice_status;
 
     $itemsDiscount = 0;
@@ -44,70 +44,145 @@
             @page { margin: 4mm; size: A5 portrait; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Vazirmatn, Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #2d3436; font-size: 7pt; line-height: 1.3; min-height: 100vh; padding: 10px; }
-        .page { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 14px 18px; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-        .page::after { content: '<?php echo $wmText; ?>'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 50px; font-weight: 900; color: rgba(0,0,0,0.08); white-space: nowrap; pointer-events: none; z-index: 10; letter-spacing: 8px; border: 8px solid rgba(0,0,0,0.06); padding: 10px 40px; }
+        body {
+            font-family: Vazirmatn, Tahoma, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            font-size: 7pt;
+            line-height: 1.3;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 4px;
+            padding: 14px 18px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .page::after {
+            content: '<?php echo $wmText; ?>';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) rotate(-35deg);
+            font-size: 44px; font-weight: 900;
+            color: rgba(0,0,0,0.04);
+            white-space: nowrap; pointer-events: none; z-index: 10;
+            letter-spacing: 6px;
+            border: 6px solid rgba(0,0,0,0.03);
+            padding: 8px 36px;
+        }
 
         /* Action Bar */
-        .action-bar { background: linear-gradient(135deg, #2d3436, #636e72); padding: 8px 16px; display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; border-radius: 8px; }
-        .action-bar button { padding: 6px 28px; border: 2px solid rgba(255,255,255,0.2); border-radius: 6px; font-family: inherit; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.2s; }
-        .btn-print { background: #fff; color: #2d3436; }
+        .action-bar {
+            background: #1e293b;
+            padding: 8px 16px;
+            display: flex; justify-content: center; gap: 12px;
+            margin-bottom: 10px; border-radius: 4px;
+        }
+        .action-bar button {
+            padding: 6px 28px; border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 4px; font-family: inherit; font-weight: 700;
+            font-size: 11px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-print { background: #fff; color: #1e293b; }
         .btn-close { background: transparent; color: #fff; }
 
-        /* Top Accent */
-        .accent-bar { height: 3px; background: linear-gradient(90deg, <?php echo $pc; ?>, <?php echo $sc; ?>, <?php echo $pc; ?>); margin-bottom: 10px; border-radius: 2px; }
+        /* Top Line */
+        .top-line { height: 3px; background: #1e293b; margin-bottom: 10px; }
 
         /* Header */
         .hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .hdr-right .logo { max-height: 22px; margin-bottom: 2px; }
-        .hdr-right .title { font-size: 9pt; font-weight: 900; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $sc; ?>); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0; }
-        .hdr-right .meta { font-size: 6.5pt; color: #636e72; margin-top: 2px; }
-        .hdr-right .meta strong { color: <?php echo $pc; ?>; font-weight: 800; }
+        .hdr-right .title { font-size: 9pt; font-weight: 900; color: #1e293b; margin: 0; }
+        .hdr-right .meta { font-size: 6.5pt; color: #64748b; margin-top: 2px; }
+        .hdr-right .meta strong { color: #1e293b; font-weight: 800; }
         .hdr-left { text-align: left; }
-        .hdr-left .co { font-size: 9pt; font-weight: 900; background: linear-gradient(135deg, <?php echo $pc; ?>, <?php echo $sc; ?>); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hdr-left .sub { font-size: 6pt; color: #636e72; margin-top: 1px; }
+        .hdr-left .co { font-size: 9pt; font-weight: 900; color: #1e293b; }
+        .hdr-left .sub { font-size: 6pt; color: #64748b; margin-top: 1px; }
 
         /* Info Bar */
-        .info-bar { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; padding: 4px 0; border-top: 1px solid #eef0f2; border-bottom: 1px solid #eef0f2; }
-        .chip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 6px; font-size: 6pt; font-weight: 600; background: #f8f9fa; color: #555; border: 1px solid #eef0f2; }
-        .chip b { color: #1a1a2e; font-weight: 800; }
-        .chip.status { background: <?php echo $stC[$st] ?? '#999'; ?>; color: #fff; border: none; font-weight: 800; }
-        .chip.type { background: #fff; border: 1.5px solid <?php echo $pc; ?>; color: <?php echo $pc; ?>; }
-        .chip.nights { background: <?php echo $pc; ?>12; color: <?php echo $pc; ?>; border-color: <?php echo $pc; ?>22; font-weight: 800; }
-        .creator-chip { margin-right: auto; font-size: 6pt; color: #b2bec3; }
+        .info-bar {
+            display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
+            margin-bottom: 8px; padding: 4px 0;
+            border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+        }
+        .chip {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 7px; border-radius: 3px;
+            font-size: 6pt; font-weight: 600;
+            background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;
+        }
+        .chip b { color: #1e293b; font-weight: 800; }
+        .chip.status { background: <?php echo $stC[$st] ?? '#64748b'; ?>; color: #fff; border: none; font-weight: 800; }
+        .chip.type { background: #fff; border: 1.5px solid #1e293b; color: #1e293b; }
+        .chip.nights { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; font-weight: 800; }
+        .creator-chip { margin-right: auto; font-size: 6pt; color: #94a3b8; }
 
         /* Table */
-        .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 6.5pt; margin-bottom: 6px; border-radius: 6px; overflow: hidden; border: 1px solid #e8ecef; }
-        .tbl th { background: linear-gradient(135deg, #1a1a2e, #2d3436); color: #fff; padding: 4px 5px; font-weight: 700; font-size: 6pt; text-align: right; }
-        .tbl td { padding: 3px 5px; border-bottom: 1px solid #f0f2f5; }
+        .tbl {
+            width: 100%; border-collapse: collapse; font-size: 6.5pt;
+            margin-bottom: 6px; border: 1px solid #e2e8f0;
+        }
+        .tbl th {
+            background: #1e293b; color: #fff;
+            padding: 4px 5px; font-weight: 700; font-size: 6pt; text-align: right;
+        }
+        .tbl td { padding: 3px 5px; border-bottom: 1px solid #f1f5f9; }
         .tbl .c { text-align: center; }
         .tbl .r { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 6.5pt; }
-        .tbl .total { font-weight: 900; color: <?php echo $pc; ?>; }
-        .tbl tbody tr:nth-child(even) { background: #fafbfc; }
-        .tbl tbody tr:last-child td { border-bottom: 2px solid <?php echo $pc; ?>; }
-        .half-badge { display: inline-flex; align-items: center; gap: 2px; background: linear-gradient(135deg, #e67e22, #f39c12); color: #fff; font-size: 5.5pt; padding: 1px 5px; border-radius: 8px; font-weight: 800; }
+        .tbl .total { font-weight: 900; color: #1e293b; }
+        .tbl tbody tr:nth-child(even) { background: #f8fafc; }
+        .tbl tbody tr:last-child td { border-bottom: 2px solid #1e293b; }
+        .half-badge {
+            display: inline-flex; align-items: center; gap: 2px;
+            background: #1e293b; color: #fff;
+            font-size: 5.5pt; padding: 1px 5px; border-radius: 3px; font-weight: 800;
+        }
 
         /* Summary + Notes */
         .bottom-section { display: flex; gap: 10px; align-items: flex-start; margin-top: 2px; }
-        .sum-box { min-width: 190px; margin-right: auto; background: linear-gradient(135deg, #fafbfc, #fff); border-radius: 8px; padding: 6px 10px; border: 1.5px solid <?php echo $pc; ?>18; position: relative; }
-        .sum-box::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: linear-gradient(180deg, <?php echo $pc; ?>, <?php echo $sc; ?>); border-radius: 0 8px 8px 0; }
+        .sum-box {
+            min-width: 190px; margin-right: auto;
+            background: #f8fafc; border-radius: 4px; padding: 6px 10px;
+            border: 1px solid #e2e8f0; position: relative;
+        }
+        .sum-box::before {
+            content: ''; position: absolute; top: 0; right: 0;
+            width: 3px; height: 100%; background: #1e293b;
+            border-radius: 0 4px 4px 0;
+        }
         .sum-row { display: flex; justify-content: space-between; padding: 1.5px 0; font-size: 6.5pt; }
-        .sum-row .l { color: #636e72; }
+        .sum-row .l { color: #64748b; }
         .sum-row .v { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; }
-        .sum-row .v.red { color: #e74c3c; font-weight: 800; }
-        .sum-hr { border: none; border-top: 1.5px dashed #e0e0e0; margin: 3px 0; }
+        .sum-row .v.red { color: #dc2626; font-weight: 800; }
+        .sum-hr { border: none; border-top: 1px dashed #cbd5e1; margin: 3px 0; }
         .sum-final { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 0; font-size: 7.5pt; font-weight: 900; }
-        .sum-final .badge-final { color: #fff; font-size: 6.5pt; padding: 3px 10px; border-radius: 8px; font-weight: 900; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .sum-final .badge-final {
+            color: #fff; font-size: 6.5pt; padding: 3px 10px;
+            border-radius: 3px; font-weight: 900;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
         /* Notes */
         .notes-area { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .note-card { background: #fff; border-radius: 6px; padding: 4px 7px; border: 1px solid #eef0f2; border-right: 3px solid <?php echo $pc; ?>; font-size: 6pt; color: #555; line-height: 1.5; }
-        .note-card .nt { font-weight: 800; color: <?php echo $pc; ?>; font-size: 6pt; margin-bottom: 1px; }
-        .note-card.dark { border-right-color: #2d3436; }
-        .note-card.dark .nt { color: #2d3436; }
+        .note-card {
+            background: #fff; border-radius: 3px; padding: 4px 7px;
+            border: 1px solid #e2e8f0; border-right: 3px solid #1e293b;
+            font-size: 6pt; color: #475569; line-height: 1.5;
+        }
+        .note-card .nt { font-weight: 800; color: #1e293b; font-size: 6pt; margin-bottom: 1px; }
+        .note-card.dark { border-right-color: #64748b; }
+        .note-card.dark .nt { color: #64748b; }
 
         /* Footer */
-        .ftr { text-align: center; font-size: 5.5pt; color: #b2bec3; padding-top: 5px; border-top: 1px solid #eef0f2; margin-top: 6px; }
+        .ftr {
+            text-align: center; font-size: 5.5pt; color: #94a3b8;
+            padding-top: 5px; border-top: 1px solid #e2e8f0; margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -117,8 +192,8 @@
     </div>
 
     <div class="page">
-        <!-- Accent Bar -->
-        <div class="accent-bar"></div>
+        <!-- Top Line -->
+        <div class="top-line"></div>
 
         <!-- Header -->
         <div class="hdr">
@@ -165,7 +240,7 @@
             <tbody>
                 <?php foreach ($items as $i => $item): ?>
                 <tr>
-                    <td class="c" style="color:#b2bec3;font-weight:700;"><?php echo $i + 1; ?></td>
+                    <td class="c" style="color:#94a3b8;font-weight:700;"><?php echo $i + 1; ?></td>
                     <td style="font-weight:700;"><?php echo htmlspecialchars($item->description); ?></td>
                     <td class="c"><?php echo !empty($item->room_type) ? htmlspecialchars($item->room_type) : '-'; ?></td>
                     <td class="c" style="font-weight:700;"><?php echo number_format((int)$item->quantity); ?></td>
@@ -192,10 +267,10 @@
                 <?php if ($isPending): ?>
                 <hr class="sum-hr">
                 <div class="sum-row"><span class="l"><i class="bi bi-wallet2"></i> بیعانه</span><span class="v red">- <?php echo number_format($invoice->deposit_amount); ?></span></div>
-                <div class="sum-final"><span>باقیمانده:</span><span class="badge-final" style="background:linear-gradient(135deg,<?php echo $stC[$st] ?? '#e67e22'; ?>,<?php echo $stC[$st] ?? '#e67e22'; ?>cc);"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</span></div>
+                <div class="sum-final"><span>باقیمانده:</span><span class="badge-final" style="background:<?php echo $stC[$st] ?? '#d97706'; ?>;"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</span></div>
                 <?php else: ?>
                 <hr class="sum-hr">
-                <div class="sum-final"><span>مبلغ نهایی:</span><span class="badge-final" style="background:linear-gradient(135deg,<?php echo $pc; ?>,<?php echo $sc; ?>);"><?php echo number_format($invoice->final_amount); ?> تومان</span></div>
+                <div class="sum-final"><span>مبلغ نهایی:</span><span class="badge-final" style="background:#1e293b;"><?php echo number_format($invoice->final_amount); ?> تومان</span></div>
                 <?php endif; ?>
             </div>
 

@@ -65,6 +65,13 @@ class AutomationController
                 'conditions' => [],
                 'category' => 'فعالیت‌ها',
             ],
+            'invoice_created' => [
+                'label' => '🧾 صدور فاکتور هتل',
+                'description' => 'وقتی یک فاکتور هتل جدید برای معامله صادر می‌شود. برای ارسال خودکار لینک پرداخت فاکتور به مشتری عالی است.',
+                'conditions' => ['min_amount'],
+                'extra' => ['invoice_number', 'hotel_name'],
+                'category' => 'فاکتور',
+            ],
         ];
     }
 
@@ -411,6 +418,7 @@ class AutomationController
             '{deal_title}', '{amount}',
             '{payment_link}', '{payment_short_link}', '{payment_amount}',
             '{stage_name}', '{pipeline_name}',
+            '{invoice_number}', '{hotel_name}',
         ];
         $replace = [
             $extra['contact_name'] ?? $extra['contact_phone'] ?? '',
@@ -423,6 +431,8 @@ class AutomationController
             !empty($extra['payment_amount']) ? number_format((float)$extra['payment_amount']) . ' تومان' : '',
             $extra['stage_name'] ?? '',
             $extra['pipeline_name'] ?? '',
+            $extra['invoice_number'] ?? '',
+            $extra['hotel_name'] ?? '',
         ];
         return str_replace($search, $replace, $template);
     }
