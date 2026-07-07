@@ -421,7 +421,7 @@ function onTriggerChange() {
 
     // Show/hide conditions
     var needsStage = val === 'stage_change';
-    var needsAmount = val === 'payment_created' || val === 'payment_verified' || val === 'deal_created';
+    var needsAmount = val === 'payment_created' || val === 'payment_verified' || val === 'deal_created' || val === 'invoice_created' || val === 'invoice_paid';
     
     var stageEl = document.getElementById('stageConditions');
     var amountEl = document.getElementById('amountCondition');
@@ -434,6 +434,32 @@ function onTriggerChange() {
     updatePlaceholderHelp();
 }
 
+function getPlaceholderVars(triggerType) {
+    var vars = {
+        '{contact_name}': 'نام مخاطب',
+        '{contact_phone}': 'تلفن مخاطب',
+        '{deal_title}': 'عنوان معامله',
+        '{amount}': 'مبلغ معامله (تومان)',
+        '{stage_name}': 'نام مرحله فعلی',
+        '{pipeline_name}': 'نام پایپ‌لاین',
+    };
+    if (triggerType === 'payment_created' || triggerType === 'payment_verified' || triggerType === 'invoice_created') {
+        vars['{payment_link}'] = '🔗 لینک کوتاه پرداخت';
+        vars['{payment_short_link}'] = '🔗 لینک کوتاه پرداخت';
+        vars['{payment_amount}'] = '<i class="bi bi-cash me-1"></i> مبلغ پرداخت (تومان)';
+    }
+    if (triggerType === 'invoice_created' || triggerType === 'invoice_paid') {
+        vars['{invoice_number}'] = '🧾 شماره فاکتور';
+        vars['{hotel_name}'] = '🏨 نام هتل';
+        vars['{invoice_link}'] = '🔗 لینک فاکتور';
+        vars['{invoice_short_link}'] = '🔗 لینک کوتاه فاکتور';
+    }
+    if (triggerType === 'new_contact') {
+        vars['{contact_email}'] = '📧 ایمیل مخاطب';
+    }
+    return vars;
+}
+
 function updateTriggerVarHelp(triggerType) {
     var helpDiv = document.getElementById('triggerVarHelp');
     var listDiv = document.getElementById('triggerVarList');
@@ -444,20 +470,7 @@ function updateTriggerVarHelp(triggerType) {
     }
     
     helpDiv.classList.remove('d-none');
-    var vars = {
-        '{contact_name}': 'نام مخاطب',
-        '{contact_phone}': 'تلفن مخاطب',
-        '{deal_title}': 'عنوان معامله',
-        '{amount}': 'مبلغ معامله (تومان)',
-        '{stage_name}': 'نام مرحله فعلی',
-        '{pipeline_name}': 'نام پایپ‌لاین',
-    };
-    
-    if (triggerType === 'payment_created' || triggerType === 'payment_verified') {
-        vars['{payment_link}'] = '🔗 لینک کوتاه پرداخت';
-        vars['{payment_short_link}'] = '🔗 لینک کوتاه پرداخت (یکسان)';
-        vars['{payment_amount}'] = '<i class="bi bi-cash me-1"></i> مبلغ پرداخت (تومان)';
-    }
+    var vars = getPlaceholderVars(triggerType);
     
     var html = '';
     for (var key in vars) {
@@ -500,20 +513,7 @@ function updatePlaceholderHelp() {
     
     if (!listEl) return;
     
-    var placeholders = {
-        '{contact_name}': 'نام مخاطب',
-        '{contact_phone}': 'تلفن مخاطب',
-        '{deal_title}': 'عنوان معامله',
-        '{amount}': 'مبلغ معامله (تومان)',
-        '{stage_name}': 'نام مرحله',
-        '{pipeline_name}': 'نام پایپ‌لاین',
-    };
-    
-    if (triggerType === 'payment_created' || triggerType === 'payment_verified') {
-        placeholders['{payment_link}'] = '🔗 لینک کوتاه پرداخت';
-        placeholders['{payment_short_link}'] = '🔗 لینک کوتاه پرداخت';
-        placeholders['{payment_amount}'] = '<i class="bi bi-cash me-1"></i> مبلغ پرداخت (تومان)';
-    }
+    var placeholders = getPlaceholderVars(triggerType);
     
     var html = '';
     for (var key in placeholders) {
