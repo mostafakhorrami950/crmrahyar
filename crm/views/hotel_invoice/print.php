@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <?php
     $invSet = $invoiceSettings ?? [];
-    $pc = $invSet['invoice_primary_color'] ?? '#1a1a2e';
-    $sc = $invSet['invoice_success_color'] ?? '#16213e';
+    $pc = $invSet['invoice_primary_color'] ?? '#1e3a5f';
+    $sc = $invSet['invoice_success_color'] ?? '#166534';
     $company = $invSet['invoice_company_name'] ?? 'علاءالدین سفیر اسمان';
     $sub = $invSet['invoice_subtitle'] ?? 'آژانس مسافرتی';
     $logo = $invSet['invoice_logo_url'] ?? '';
@@ -16,7 +16,7 @@
     $terms = $invoice->payment_terms ?? $invSet['invoice_terms'] ?? '';
 
     $stL = ['pending'=>'مانده دارد','settled'=>'تسویه شده','prepaid'=>'پیش فاکتور','paid'=>'پرداخت شده'];
-    $stC = ['pending'=>'#d97706','settled'=>'#059669','prepaid'=>'#2563eb','paid'=>'#059669'];
+    $stC = ['pending'=>'#b45309','settled'=>'#15803d','prepaid'=>'#1d4ed8','paid'=>'#15803d'];
     $st = $invoice->invoice_status;
 
     $itemsDiscount = 0;
@@ -40,148 +40,168 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
             .no-print { display: none !important; }
-            .page { box-shadow: none !important; margin: 0 !important; padding: 12px !important; max-width: 100% !important; border-radius: 0 !important; }
-            @page { margin: 4mm; size: A5 portrait; }
+            .page { box-shadow: none !important; margin: 0 !important; padding: 8mm !important; max-width: 100% !important; border-radius: 0 !important; border: none !important; }
+            @page { margin: 5mm; size: A5 portrait; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: Vazirmatn, Tahoma, sans-serif;
-            background: #f1f5f9;
-            color: #1e293b;
+            background: #e5e7eb;
+            color: #1f2937;
             font-size: 7pt;
-            line-height: 1.3;
+            line-height: 1.4;
             min-height: 100vh;
-            padding: 10px;
+            padding: 12px;
         }
         .page {
-            max-width: 720px;
+            max-width: 700px;
             margin: 0 auto;
             background: #fff;
-            border-radius: 4px;
-            padding: 14px 18px;
+            border-radius: 2px;
+            padding: 10mm 12mm;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            border: 1px solid #d1d5db;
         }
         .page::after {
             content: '<?php echo $wmText; ?>';
             position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%,-50%) rotate(-35deg);
-            font-size: 44px; font-weight: 900;
-            color: rgba(0,0,0,0.04);
+            transform: translate(-50%,-50%) rotate(-30deg);
+            font-size: 42px; font-weight: 900;
+            color: rgba(0,0,0,0.03);
             white-space: nowrap; pointer-events: none; z-index: 10;
-            letter-spacing: 6px;
-            border: 6px solid rgba(0,0,0,0.03);
-            padding: 8px 36px;
+            letter-spacing: 4px;
         }
 
         /* Action Bar */
         .action-bar {
-            background: #1e293b;
+            background: #1f2937;
             padding: 8px 16px;
             display: flex; justify-content: center; gap: 12px;
-            margin-bottom: 10px; border-radius: 4px;
+            margin-bottom: 12px; border-radius: 2px;
         }
         .action-bar button {
-            padding: 6px 28px; border: 1.5px solid rgba(255,255,255,0.15);
-            border-radius: 4px; font-family: inherit; font-weight: 700;
+            padding: 6px 28px; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 2px; font-family: inherit; font-weight: 700;
             font-size: 11px; cursor: pointer; transition: all 0.2s;
         }
-        .btn-print { background: #fff; color: #1e293b; }
+        .btn-print { background: #fff; color: #1f2937; }
         .btn-close { background: transparent; color: #fff; }
 
-        /* Top Line */
-        .top-line { height: 3px; background: #1e293b; margin-bottom: 10px; }
+        /* Top border accent */
+        .top-accent { height: 4px; background: <?php echo $pc; ?>; margin-bottom: 8px; }
 
         /* Header */
-        .hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .hdr-right .logo { max-height: 22px; margin-bottom: 2px; }
-        .hdr-right .title { font-size: 9pt; font-weight: 900; color: #1e293b; margin: 0; }
-        .hdr-right .meta { font-size: 6.5pt; color: #64748b; margin-top: 2px; }
-        .hdr-right .meta strong { color: #1e293b; font-weight: 800; }
+        .hdr {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 6px; padding-bottom: 6px;
+            border-bottom: 2px solid <?php echo $pc; ?>;
+        }
+        .hdr-right .logo { max-height: 24px; margin-bottom: 3px; }
+        .hdr-right .title {
+            font-size: 11pt; font-weight: 900; color: <?php echo $pc; ?>;
+            margin: 0; letter-spacing: -0.3px;
+        }
+        .hdr-right .meta { font-size: 7pt; color: #6b7280; margin-top: 2px; }
+        .hdr-right .meta strong { color: #1f2937; font-weight: 800; }
         .hdr-left { text-align: left; }
-        .hdr-left .co { font-size: 9pt; font-weight: 900; color: #1e293b; }
-        .hdr-left .sub { font-size: 6pt; color: #64748b; margin-top: 1px; }
+        .hdr-left .co { font-size: 10pt; font-weight: 900; color: <?php echo $pc; ?>; }
+        .hdr-left .sub { font-size: 7pt; color: #6b7280; margin-top: 1px; }
 
-        /* Info Bar */
-        .info-bar {
-            display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
-            margin-bottom: 8px; padding: 4px 0;
-            border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+        /* Status + Meta bar */
+        .meta-bar {
+            display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+            padding: 4px 0; margin-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
         }
         .chip {
-            display: inline-flex; align-items: center; gap: 3px;
-            padding: 2px 7px; border-radius: 3px;
-            font-size: 6pt; font-weight: 600;
-            background: #f8fafc; color: #475569; border: 1px solid #e2e8f0;
+            display: inline-flex; align-items: center; gap: 2px;
+            padding: 2px 6px; border-radius: 2px;
+            font-size: 6.5pt; font-weight: 600;
+            background: #f9fafb; color: #374151; border: 1px solid #e5e7eb;
         }
-        .chip b { color: #1e293b; font-weight: 800; }
-        .chip.status { background: <?php echo $stC[$st] ?? '#64748b'; ?>; color: #fff; border: none; font-weight: 800; }
-        .chip.type { background: #fff; border: 1.5px solid #1e293b; color: #1e293b; }
-        .chip.nights { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; font-weight: 800; }
-        .creator-chip { margin-right: auto; font-size: 6pt; color: #94a3b8; }
+        .chip b { color: #111827; font-weight: 800; }
+        .chip.st-chip {
+            background: <?php echo $stC[$st] ?? '#6b7280'; ?>;
+            color: #fff; border: none; font-weight: 800;
+            padding: 2px 8px;
+        }
+        .chip.type-chip {
+            background: #fff; border: 1.5px solid <?php echo $pc; ?>;
+            color: <?php echo $pc; ?>; font-weight: 700;
+        }
+        .chip.nights-chip {
+            background: <?php echo $pc; ?>10; color: <?php echo $pc; ?>;
+            border-color: <?php echo $pc; ?>30; font-weight: 800;
+        }
 
         /* Table */
         .tbl {
-            width: 100%; border-collapse: collapse; font-size: 6.5pt;
-            margin-bottom: 6px; border: 1px solid #e2e8f0;
+            width: 100%; border-collapse: collapse; font-size: 7pt;
+            margin-bottom: 6px;
         }
         .tbl th {
-            background: #1e293b; color: #fff;
-            padding: 4px 5px; font-weight: 700; font-size: 6pt; text-align: right;
+            background: <?php echo $pc; ?>; color: #fff;
+            padding: 4px 5px; font-weight: 700; font-size: 6.5pt;
+            text-align: center; border: 1px solid <?php echo $pc; ?>;
         }
-        .tbl td { padding: 3px 5px; border-bottom: 1px solid #f1f5f9; }
-        .tbl .c { text-align: center; }
-        .tbl .r { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 6.5pt; }
-        .tbl .total { font-weight: 900; color: #1e293b; }
-        .tbl tbody tr:nth-child(even) { background: #f8fafc; }
-        .tbl tbody tr:last-child td { border-bottom: 2px solid #1e293b; }
+        .tbl th:first-child { text-align: right; width: 28px; }
+        .tbl td {
+            padding: 3px 5px; border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .tbl td:first-child { text-align: right; color: #9ca3a8; font-weight: 700; font-size: 6.5pt; }
+        .tbl .r { text-align: left; direction: ltr; font-family: 'Courier New', monospace; font-size: 7pt; }
+        .tbl .total-cell { font-weight: 900; color: <?php echo $pc; ?>; }
+        .tbl tbody tr:nth-child(even) { background: #f9fafb; }
+        .tbl tbody tr:last-child td { border-bottom: 2px solid <?php echo $pc; ?>; }
         .half-badge {
-            display: inline-flex; align-items: center; gap: 2px;
-            background: #1e293b; color: #fff;
-            font-size: 5.5pt; padding: 1px 5px; border-radius: 3px; font-weight: 800;
+            display: inline-flex; align-items: center; gap: 1px;
+            background: <?php echo $pc; ?>; color: #fff;
+            font-size: 5.5pt; padding: 1px 4px; border-radius: 2px; font-weight: 800;
         }
 
-        /* Summary + Notes */
-        .bottom-section { display: flex; gap: 10px; align-items: flex-start; margin-top: 2px; }
+        /* Summary */
+        .bottom { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; }
         .sum-box {
-            min-width: 190px; margin-right: auto;
-            background: #f8fafc; border-radius: 4px; padding: 6px 10px;
-            border: 1px solid #e2e8f0; position: relative;
+            min-width: 180px; margin-right: auto;
+            background: #f9fafb; border-radius: 2px; padding: 5px 8px;
+            border: 1px solid #e5e7eb;
+            border-right: 3px solid <?php echo $pc; ?>;
         }
-        .sum-box::before {
-            content: ''; position: absolute; top: 0; right: 0;
-            width: 3px; height: 100%; background: #1e293b;
-            border-radius: 0 4px 4px 0;
+        .sum-row {
+            display: flex; justify-content: space-between;
+            padding: 1.5px 0; font-size: 7pt;
         }
-        .sum-row { display: flex; justify-content: space-between; padding: 1.5px 0; font-size: 6.5pt; }
-        .sum-row .l { color: #64748b; }
+        .sum-row .l { color: #6b7280; }
         .sum-row .v { font-weight: 700; font-family: 'Courier New', monospace; direction: ltr; }
         .sum-row .v.red { color: #dc2626; font-weight: 800; }
-        .sum-hr { border: none; border-top: 1px dashed #cbd5e1; margin: 3px 0; }
-        .sum-final { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 0; font-size: 7.5pt; font-weight: 900; }
+        .sum-hr { border: none; border-top: 1px dashed #d1d5db; margin: 2px 0; }
+        .sum-final {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 3px 0 0; font-size: 8pt; font-weight: 900;
+        }
         .sum-final .badge-final {
-            color: #fff; font-size: 6.5pt; padding: 3px 10px;
-            border-radius: 3px; font-weight: 900;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #fff; font-size: 7pt; padding: 3px 10px;
+            border-radius: 2px; font-weight: 900;
         }
 
         /* Notes */
-        .notes-area { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .notes-area { flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .note-card {
-            background: #fff; border-radius: 3px; padding: 4px 7px;
-            border: 1px solid #e2e8f0; border-right: 3px solid #1e293b;
-            font-size: 6pt; color: #475569; line-height: 1.5;
+            background: #fff; border-radius: 2px; padding: 3px 6px;
+            border: 1px solid #e5e7eb; border-right: 3px solid <?php echo $pc; ?>;
+            font-size: 6.5pt; color: #4b5563; line-height: 1.5;
         }
-        .note-card .nt { font-weight: 800; color: #1e293b; font-size: 6pt; margin-bottom: 1px; }
-        .note-card.dark { border-right-color: #64748b; }
-        .note-card.dark .nt { color: #64748b; }
+        .note-card .nt { font-weight: 800; color: <?php echo $pc; ?>; font-size: 6.5pt; margin-bottom: 1px; }
+        .note-card.dark { border-right-color: #9ca3af; }
+        .note-card.dark .nt { color: #6b7280; }
 
         /* Footer */
         .ftr {
-            text-align: center; font-size: 5.5pt; color: #94a3b8;
-            padding-top: 5px; border-top: 1px solid #e2e8f0; margin-top: 6px;
+            text-align: center; font-size: 6pt; color: #9ca3af;
+            padding-top: 4px; border-top: 1px solid #e5e7eb; margin-top: 6px;
         }
     </style>
 </head>
@@ -192,15 +212,15 @@
     </div>
 
     <div class="page">
-        <!-- Top Line -->
-        <div class="top-line"></div>
+        <!-- Top Accent -->
+        <div class="top-accent"></div>
 
         <!-- Header -->
         <div class="hdr">
             <div class="hdr-right">
                 <?php if ($logo): ?><img src="<?php echo htmlspecialchars($logo); ?>" class="logo" alt="لوگو"><?php endif; ?>
                 <div class="title"><?php echo htmlspecialchars($invSet['invoice_title'] ?? 'فاکتور رزرو هتل'); ?></div>
-                <div class="meta">شماره: <strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong> &bull; تاریخ: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></div>
+                <div class="meta">شماره: <strong><?php echo $invoice->invoice_number ?? '#' . $invoice->id; ?></strong> | تاریخ: <strong><?php echo \Core\JDate::displayDateTime($invoice->created_at); ?></strong></div>
             </div>
             <div class="hdr-left">
                 <div class="co"><?php echo htmlspecialchars($company); ?></div>
@@ -208,53 +228,52 @@
             </div>
         </div>
 
-        <!-- Info Bar -->
-        <div class="info-bar">
-            <span class="chip status"><i class="bi bi-circle-fill" style="font-size:4px;"></i> <?php echo $stL[$st] ?? $st; ?></span>
-            <?php if ($invoice->invoice_type): ?><span class="chip type"><?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span><?php endif; ?>
-            <span class="chip"><i class="bi bi-building"></i> هتل : <b><?php echo htmlspecialchars($invoice->hotel_name); ?></b></span>
-            <span class="chip"><i class="bi bi-briefcase"></i> آژانس محترم : <?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></span>
-            <span class="chip"><i class="bi bi-person"></i> نام میهمان : <?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></span>
-            <span class="chip"><i class="bi bi-telephone"></i> <b dir="ltr">شماره تماس میهمان : <?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></b></span>
-            <span class="chip nights"><i class="bi bi-moon-stars"></i> تعداد شب اقامت :<?php echo $invoice->nights; ?> شب</span>
+        <!-- Meta Bar -->
+        <div class="meta-bar">
+            <span class="chip st-chip"><i class="bi bi-circle-fill" style="font-size:3px;"></i> <?php echo $stL[$st] ?? $st; ?></span>
+            <?php if ($invoice->invoice_type): ?><span class="chip type-chip"><?php echo $invoice->invoice_type == 'confirmed' ? 'فاکتور تایید شده' : 'پیش فاکتور'; ?></span><?php endif; ?>
+            <span class="chip"><i class="bi bi-building"></i> هتل: <b><?php echo htmlspecialchars($invoice->hotel_name); ?></b></span>
+            <span class="chip"><i class="bi bi-briefcase"></i> آژانس: <?php echo htmlspecialchars($invoice->agency_name ?? '-'); ?></span>
+            <span class="chip"><i class="bi bi-person"></i> میهمان: <?php echo htmlspecialchars($invoice->guest_name ?? '-'); ?></span>
+            <span class="chip"><i class="bi bi-telephone"></i> <b dir="ltr"><?php echo htmlspecialchars($invoice->guest_phone ?? $invoice->contact_phone ?? '-'); ?></b></span>
+            <span class="chip nights-chip"><i class="bi bi-moon-stars"></i> <?php echo $invoice->nights; ?> شب</span>
             <span class="chip"><i class="bi bi-calendar-check"></i> ورود: <b><?php echo \Core\JDate::displayDate($invoice->check_in_date); ?></b></span>
             <span class="chip"><i class="bi bi-calendar-x"></i> خروج: <b><?php echo \Core\JDate::displayDate($invoice->check_out_date); ?></b></span>
             <?php if ($invoice->valid_until): ?><span class="chip"><i class="bi bi-clock-history"></i> اعتبار: <b><?php echo \Core\JDate::displayDate($invoice->valid_until); ?></b></span><?php endif; ?>
-            <span class="creator-chip"><i class="bi bi-person-badge"></i> <?php echo htmlspecialchars($invoice->creator_name ?? '-'); ?></span>
         </div>
 
         <!-- Items Table -->
         <table class="tbl">
             <thead>
                 <tr>
-                    <th style="width:4%" class="c">ردیف</th>
-                    <th style="width:26%">شرح</th>
-                    <th style="width:10%" class="c">نوع اتاق</th>
-                    <th style="width:7%" class="c">تعداد</th>
-                    <th style="width:9%" class="c">نیم بها</th>
-                    <th style="width:13%" class="c">قیمت واحد</th>
-                    <th style="width:6%" class="c">شب</th>
-                    <th style="width:15%" class="c">مبلغ کل</th>
+                    <th>#</th>
+                    <th style="width:24%">شرح</th>
+                    <th style="width:10%">نوع اتاق</th>
+                    <th style="width:7%">تعداد</th>
+                    <th style="width:8%">نیم بها</th>
+                    <th style="width:12%">قیمت واحد</th>
+                    <th style="width:6%">شب</th>
+                    <th style="width:14%">مبلغ کل</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($items as $i => $item): ?>
                 <tr>
-                    <td class="c" style="color:#94a3b8;font-weight:700;"><?php echo $i + 1; ?></td>
-                    <td style="font-weight:700;"><?php echo htmlspecialchars($item->description); ?></td>
-                    <td class="c"><?php echo !empty($item->room_type) ? htmlspecialchars($item->room_type) : '-'; ?></td>
-                    <td class="c" style="font-weight:700;"><?php echo number_format((int)$item->quantity); ?></td>
-                    <td class="c"><?php echo !empty($item->half_price_qty) && $item->half_price_qty > 0 ? '<span class="half-badge">' . $item->half_price_qty . '</span>' : '-'; ?></td>
+                    <td><?php echo $i + 1; ?></td>
+                    <td style="text-align:right;font-weight:700;"><?php echo htmlspecialchars($item->description); ?></td>
+                    <td><?php echo !empty($item->room_type) ? htmlspecialchars($item->room_type) : '-'; ?></td>
+                    <td style="font-weight:700;"><?php echo number_format((int)$item->quantity); ?></td>
+                    <td><?php echo !empty($item->half_price_qty) && $item->half_price_qty > 0 ? '<span class="half-badge">' . $item->half_price_qty . '</span>' : '-'; ?></td>
                     <td class="r"><?php echo number_format($item->unit_price); ?></td>
-                    <td class="c"><?php echo $invoice->nights; ?></td>
-                    <td class="r total"><?php echo number_format($item->total_price); ?></td>
+                    <td><?php echo $invoice->nights; ?></td>
+                    <td class="r total-cell"><?php echo number_format($item->total_price); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
         <!-- Bottom Section -->
-        <div class="bottom-section">
+        <div class="bottom">
             <!-- Summary -->
             <div class="sum-box">
                 <?php if ($itemsDiscount > 0): ?>
@@ -267,10 +286,10 @@
                 <?php if ($isPending): ?>
                 <hr class="sum-hr">
                 <div class="sum-row"><span class="l"><i class="bi bi-wallet2"></i> بیعانه</span><span class="v red">- <?php echo number_format($invoice->deposit_amount); ?></span></div>
-                <div class="sum-final"><span>باقیمانده:</span><span class="badge-final" style="background:<?php echo $stC[$st] ?? '#d97706'; ?>;"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</span></div>
+                <div class="sum-final"><span>باقیمانده:</span><span class="badge-final" style="background:<?php echo $stC[$st] ?? '#b45309'; ?>;"><?php echo number_format($invoice->final_amount - $invoice->deposit_amount); ?> تومان</span></div>
                 <?php else: ?>
                 <hr class="sum-hr">
-                <div class="sum-final"><span>مبلغ نهایی:</span><span class="badge-final" style="background:#1e293b;"><?php echo number_format($invoice->final_amount); ?> تومان</span></div>
+                <div class="sum-final"><span>مبلغ نهایی:</span><span class="badge-final" style="background:<?php echo $pc; ?>;"><?php echo number_format($invoice->final_amount); ?> تومان</span></div>
                 <?php endif; ?>
             </div>
 
@@ -292,8 +311,8 @@
 
         <!-- Footer -->
         <div class="ftr">
-            <?php if ($footer): ?><?php echo htmlspecialchars($footer); ?> &bull; <?php endif; ?>
-            <?php echo htmlspecialchars($company); ?> &bull; <?php echo htmlspecialchars($sub); ?>
+            <?php if ($footer): ?><?php echo htmlspecialchars($footer); ?> | <?php endif; ?>
+            <?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?>
         </div>
     </div>
 </body>

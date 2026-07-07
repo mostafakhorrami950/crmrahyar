@@ -69,6 +69,13 @@ class AutomationController
                 'label' => '🧾 صدور فاکتور هتل',
                 'description' => 'وقتی یک فاکتور هتل جدید برای معامله صادر می‌شود. برای ارسال خودکار لینک پرداخت فاکتور به مشتری عالی است.',
                 'conditions' => ['min_amount'],
+                'extra' => ['invoice_number', 'hotel_name', 'invoice_link', 'invoice_short_link'],
+                'category' => 'فاکتور',
+            ],
+            'invoice_paid' => [
+                'label' => '💰 پرداخت فاکتور هتل',
+                'description' => 'وقتی فاکتور هتل با موفقیت پرداخت می‌شود (کامل یا بیعانه). برای ارسال خودکار تشکر یا اطلاع‌رسانی به مدیر عالی است.',
+                'conditions' => ['min_amount'],
                 'extra' => ['invoice_number', 'hotel_name'],
                 'category' => 'فاکتور',
             ],
@@ -134,6 +141,13 @@ class AutomationController
             '{payment_amount}' => 'مبلغ پرداخت (تومان)',
         ];
 
+        $invoice = [
+            '{invoice_number}' => 'شماره فاکتور',
+            '{hotel_name}' => 'نام هتل',
+            '{invoice_link}' => 'لینک فاکتور',
+            '{invoice_short_link}' => 'لینک کوتاه فاکتور',
+        ];
+
         $triggerMap = [
             'payment_created' => array_merge($common, $payment),
             'payment_verified' => array_merge($common, $payment),
@@ -143,6 +157,8 @@ class AutomationController
             'deal_lost' => $common,
             'new_contact' => ['{contact_name}' => 'نام مخاطب', '{contact_phone}' => 'تلفن مخاطب', '{contact_email}' => 'ایمیل مخاطب'],
             'activity_reminder' => $common,
+            'invoice_created' => array_merge($common, $invoice, $payment),
+            'invoice_paid' => array_merge($common, $invoice),
         ];
 
         return $triggerMap[$triggerType] ?? $common;
@@ -419,6 +435,7 @@ class AutomationController
             '{payment_link}', '{payment_short_link}', '{payment_amount}',
             '{stage_name}', '{pipeline_name}',
             '{invoice_number}', '{hotel_name}',
+            '{invoice_link}', '{invoice_short_link}',
         ];
         $replace = [
             $extra['contact_name'] ?? $extra['contact_phone'] ?? '',
@@ -433,6 +450,8 @@ class AutomationController
             $extra['pipeline_name'] ?? '',
             $extra['invoice_number'] ?? '',
             $extra['hotel_name'] ?? '',
+            $extra['invoice_link'] ?? '',
+            $extra['invoice_short_link'] ?? '',
         ];
         return str_replace($search, $replace, $template);
     }

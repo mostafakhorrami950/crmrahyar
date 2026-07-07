@@ -383,6 +383,13 @@ class HotelInvoiceController
             // Fire automation trigger
             try {
                 $deal = $db->fetch("SELECT d.*, c.full_name as contact_name, c.phone as contact_phone FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id WHERE d.id = :id", [':id' => $dealId]);
+                $config = $GLOBALS['app_config'];
+                $baseUrl = $config['url'] ?? '';
+                // Get the invoice short code for link
+                $invRow = $db->fetch("SELECT short_code FROM hotel_invoices WHERE id = :id", [':id' => $invoiceId]);
+                $invoiceShortLink = ($invRow && !empty($invRow->short_code)) ? $baseUrl . '/hi/' . $invRow->short_code : '';
+                $invoiceFullLink = $baseUrl . '/hotel-invoice/view/' . $invoiceId;
+
                 \Controllers\AutomationController::execute('invoice_created', 'hotel_invoice', $invoiceId, [
                     'deal_id' => $dealId,
                     'contact_name' => $deal->contact_name ?? '',
@@ -391,6 +398,8 @@ class HotelInvoiceController
                     'amount' => $finalAmount,
                     'invoice_number' => $invoiceNumber,
                     'hotel_name' => $hotelName,
+                    'invoice_link' => $invoiceFullLink,
+                    'invoice_short_link' => $invoiceShortLink,
                 ]);
             } catch (\Exception $e) {
                 error_log('Invoice automation failed: ' . $e->getMessage());
@@ -1186,6 +1195,22 @@ class HotelInvoiceController
                             }
 
                             $this->updateInvoiceStatus($invoiceId, $newStatus);
+
+                            // Fire invoice_paid automation
+                            try {
+                                $dealInfo = $db->fetch("SELECT c.full_name as contact_name, c.phone as contact_phone FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id WHERE d.id = :id", [':id' => $payment->deal_id]);
+                                \Controllers\AutomationController::execute('invoice_paid', 'hotel_invoice', $invoiceId, [
+                                    'deal_id' => (int)$payment->deal_id,
+                                    'contact_name' => $dealInfo->contact_name ?? '',
+                                    'contact_phone' => $dealInfo->contact_phone ?? '',
+                                    'title' => $invoice->hotel_name ?? '',
+                                    'amount' => $payment->amount,
+                                    'invoice_number' => $invoice->invoice_number ?? '',
+                                    'hotel_name' => $invoice->hotel_name ?? '',
+                                ]);
+                            } catch (\Exception $e) {
+                                error_log('Invoice paid automation failed: ' . $e->getMessage());
+                            }
 
                             // Update deal as won only for full payment
                             if ($newStatus === 'paid' && $payment->deal_id) {
