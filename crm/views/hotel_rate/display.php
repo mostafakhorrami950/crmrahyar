@@ -162,21 +162,39 @@
     <div class="bg-mesh"></div>
     <div class="bg-grid"></div>
 
-    <!-- ===== PRINT VERSION ===== -->
+    <!-- ===== PRINT VERSION - Professional Office Style ===== -->
     <div class="print-only">
         <div class="print-wrap">
+            <div class="print-accent"></div>
             <div class="print-header">
-                <h1>نرخنامه هتل‌ها</h1>
-                <p><?php echo htmlspecialchars($company); ?> — <?php echo htmlspecialchars($sub); ?></p>
+                <div class="ph-right">
+                    <h1>📋 نرخنامه هتل‌ها</h1>
+                    <p><?php echo \Core\JDate::displayDate(date('Y-m-d')); ?></p>
+                </div>
+                <div class="ph-left">
+                    <div class="co"><?php echo htmlspecialchars($company); ?></div>
+                    <div class="sub"><?php echo htmlspecialchars($sub); ?></div>
+                </div>
             </div>
+
             <?php if (!empty($hotels)): ?>
             <?php foreach ($hotels as $hotel): ?>
             <div class="print-hotel">
                 <div class="print-hotel-name">
                     <?php echo htmlspecialchars($hotel->hotel_name); ?>
-                    <?php if ($hotel->star_rating): ?> (<?php echo str_repeat('★', $hotel->star_rating); ?>)<?php endif; ?>
-                    <?php if ($hotel->city): ?> — <small><?php echo htmlspecialchars($hotel->city); ?></small><?php endif; ?>
+                    <?php if ($hotel->star_rating): ?> <small>(<?php echo str_repeat('★', $hotel->star_rating); ?>)</small><?php endif; ?>
+                    <?php if ($hotel->city): ?> — <small>📍 <?php echo htmlspecialchars($hotel->city); ?></small><?php endif; ?>
                 </div>
+                <?php
+                $descTags = !empty($hotel->description) ? array_filter(array_map('trim', explode(',', $hotel->description))) : [];
+                $facTags = !empty($hotel->facilities) ? array_filter(array_map('trim', explode(',', $hotel->facilities))) : [];
+                if ($descTags || $facTags):
+                ?>
+                <div class="print-tags">
+                    <?php foreach ($descTags as $t): ?><span class="print-tag"><?php echo htmlspecialchars($t); ?></span><?php endforeach; ?>
+                    <?php foreach ($facTags as $t): ?><span class="print-tag" style="background:#eff6ff;border-color:#93c5fd;color:#1e40af;"><?php echo htmlspecialchars($t); ?></span><?php endforeach; ?>
+                </div>
+                <?php endif; ?>
                 <?php if (!empty($ratesByHotel[$hotel->id])): ?>
                 <table class="print-tbl">
                     <thead>
@@ -208,10 +226,13 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php else: ?>
+                <div style="text-align:center;padding:4mm;color:#9ca3af;font-size:8pt;">نرخی ثبت نشده</div>
                 <?php endif; ?>
             </div>
             <?php endforeach; ?>
             <?php endif; ?>
+
             <div class="print-footer">
                 <?php echo htmlspecialchars($company); ?> | <?php echo htmlspecialchars($sub); ?> — قیمت‌ها به تومان و ممکن است بدون اطلاع قبلی تغییر کند.
             </div>
