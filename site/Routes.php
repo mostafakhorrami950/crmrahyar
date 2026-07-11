@@ -89,6 +89,7 @@ $router->post('/admin/blog/create', [\Site\Controllers\AdminContentController::c
 $router->get('/admin/blog/{id}/edit', [\Site\Controllers\AdminContentController::class, 'blogEdit']);
 $router->post('/admin/blog/{id}/edit', [\Site\Controllers\AdminContentController::class, 'blogEdit']);
 $router->get('/admin/blog/{id}/delete', [\Site\Controllers\AdminContentController::class, 'blogDelete']);
+$router->post('/admin/blog/image-upload', [\Site\Controllers\AdminContentController::class, 'blogImageUpload']);
 
 // Admin Pages
 $router->get('/admin/pages', [\Site\Controllers\AdminContentController::class, 'pagesIndex']);

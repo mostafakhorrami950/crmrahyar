@@ -7,9 +7,11 @@
         <div class="card" style="margin-bottom: 16px;">
             <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">📝 محتوای مقاله</h3>
             <div class="form-group"><label>عنوان مقاله *</label><input type="text" name="title" id="postTitle" value="<?php echo htmlspecialchars($post->title ?? ''); ?>" required oninput="autoSlug(this.value)"></div>
-            <?php if ($post): ?>
-            <div class="form-group"><label>slug (آدرس URL)</label><input type="text" name="slug" value="<?php echo htmlspecialchars($post->slug ?? ''); ?>" dir="ltr" style="text-align: left;"></div>
-            <?php endif; ?>
+            <div class="form-group">
+                <label>آدرس URL (slug) - فقط انگلیسی و خط تیره</label>
+                <input type="text" name="slug" id="postSlug" value="<?php echo htmlspecialchars($post->slug ?? ''); ?>" dir="ltr" style="text-align: left; font-family: monospace;" placeholder="my-article-title">
+                <small style="color: #94a3b8; font-size: 11px;">پیش‌نمایش: <span id="slugPreview">https://crm.mobixai.ir/blog/...</span></small>
+            </div>
             <div class="form-group"><label>خلاصه (_excerpt) - برای نمایش در لیست و شبکه‌های اجتماعی</label><textarea name="excerpt" rows="3" style="max-width: 100%;"><?php echo htmlspecialchars($post->excerpt ?? ''); ?></textarea></div>
             <div class="form-group">
                 <label>محتوای اصلی مقاله *</label>
@@ -17,9 +19,29 @@
             </div>
         </div>
 
+        <!-- Image Upload -->
+        <div class="card" style="margin-bottom: 16px;">
+            <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">🖼️ تصویر شاخص</h3>
+            <div id="dropZone" style="border: 2px dashed #c7d2fe; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; background: #f8fafc; transition: 0.2s;" onclick="document.getElementById('imageInput').click()">
+                <div style="font-size: 32px; margin-bottom: 8px;">📤</div>
+                <div style="font-weight: 700; color: #4f46e5;">تصویر را اینجا بکشید یا کلیک کنید</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">JPG, PNG, WebP - حداکثر 5MB</div>
+            </div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="uploadImage(this)">
+            <div id="imagePreview" style="margin-top: 12px; display: none;">
+                <img id="previewImg" src="" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="margin-top: 6px;"><button type="button" class="btn btn-sm btn-danger" onclick="removeImage()">حذف تصویر</button></div>
+            </div>
+            <input type="hidden" name="featured_image" id="featuredImage" value="<?php echo htmlspecialchars($post->featured_image ?? ''); ?>">
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Alt Text تصویر (سئو)</label>
+                <input type="text" name="image_alt" id="imageAlt" value="<?php echo htmlspecialchars($post->image_alt ?? ''); ?>" placeholder="توضیح تصویر برای موتورهای جستجو">
+            </div>
+        </div>
+
         <!-- SEO Settings -->
         <div class="card" style="margin-bottom: 16px;">
-            <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">🔍 تنظیمات سئو (SEO)</h3>
+            <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">🔍 تنظیمات سئو (SEO 2026)</h3>
             <div class="form-group">
                 <label>عنوان SEO (Meta Title) - حداکثر ۶۰ کاراکتر</label>
                 <input type="text" name="meta_title" id="metaTitle" value="<?php echo htmlspecialchars($post->meta_title ?? ''); ?>" maxlength="60" oninput="updateSeoPreview()">
@@ -39,23 +61,9 @@
                 <div id="seoPreviewDesc" style="color: #545454; font-size: 13px; direction: ltr; text-align: left;">توضیحات مقاله...</div>
             </div>
 
-            <!-- Focus Keyword -->
             <div class="form-group" style="margin-top: 12px;">
                 <label>کلمه کلیدی اصلی (Focus Keyword)</label>
-                <input type="text" name="focus_keyword" value="<?php echo htmlspecialchars($post->focus_keyword ?? ''); ?>" placeholder="مثال: هتل مشهد">
-            </div>
-        </div>
-
-        <!-- Social Media -->
-        <div class="card" style="margin-bottom: 16px;">
-            <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">📱 شبکه‌های اجتماعی</h3>
-            <div class="form-group">
-                <label>تصویر شاخص (URL)</label>
-                <input type="text" name="featured_image" value="<?php echo htmlspecialchars($post->featured_image ?? ''); ?>" dir="ltr" placeholder="/uploads/blog/image.jpg">
-            </div>
-            <div class="form-group">
-                <label>Alt Text تصویر</label>
-                <input type="text" name="image_alt" value="<?php echo htmlspecialchars($post->image_alt ?? ''); ?>" placeholder="توضیح تصویر برای سئو">
+                <input type="text" name="focus_keyword" value="<?php echo htmlspecialchars($post->focus_keyword ?? ''); ?>" placeholder="مثال: هتل مشهد، رزرو هتل">
             </div>
         </div>
 
@@ -72,29 +80,66 @@
 <!-- TinyMCE CDN -->
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-// Fallback: if TinyMCE fails to load, use plain textarea
+// Image upload
+var dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); this.style.borderColor = '#4f46e5'; this.style.background = '#eef2ff'; });
+dropZone.addEventListener('dragleave', function(e) { this.style.borderColor = '#c7d2fe'; this.style.background = '#f8fafc'; });
+dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#c7d2fe'; this.style.background = '#f8fafc';
+    if (e.dataTransfer.files.length) { document.getElementById('imageInput').files = e.dataTransfer.files; uploadImage(document.getElementById('imageInput')); }
+});
+
+function uploadImage(input) {
+    if (!input.files || !input.files[0]) return;
+    var formData = new FormData();
+    formData.append('image', input.files[0]);
+    fetch('/admin/blog/image-upload', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('featuredImage').value = data.path;
+                document.getElementById('previewImg').src = data.path;
+                document.getElementById('imagePreview').style.display = 'block';
+                document.getElementById('dropZone').style.display = 'none';
+            } else { alert(data.message || 'خطا در آپلود'); }
+        })
+        .catch(() => alert('خطا در آپلود'));
+}
+
+function removeImage() {
+    document.getElementById('featuredImage').value = '';
+    document.getElementById('previewImg').src = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('dropZone').style.display = 'block';
+}
+
+// Show existing image
+if (document.getElementById('featuredImage').value) {
+    document.getElementById('previewImg').src = document.getElementById('featuredImage').value;
+    document.getElementById('imagePreview').style.display = 'block';
+    document.getElementById('dropZone').style.display = 'none';
+}
+
+// TinyMCE
 if (typeof tinymce !== 'undefined') {
     tinymce.init({
-        selector: '#editor',
-        directionality: 'rtl',
-        language: 'fa',
-        height: 400,
+        selector: '#editor', directionality: 'rtl', language: 'fa', height: 400,
         plugins: 'lists link image table code fullscreen preview searchreplace wordcount',
         toolbar: 'undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist | link image table | code preview fullscreen',
-        menubar: false,
-        branding: false,
+        menubar: false, branding: false,
         content_style: 'body { font-family: Vazirmatn, sans-serif; font-size: 14px; line-height: 1.8; direction: rtl; }',
-        setup: function(editor) {
-            editor.on('change', function() { editor.save(); });
-        }
+        setup: function(editor) { editor.on('change', function() { editor.save(); }); }
     });
 }
 
 function autoSlug(val) {
-    // Auto-generate SEO title from main title
-    var metaTitle = document.getElementById('metaTitle');
-    if (!metaTitle.value) {
-        metaTitle.value = val;
+    if (!document.getElementById('postSlug').value) {
+        // Auto-generate slug from title
+        fetch('/admin/blog/create').catch(() => {});
+    }
+    if (!document.getElementById('metaTitle').value) {
+        document.getElementById('metaTitle').value = val;
         updateSeoPreview();
     }
 }
@@ -102,8 +147,11 @@ function autoSlug(val) {
 function updateSeoPreview() {
     var title = document.getElementById('metaTitle').value || document.getElementById('postTitle').value || 'عنوان مقاله';
     var desc = document.getElementById('metaDesc').value || 'توضیحات مقاله...';
+    var slug = document.getElementById('postSlug').value || 'slug';
     document.getElementById('seoPreviewTitle').textContent = title.substring(0, 60);
     document.getElementById('seoPreviewDesc').textContent = desc.substring(0, 160);
+    document.getElementById('seoPreviewUrl').textContent = 'https://crm.mobixai.ir/blog/' + slug;
+    document.getElementById('slugPreview').textContent = 'https://crm.mobixai.ir/blog/' + slug;
     document.getElementById('metaTitleCount').textContent = (document.getElementById('metaTitle').value || '').length;
     document.getElementById('metaDescCount').textContent = (document.getElementById('metaDesc').value || '').length;
 }

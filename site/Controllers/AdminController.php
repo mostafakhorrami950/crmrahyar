@@ -86,37 +86,9 @@ class AdminController
 
     public function database(array $params = []): void
     {
-        $this->requireAdmin();
-
-        $action = $_GET['action'] ?? '';
-        $results = [];
-        $message = '';
-
-        if ($action === 'migrate') {
-            $runner = new MigrationRunner($this->db);
-            $results = $runner->run();
-            $message = 'مایگریشن اجرا شد.';
-        } elseif ($action === 'rollback') {
-            $runner = new MigrationRunner($this->db);
-            $results = $runner->rollback();
-            $message = 'بازگشت مایگریشن انجام شد.';
-        } elseif ($action === 'repair') {
-            $results = $this->repairTables();
-            $message = 'تعمیر دیتابیس انجام شد.';
-        }
-
-        // Get migration status
-        $applied = [];
-        try {
-            $applied = $this->db->fetchAll("SELECT migration, batch, applied_at FROM site_migrations ORDER BY id DESC");
-        } catch (\Exception $e) {}
-
-        $this->render('admin/database', [
-            'applied' => $applied,
-            'results' => $results,
-            'message' => $message,
-            'meta' => ['title' => 'تعمیرات دیتابیس'],
-        ]);
+        // Redirect to unified CRM system repair page
+        header('Location: /crm/system/repair');
+        exit;
     }
 
     private function repairTables(): array

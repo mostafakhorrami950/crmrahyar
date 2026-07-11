@@ -41,7 +41,6 @@ class AdminHotelController
                    hp.distance_to_haram_km, hp.latitude, hp.longitude
             FROM hotel_rate_hotels h
             LEFT JOIN site_hotel_profiles hp ON hp.crm_hotel_id = h.id
-            WHERE h.deleted_at IS NULL
             ORDER BY hp.featured DESC, h.hotel_name ASC
         ");
         $this->render('admin/hotels/index', ['hotels' => $hotels, 'meta' => ['title' => 'مدیریت هتل‌ها']]);
@@ -55,7 +54,7 @@ class AdminHotelController
         $hotel = $this->db->fetch("SELECT * FROM site_hotel_profiles WHERE crm_hotel_id = :id", [':id' => $id]);
         if (!$hotel) {
             // Auto-create profile from CRM hotel
-            $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id AND deleted_at IS NULL", [':id' => $id]);
+            $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id", [':id' => $id]);
             if (!$crmHotel) { echo 'هتل یافت نشد'; exit; }
             $slug = $this->slugify($crmHotel->hotel_name ?? 'hotel-' . $id);
             $this->db->insert('site_hotel_profiles', [

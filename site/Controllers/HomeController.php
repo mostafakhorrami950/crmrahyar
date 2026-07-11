@@ -59,7 +59,22 @@ class HomeController
         $slug = $params['slug'] ?? '';
         $post = $this->db->fetch("SELECT * FROM site_blog_posts WHERE slug = :s AND is_published = 1 AND deleted_at IS NULL", [':s' => $slug]);
         if (!$post) { $this->notFound(); return; }
-        $this->render('blog/show', ['post' => $post, 'meta' => $this->seo->generateMeta('blog_post', $post->id)]);
+        $baseUrl = $this->config->url();
+        $meta = [
+            'title' => !empty($post->meta_title) ? $post->meta_title : ($post->title . ' | رزرو هتل مشهد'),
+            'description' => !empty($post->meta_description) ? $post->meta_description : ($post->excerpt ?? ''),
+            'canonical' => $baseUrl . '/blog/' . $post->slug,
+            'og_title' => !empty($post->meta_title) ? $post->meta_title : $post->title,
+            'og_description' => !empty($post->meta_description) ? $post->meta_description : ($post->excerpt ?? ''),
+            'og_image' => !empty($post->featured_image) ? $baseUrl . $post->featured_image : '',
+            'og_type' => 'article',
+        ];
+        $company = 'آژانس مسافرتی رهیار';
+        try {
+            $row = $this->db->fetch("SELECT `value` FROM site_settings WHERE `key` = 'company_name'");
+            if ($row) $company = $row->value;
+        } catch (\Exception $e) {}
+        $this->render('blog/show', ['post' => $post, 'meta' => $meta, 'company' => $company]);
     }
 
     public function page(array $params = []): void

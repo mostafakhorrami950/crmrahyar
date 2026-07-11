@@ -117,7 +117,7 @@
             <a href="/admin/settings" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/settings') === 0) ? 'active' : ''; ?>">
                 <span class="icon">⚙️</span> تنظیمات سایت
             </a>
-            <a href="/admin/database" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/admin/database') === 0) ? 'active' : ''; ?>">
+            <a href="/crm/system/repair" class="<?php echo (strpos($_SERVER['REQUEST_URI'], '/crm/system') === 0) ? 'active' : ''; ?>">
                 <span class="icon">🗄️</span> تعمیرات دیتابیس
             </a>
         </nav>

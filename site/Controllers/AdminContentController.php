@@ -31,7 +31,7 @@ class AdminContentController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
                 'title' => trim($_POST['title'] ?? ''),
-                'slug' => $this->slugify($_POST['title'] ?? ''),
+                'slug' => !empty(trim($_POST['slug'] ?? '')) ? trim($_POST['slug']) : $this->slugify($_POST['title'] ?? ''),
                 'excerpt' => trim($_POST['excerpt'] ?? ''),
                 'content' => $_POST['content'] ?? '',
                 'meta_title' => trim($_POST['meta_title'] ?? ''),
@@ -82,6 +82,32 @@ class AdminContentController extends AdminController
             exit;
         }
         $this->renderAdmin('admin/blog/form', ['post' => $post, 'meta' => ['title' => 'ویرایش مقاله']]);
+    }
+
+    public function blogImageUpload(array $params = []): void
+    {
+        $this->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['image'])) {
+            echo json_encode(['success' => false, 'message' => 'فایل ارسال نشد']);
+            exit;
+        }
+        $file = $_FILES['image'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        if (!in_array($ext, $allowed)) {
+            echo json_encode(['success' => false, 'message' => 'فرمت مجاز نیست']);
+            exit;
+        }
+        $dir = __DIR__ . '/../../uploads/blog/';
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        $filename = 'blog_' . time() . '_' . rand(100, 999) . '.' . $ext;
+        $path = 'uploads/blog/' . $filename;
+        if (move_uploaded_file($file['tmp_name'], $dir . $filename)) {
+            echo json_encode(['success' => true, 'path' => '/' . $path]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'خطا در آپلود']);
+        }
+        exit;
     }
 
     public function blogDelete(array $params = []): void
@@ -336,9 +362,31 @@ class AdminContentController extends AdminController
     private function slugify(string $text): string
     {
         $text = trim($text);
-        $text = str_replace([' ', '‌', '،', '؟', '!', '؟'], '-', $text);
-        $text = preg_replace('/[^a-zA-Z0-9\x{0600}-\x{06FF}\-]/u', '', $text);
-        $text = preg_replace('/\-+/', '-', $text);
-        return rtrim($text, '-') ?: 'page-' . time();
+        // Persian to English transliteration map
+        $persianMap = [
+            'آ' => 'a', 'ا' => 'a', 'ب' => 'b', 'پ' => 'p', 'ت' => 't', 'ث' => 's',
+            'ج' => 'j', 'چ' => 'ch', 'ح' => 'h', 'خ' => 'kh', 'د' => 'd', 'ذ' => 'z',
+            'ر' => 'r', 'ز' => 'z', 'ژ' => 'zh', 'س' => 's', 'ش' => 'sh', 'ص' => 's',
+            'ض' => 'z', 'ط' => 't', 'ظ' => 'z', 'ع' => 'a', 'غ' => 'gh', 'ف' => 'f',
+            'ق' => 'gh', 'ک' => 'k', 'گ' => 'g', 'ل' => 'l', 'م' => 'm', 'ن' => 'n',
+            'و' => 'v', 'ه' => 'h', 'ی' => 'y', 'ة' => 'h', 'ئ' => 'y', 'ؤ' => 'v',
+            '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4',
+            '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9',
+        ];
+        $result = '';
+        $len = mb_strlen($text);
+        for ($i = 0; $i < $len; $i++) {
+            $char = mb_substr($text, $i, 1);
+            if (isset($persianMap[$char])) {
+                $result .= $persianMap[$char];
+            } elseif (preg_match('/[a-zA-Z0-9]/', $char)) {
+                $result .= $char;
+            } elseif (in_array($char, [' ', '-', '_', '‌'])) {
+                $result .= '-';
+            }
+        }
+        $result = preg_replace('/\-+/', '-', $result);
+        $result = trim($result, '-');
+        return $result ?: 'post-' . time();
     }
 }
