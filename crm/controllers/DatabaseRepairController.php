@@ -295,6 +295,15 @@ class DatabaseRepairController
             // Run site migrations (PHP-based)
             $siteResults = [];
             try {
+                // Register autoloader for Shared namespace (CRM doesn't know about it)
+                $sharedDir = dirname(__DIR__, 2) . '/shared/';
+                spl_autoload_register(function ($class) use ($sharedDir) {
+                    if (strpos($class, 'Shared\\') === 0) {
+                        $relative = str_replace('\\', '/', substr($class, 7));
+                        $file = $sharedDir . $relative . '.php';
+                        if (file_exists($file)) { require_once $file; return; }
+                    }
+                });
                 $runner = new \Shared\Core\MigrationRunner($db);
                 $siteResults = $runner->run();
             } catch (\Exception $e) {
