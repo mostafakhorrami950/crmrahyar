@@ -65,5 +65,9 @@ $router->get('/faq', [HomeController::class, 'page']);
 // Cities
 $router->get('/city/{slug}', [HotelController::class, 'city']);
 
+// Admin routes (separate from CRM)
+$router->get('/admin', [\Site\Controllers\AdminController::class, 'index']);
+$router->get('/admin/database', [\Site\Controllers\AdminController::class, 'database']);
+
 // 404
 $router->set404([HomeController::class, 'notFound']);
