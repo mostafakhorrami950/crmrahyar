@@ -69,5 +69,14 @@ $router->get('/city/{slug}', [HotelController::class, 'city']);
 $router->get('/admin', [\Site\Controllers\AdminController::class, 'index']);
 $router->get('/admin/database', [\Site\Controllers\AdminController::class, 'database']);
 
+// Admin Hotel Management
+$router->get('/admin/hotels', [\Site\Controllers\AdminHotelController::class, 'index']);
+$router->get('/admin/hotels/{id}/edit', [\Site\Controllers\AdminHotelController::class, 'edit']);
+$router->post('/admin/hotels/{id}/update', [\Site\Controllers\AdminHotelController::class, 'update']);
+$router->get('/admin/hotels/{id}/rooms', [\Site\Controllers\AdminHotelController::class, 'rooms']);
+$router->post('/admin/hotels/{id}/rooms/add', [\Site\Controllers\AdminHotelController::class, 'addRoom']);
+$router->get('/admin/rooms/{id}/edit', [\Site\Controllers\AdminHotelController::class, 'roomEdit']);
+$router->post('/admin/rooms/{id}/update', [\Site\Controllers\AdminHotelController::class, 'roomUpdate']);
+
 // 404
 $router->set404([HomeController::class, 'notFound']);

@@ -30,6 +30,11 @@ ob_start();
     <!-- Quick Links -->
     <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 16px;">دسترسی سریع</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+        <a href="/admin/hotels" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='#e2e8f0'">
+            <div style="font-size: 24px; margin-bottom: 6px;">🏨</div>
+            <div style="font-weight: 700; font-size: 13px;">مدیریت هتل‌ها</div>
+            <div style="font-size: 11px; color: #64748b;">پروفایل، عکس و توضیحات</div>
+        </a>
         <a href="/admin/database" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='#e2e8f0'">
             <div style="font-size: 24px; margin-bottom: 6px;">🗄️</div>
             <div style="font-weight: 700; font-size: 13px;">تعمیرات دیتابیس</div>

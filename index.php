@@ -75,6 +75,20 @@ try {
         return Config::getInstance();
     });
 
+    // Bind interfaces to implementations
+    $container->bind(\Shared\Interfaces\SearchIndexInterface::class, function($c) {
+        return new \Shared\Repositories\MysqlSearchIndex($c->make(Database::class));
+    });
+    $container->bind(\Shared\Interfaces\PricingInterface::class, function($c) {
+        return new \Shared\Services\PricingService($c->make(Database::class), $c->make(Config::class));
+    });
+    $container->bind(\Shared\Interfaces\AvailabilityInterface::class, function($c) {
+        return new \Shared\Services\AvailabilityService($c->make(Database::class), $c->make(Config::class));
+    });
+    $container->bind(\Shared\Interfaces\CacheInterface::class, function($c) {
+        return new \Shared\Services\CacheService();
+    });
+
     // Set DB on config
     $config = $container->make(Config::class);
     $config->setDatabase($container->make(Database::class));

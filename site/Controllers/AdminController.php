@@ -27,15 +27,26 @@ class AdminController
             header('Location: /crm/login');
             exit;
         }
-        // Check if user is admin
+        // Check if user has site access permission
         $user = $this->db->fetch(
             "SELECT u.*, r.slug as role_slug FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = :id",
             [':id' => $_SESSION['user_id']]
         );
-        if (!$user || ($user->role_slug !== 'super_admin' && $user->role_slug !== 'admin')) {
-            header('Content-Type: text/html; charset=utf-8');
-            echo '<div style="text-align:center;padding:60px;font-family:Vazirmatn,sans-serif;"><h2>⛔ دسترسی محدود</h2><p>فقط مدیر اصلی به این بخش دسترسی دارد.</p><a href="/crm">بازگشت به CRM</a></div>';
+        if (!$user) {
+            header('Location: /crm/login');
             exit;
+        }
+        // Check permission: super_admin always has access, others need site.access
+        if ($user->role_slug !== 'super_admin') {
+            $hasPerm = $this->db->fetch(
+                "SELECT p.id FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = :rid AND p.slug = 'site.access'",
+                [':rid' => $user->role_id]
+            );
+            if (!$hasPerm) {
+                header('Content-Type: text/html; charset=utf-8');
+                echo '<div style="text-align:center;padding:60px;font-family:Vazirmatn,sans-serif;"><h2>⛔ دسترسی محدود</h2><p>شما به پنل مدیریت سایت دسترسی ندارید.</p><a href="/crm">بازگشت به CRM</a></div>';
+                exit;
+            }
         }
     }
 
