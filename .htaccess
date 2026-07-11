@@ -22,6 +22,10 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
+# IMPORTANT: Let CRM handle its own routes
+RewriteCond %{REQUEST_URI} ^/crm(/.*)?$ [NC]
+RewriteRule ^ - [L]
+
 # Allow static files
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

@@ -94,7 +94,13 @@ try {
     $router->dispatch($path, $_SERVER['REQUEST_METHOD']);
 
 } catch (\Throwable $e) {
-    Logger::logException($e, 'Application Error');
+    // Log error
+    error_log('[Site Error] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    
     http_response_code(500);
-    echo '<h1>خطای سرور</h1><p>لطفاً بعداً تلاش کنید.</p>';
+    echo '<div style="direction:rtl;font-family:Tahoma,sans-serif;padding:40px;max-width:800px;margin:0 auto;">';
+    echo '<h1 style="color:#dc2626;">خطای سرور</h1>';
+    echo '<p style="color:#475569;">' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p style="color:#94a3b8;font-size:12px;">' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+    echo '</div>';
 }
