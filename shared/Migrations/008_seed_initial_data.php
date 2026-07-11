@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration008
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Seed cities
         $existing = $db->fetch("SELECT COUNT(*) as cnt FROM site_cities");
@@ -100,7 +98,7 @@ class Migration008
         }
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DELETE FROM site_workflow_transitions");
         $db->query("DELETE FROM site_workflows");

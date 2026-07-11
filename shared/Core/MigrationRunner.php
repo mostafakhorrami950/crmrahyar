@@ -3,10 +3,10 @@ namespace Shared\Core;
 
 class MigrationRunner
 {
-    private Database $db;
+    private $db;
     private string $migrationsDir;
 
-    public function __construct(Database $db)
+    public function __construct($db)
     {
         $this->db = $db;
         $this->migrationsDir = __DIR__ . '/../Migrations/';
@@ -37,9 +37,9 @@ class MigrationRunner
             }
 
             try {
-                $className = 'Shared\\Migrations\\' . str_replace('_', '', ucwords(str_replace(['001_','002_','003_','004_','005_','006_','007_','008_','009_','010_'], ['001_','002_','003_','004_','005_','006_','007_','008_','009_','010_'], $name), '_'));
-                // Simple class name from file
-                $className = 'Shared\\Migrations\\' . preg_replace_callback('/_(\w)/', function($m) { return strtoupper($m[1]); }, ucfirst($name));
+                // Extract number from filename: 001_create_site_cities → Migration001
+                $num = preg_replace('/^(\d+)_.*/', 'Migration$1', $name);
+                $className = 'Shared\\Migrations\\' . $num;
 
                 if (!class_exists($className)) {
                     // Try loading the file
@@ -85,7 +85,8 @@ class MigrationRunner
 
             try {
                 require_once $file;
-                $className = 'Shared\\Migrations\\' . preg_replace_callback('/_(\w)/', function($m) { return strtoupper($m[1]); }, ucfirst($m->migration));
+                $num = preg_replace('/^(\d+)_.*/', 'Migration$1', $m->migration);
+                $className = 'Shared\\Migrations\\' . $num;
                 if (class_exists($className)) {
                     $className::down($this->db);
                 }

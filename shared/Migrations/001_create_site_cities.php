@@ -1,12 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-use Shared\Core\Logger;
-
 class Migration001
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         $db->query("
             CREATE TABLE IF NOT EXISTS `site_cities` (
@@ -50,7 +47,7 @@ class Migration001
         ");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DROP TABLE IF EXISTS `site_neighborhoods`");
         $db->query("DROP TABLE IF EXISTS `site_cities`");

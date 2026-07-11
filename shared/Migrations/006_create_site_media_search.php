@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration006
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Media Library
         $db->query("
@@ -67,7 +65,7 @@ class Migration006
         ");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DROP TABLE IF EXISTS `site_search_index`");
         $db->query("DROP TABLE IF EXISTS `site_media`");

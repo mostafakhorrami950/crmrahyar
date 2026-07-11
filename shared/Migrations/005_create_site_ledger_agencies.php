@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration005
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Agencies (FK to CRM users)
         $db->query("
@@ -69,7 +67,7 @@ class Migration005
         ");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DROP TABLE IF EXISTS `site_agency_transactions`");
         $db->query("DROP TABLE IF EXISTS `site_ledger`");

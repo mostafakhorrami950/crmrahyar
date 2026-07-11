@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration002
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Hotel profiles (FK to CRM hotel_rate_hotels)
         $db->query("
@@ -73,7 +71,7 @@ class Migration002
         ");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DROP TABLE IF EXISTS `site_rooms`");
         $db->query("DROP TABLE IF EXISTS `site_hotel_profiles`");

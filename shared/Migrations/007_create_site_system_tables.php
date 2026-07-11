@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration007
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Workflows
         $db->query("CREATE TABLE IF NOT EXISTS `site_workflows` (
@@ -184,7 +182,7 @@ class Migration007
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $tables = [
             'site_audit_logs', 'site_idempotency_keys', 'site_outbox',

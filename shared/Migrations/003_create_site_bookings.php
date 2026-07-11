@@ -1,11 +1,9 @@
 <?php
 namespace Shared\Migrations;
 
-use Shared\Core\Database;
-
 class Migration003
 {
-    public static function up(Database $db): void
+    public static function up($db): void
     {
         // Reservations (Hold)
         $db->query("
@@ -154,7 +152,7 @@ class Migration003
         ");
     }
 
-    public static function down(Database $db): void
+    public static function down($db): void
     {
         $db->query("DROP TABLE IF EXISTS `site_booking_snapshots`");
         $db->query("DROP TABLE IF EXISTS `site_booking_status_log`");
