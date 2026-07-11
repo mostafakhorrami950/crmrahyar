@@ -35,7 +35,11 @@
         <div class="card" style="margin-bottom: 16px;">
             <h3 style="margin-bottom: 12px; font-weight: 700; font-size: 14px;">📝 توضیحات هتل</h3>
             <div class="form-group"><label>توضیح کوتاه (برای لیست و SEO)</label><textarea name="description_short" rows="3" style="max-width: 100%;"><?php echo htmlspecialchars($hotel->description_short ?? ''); ?></textarea></div>
-            <div class="form-group"><label>توضیحات کامل (با ویرایشگر حرفه‌ای)</label><textarea name="description_long" id="editor" rows="12" style="width: 100%; direction: rtl;"><?php echo htmlspecialchars($hotel->description_long ?? ''); ?></textarea></div>
+            <div class="form-group">
+                <label>توضیحات کامل (با ویرایشگر حرفه‌ای)</label>
+                <div id="quillEditor" style="height: 300px; direction: rtl;"></div>
+                <textarea name="description_long" id="editor" style="display: none;"><?php echo htmlspecialchars($hotel->description_long ?? ''); ?></textarea>
+            </div>
         </div>
 
         <!-- SEO -->
@@ -86,19 +90,20 @@
     </form>
 </div>
 
-<!-- TinyMCE -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Quill Editor (Free) -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-if (typeof tinymce !== 'undefined') {
-    tinymce.init({
-        selector: '#editor', directionality: 'rtl', language: 'fa', height: 350,
-        plugins: 'lists link image table code fullscreen preview searchreplace wordcount',
-        toolbar: 'undo redo | blocks | bold italic underline | alignright aligncenter alignleft | bullist numlist | link image table | code preview',
-        menubar: false, branding: false,
-        content_style: 'body { font-family: Vazirmatn, sans-serif; font-size: 14px; line-height: 1.8; direction: rtl; }',
-        setup: function(e) { e.on('change', function() { e.save(); }); }
-    });
-}
+var quill = new Quill('#quillEditor', {
+    theme: 'snow', direction: 'rtl', placeholder: 'توضیحات هتل...',
+    modules: { toolbar: [
+        [{'header':[1,2,3,false]}], ['bold','italic','underline','strike'],
+        [{'align':['right','center','left','justify']}], [{'list':'ordered'},{'list':'bullet'}],
+        ['link','image'], ['blockquote','code-block'], [{'color':[]},{'background':[]}], ['clean']
+    ]}
+});
+quill.on('text-change', function() { document.getElementById('editor').value = quill.root.innerHTML; });
+if (document.getElementById('editor').value) { quill.root.innerHTML = document.getElementById('editor').value; }
 
 // Gallery upload
 var dz = document.getElementById('galleryDropZone');

@@ -77,7 +77,13 @@ class AdminContentController extends AdminController
             ];
             if (!empty($_POST['slug'])) $data['slug'] = trim($_POST['slug']);
             if (isset($_POST['is_published']) && !$post->published_at) $data['published_at'] = date('Y-m-d H:i:s');
-            $this->db->update('site_blog_posts', $data, 'id = :id', [':id' => $id]);
+            try {
+                $this->db->update('site_blog_posts', $data, 'id = :id', [':id' => $id]);
+            } catch (\Exception $e) {
+                // Remove optional columns if they don't exist and retry
+                unset($data['focus_keyword'], $data['featured_image'], $data['image_alt']);
+                $this->db->update('site_blog_posts', $data, 'id = :id', [':id' => $id]);
+            }
             header('Location: /admin/blog?updated=1');
             exit;
         }
@@ -171,7 +177,7 @@ class AdminContentController extends AdminController
             foreach ($rows as $row) $settings[$row->key] = $row->value;
         } catch (\Exception $e) {}
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $fields = ['site_title', 'site_description', 'site_phone', 'site_email', 'site_address', 'site_logo', 'company_name', 'footer_text'];
+            $fields = ['site_title', 'site_description', 'site_phone', 'site_email', 'site_address', 'site_logo', 'company_name', 'footer_text', 'openrouter_api_key', 'openrouter_model'];
             foreach ($fields as $field) {
                 if (isset($_POST[$field])) {
                     $val = trim($_POST[$field]);
@@ -205,6 +211,26 @@ class AdminContentController extends AdminController
             header('Location: /admin/seo?updated=1');
             exit;
         }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_keyword'])) {
+            try {
+                $keyword = trim($_POST['keyword'] ?? '');
+                $kwSlug = trim($_POST['keyword_slug'] ?? '');
+                if (empty($kwSlug) && !empty($keyword)) {
+                    $kwSlug = $this->slugify($keyword);
+                }
+                $this->db->insert('site_seo_keywords', [
+                    'keyword' => $keyword,
+                    'keyword_slug' => $kwSlug,
+                    'target_url' => trim($_POST['target_url'] ?? ''),
+                    'description' => trim($_POST['keyword_description'] ?? ''),
+                    'created_at' => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Exception $e) {
+                // Table may not exist yet
+            }
+            header('Location: /admin/seo?updated=1');
+            exit;
+        }
         $this->renderAdmin('admin/seo/index', ['redirects' => $redirects, 'meta' => ['title' => 'سئو']]);
     }
 
@@ -213,6 +239,33 @@ class AdminContentController extends AdminController
         $this->requireAdmin();
         $id = (int)($params['id'] ?? 0);
         try { $this->db->delete('site_seo_redirects', 'id = :id', [':id' => $id]); } catch (\Exception $e) {}
+        header('Location: /admin/seo?updated=1');
+        exit;
+    }
+
+    public function seoGenerate(array $params = []): void
+    {
+        $this->requireAdmin();
+        header('Content-Type: application/json');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $keyword = trim($input['keyword'] ?? '');
+        $type = trim($input['type'] ?? 'meta');
+        if (empty($keyword)) {
+            echo json_encode(['success' => false, 'message' => 'کلمه کلیدی الزامی است']);
+            exit;
+        }
+        $c = \Shared\Core\Container::getInstance();
+        $ai = new \Shared\Services\OpenRouterService($this->db);
+        $result = $ai->generateSEOContent($keyword, $type);
+        echo json_encode($result);
+        exit;
+    }
+
+    public function seoDeleteKeyword(array $params = []): void
+    {
+        $this->requireAdmin();
+        $id = (int)($params['id'] ?? 0);
+        try { $this->db->delete('site_seo_keywords', 'id = :id', [':id' => $id]); } catch (\Exception $e) {}
         header('Location: /admin/seo?updated=1');
         exit;
     }

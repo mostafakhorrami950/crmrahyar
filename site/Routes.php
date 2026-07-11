@@ -103,7 +103,9 @@ $router->post('/admin/settings', [\Site\Controllers\AdminContentController::clas
 // Admin SEO
 $router->get('/admin/seo', [\Site\Controllers\AdminContentController::class, 'seoIndex']);
 $router->post('/admin/seo', [\Site\Controllers\AdminContentController::class, 'seoIndex']);
+$router->post('/admin/seo/generate', [\Site\Controllers\AdminContentController::class, 'seoGenerate']);
 $router->get('/admin/seo/redirect/{id}/delete', [\Site\Controllers\AdminContentController::class, 'seoDeleteRedirect']);
+$router->get('/admin/seo/keyword/{id}/delete', [\Site\Controllers\AdminContentController::class, 'seoDeleteKeyword']);
 
 // Admin Cities
 $router->get('/admin/cities', [\Site\Controllers\AdminContentController::class, 'citiesIndex']);

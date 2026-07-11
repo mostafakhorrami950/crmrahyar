@@ -15,7 +15,8 @@
             <div class="form-group"><label>خلاصه (_excerpt) - برای نمایش در لیست و شبکه‌های اجتماعی</label><textarea name="excerpt" rows="3" style="max-width: 100%;"><?php echo htmlspecialchars($post->excerpt ?? ''); ?></textarea></div>
             <div class="form-group">
                 <label>محتوای اصلی مقاله *</label>
-                <textarea name="content" id="editor" rows="15" style="width: 100%; direction: rtl;"><?php echo htmlspecialchars($post->content ?? ''); ?></textarea>
+                <div id="quillEditor" style="height: 350px; direction: rtl;"></div>
+                <textarea name="content" id="editor" style="display: none;"><?php echo htmlspecialchars($post->content ?? ''); ?></textarea>
             </div>
         </div>
 
@@ -77,8 +78,9 @@
     </form>
 </div>
 
-<!-- TinyMCE CDN -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Quill Editor (Free, no API key) -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 // Image upload
 var dropZone = document.getElementById('dropZone');
@@ -121,16 +123,32 @@ if (document.getElementById('featuredImage').value) {
     document.getElementById('dropZone').style.display = 'none';
 }
 
-// TinyMCE
-if (typeof tinymce !== 'undefined') {
-    tinymce.init({
-        selector: '#editor', directionality: 'rtl', language: 'fa', height: 400,
-        plugins: 'lists link image table code fullscreen preview searchreplace wordcount',
-        toolbar: 'undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist | link image table | code preview fullscreen',
-        menubar: false, branding: false,
-        content_style: 'body { font-family: Vazirmatn, sans-serif; font-size: 14px; line-height: 1.8; direction: rtl; }',
-        setup: function(editor) { editor.on('change', function() { editor.save(); }); }
-    });
+// Quill Editor
+var quill = new Quill('#quillEditor', {
+    theme: 'snow',
+    direction: 'rtl',
+    placeholder: 'محتوای مقاله را بنویسید...',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'direction': 'rtl' }],
+            [{ 'align': ['right', 'center', 'left', 'justify'] }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link', 'image', 'video'],
+            ['blockquote', 'code-block'],
+            [{ 'color': [] }, { 'background': [] }],
+            ['clean']
+        ]
+    }
+});
+// Sync quill content to textarea
+quill.on('text-change', function() {
+    document.getElementById('editor').value = quill.root.innerHTML;
+});
+// Load existing content
+if (document.getElementById('editor').value) {
+    quill.root.innerHTML = document.getElementById('editor').value;
 }
 
 function autoSlug(val) {
