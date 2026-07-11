@@ -204,7 +204,8 @@ $actionTypesJson = json_encode($actionTypes);
                             <p class="small mb-0">
                                 <i class="bi bi-lightbulb me-1"></i> <strong>نحوه کار:</strong> این اقدام آخرین لینک کوتاه پرداخت معامله را پیدا کرده و همراه متن پیامک به مشتری ارسال می‌کند. 
                                 اگر متن پیامک را خالی بگذارید، متن پیش‌فرض ارسال می‌شود (شامل نام مخاطب، مبلغ و لینک کوتاه پرداخت).
-                                <br>⚠️ <strong>نکته:</strong> حتماً این اقدام را با ماشه «<strong>ایجاد لینک پرداخت</strong>» یا «<strong>تایید پرداخت</strong>» استفاده کنید.
+                                <br>⚠️ <strong>نکته:</strong> حتماً این اقدام را با ماشه «<strong>ایجاد لینک پرداخت</strong>» یا «<strong>تایید پرداخت</strong>» یا «<strong>صدور فاکتور هتل</strong>» استفاده کنید.
+                                <br>💡 <strong>لینک فاکتور:</strong> با ماشه «صدور فاکتور» می‌توانید از <code>{invoice_short_link}</code> برای ارسال لینک فاکتور استفاده کنید.
                             </p>
                         </div>
                         <div class="mb-3">

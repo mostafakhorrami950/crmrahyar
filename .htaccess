@@ -1,11 +1,14 @@
 RewriteEngine On
 
-# ========== NOINDEX - Prevent Search Engine Indexing ==========
+# Security headers
 <IfModule mod_headers.c>
-    Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# ========== SECURITY ==========
+# Security
 Options -Indexes
 
 # Block access to sensitive files
@@ -19,7 +22,10 @@ Options -Indexes
     Deny from all
 </FilesMatch>
 
-# Route root to landing page
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^$ index.html [L]
+# Allow static files
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route everything else to index.php
+RewriteRule ^ index.php [L,QSA]
