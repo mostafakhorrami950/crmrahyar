@@ -133,9 +133,14 @@ try {
     error_log('[Site Error] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     
     http_response_code(500);
-    echo '<div style="direction:rtl;font-family:Tahoma,sans-serif;padding:40px;max-width:800px;margin:0 auto;">';
-    echo '<h1 style="color:#dc2626;">خطای سرور</h1>';
-    echo '<p style="color:#475569;">' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p style="color:#94a3b8;font-size:12px;">' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
-    echo '</div>';
+    if (isset($_ENV['APP_DEBUG']) && $_ENV['APP_DEBUG']) {
+        echo '<div style="direction:rtl;font-family:Tahoma,sans-serif;padding:40px;max-width:800px;margin:0 auto;">';
+        echo '<h1 style="color:#dc2626;">خطای سرور</h1>';
+        echo '<p style="color:#475569;">' . htmlspecialchars($e->getMessage()) . '</p>';
+        echo '<p style="color:#94a3b8;font-size:12px;">' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+        echo '<pre style="font-size:11px;color:#64748b;background:#f1f5f9;padding:12px;border-radius:6px;overflow-x:auto;">' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+        echo '</div>';
+    } else {
+        require __DIR__ . '/site/Views/errors/404.php';
+    }
 }

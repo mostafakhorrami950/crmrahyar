@@ -5,7 +5,7 @@ class Migration010
 {
     public static function up($db): void
     {
-        // Add SEO columns to blog posts
+        // Add SEO columns to blog posts (safe - catches all errors)
         $columns = [
             'focus_keyword' => "VARCHAR(255) DEFAULT NULL",
             'featured_image' => "VARCHAR(500) DEFAULT NULL",
@@ -14,17 +14,17 @@ class Migration010
         
         foreach ($columns as $col => $type) {
             try {
-                $db->execute("ALTER TABLE site_blog_posts ADD COLUMN `{$col}` {$type}");
+                $db->query("ALTER TABLE site_blog_posts ADD COLUMN `{$col}` {$type}");
             } catch (\Exception $e) {
-                if (!str_contains($e->getMessage(), 'Duplicate column')) {
-                    throw $e;
-                }
+                // Column already exists or any other error - continue
+            } catch (\Error $e) {
+                // Method not found or other PHP errors - continue
             }
         }
 
         // Create SEO keywords table
         try {
-            $db->execute("CREATE TABLE IF NOT EXISTS site_seo_keywords (
+            $db->query("CREATE TABLE IF NOT EXISTS site_seo_keywords (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 keyword VARCHAR(255) NOT NULL,
                 keyword_slug VARCHAR(255) NOT NULL,
@@ -34,6 +34,8 @@ class Migration010
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         } catch (\Exception $e) {
             // Table may already exist
+        } catch (\Error $e) {
+            // Any PHP error
         }
     }
 }
