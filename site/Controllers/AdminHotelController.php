@@ -33,16 +33,16 @@ class AdminHotelController
     public function index(array $params = []): void
     {
         $this->requireAuth();
+        // Show hotels from both CRM (hotel_rate_hotels) and site profiles
         $hotels = $this->db->fetchAll("
-            SELECT hp.*, 
-                   COALESCE(h.hotel_name, hp.slug) as hotel_name,
-                   COALESCE(h.star_rating, 0) as star_rating,
-                   c.name as city_name
-            FROM site_hotel_profiles hp
-            LEFT JOIN hotel_rate_hotels h ON hp.crm_hotel_id = h.id
-            LEFT JOIN site_cities c ON hp.city_id = c.id
-            WHERE hp.deleted_at IS NULL
-            ORDER BY hp.featured DESC, hp.sort_order
+            SELECT h.id as crm_hotel_id, h.hotel_name, h.star_rating, h.city,
+                   hp.id as profile_id, hp.slug, hp.is_active, hp.featured,
+                   hp.meta_title, hp.meta_description, hp.description_short,
+                   hp.distance_to_haram_km, hp.latitude, hp.longitude
+            FROM hotel_rate_hotels h
+            LEFT JOIN site_hotel_profiles hp ON hp.crm_hotel_id = h.id
+            WHERE h.deleted_at IS NULL
+            ORDER BY hp.featured DESC, h.hotel_name ASC
         ");
         $this->render('admin/hotels/index', ['hotels' => $hotels, 'meta' => ['title' => 'مدیریت هتل‌ها']]);
     }
@@ -51,8 +51,21 @@ class AdminHotelController
     {
         $this->requireAuth();
         $id = (int)($params['id'] ?? 0);
-        $hotel = $this->db->fetch("SELECT * FROM site_hotel_profiles WHERE id = :id", [':id' => $id]);
-        if (!$hotel) { echo 'هتل یافت نشد'; exit; }
+        // Try to find profile, or create one from CRM hotel
+        $hotel = $this->db->fetch("SELECT * FROM site_hotel_profiles WHERE crm_hotel_id = :id", [':id' => $id]);
+        if (!$hotel) {
+            // Auto-create profile from CRM hotel
+            $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id AND deleted_at IS NULL", [':id' => $id]);
+            if (!$crmHotel) { echo 'هتل یافت نشد'; exit; }
+            $slug = $this->slugify($crmHotel->hotel_name ?? 'hotel-' . $id);
+            $this->db->insert('site_hotel_profiles', [
+                'crm_hotel_id' => $id,
+                'slug' => $slug,
+                'is_active' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            $hotel = $this->db->fetch("SELECT * FROM site_hotel_profiles WHERE crm_hotel_id = :id", [':id' => $id]);
+        }
 
         $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id", [':id' => $hotel->crm_hotel_id]);
         $cities = $this->db->fetchAll("SELECT * FROM site_cities WHERE is_active = 1 ORDER BY name");
@@ -182,6 +195,15 @@ class AdminHotelController
 
         header('Location: /admin/hotels/' . $hotelId . '/rooms?added=1');
         exit;
+    }
+
+    private function slugify(string $text): string
+    {
+        $text = trim($text);
+        $text = str_replace([' ', '‌', '،', '؟'], '-', $text);
+        $text = preg_replace('/[^a-zA-Z0-9\x{0600}-\x{06FF}\-]/u', '', $text);
+        $text = preg_replace('/\-+/', '-', $text);
+        return rtrim($text, '-') ?: 'hotel-' . time();
     }
 
     private function render(string $view, array $data = []): void

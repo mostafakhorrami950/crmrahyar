@@ -29,7 +29,7 @@ class AdminContentController extends AdminController
     {
         $this->requireAdmin();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->db->insert('site_blog_posts', [
+            $data = [
                 'title' => trim($_POST['title'] ?? ''),
                 'slug' => $this->slugify($_POST['title'] ?? ''),
                 'excerpt' => trim($_POST['excerpt'] ?? ''),
@@ -39,7 +39,18 @@ class AdminContentController extends AdminController
                 'is_published' => isset($_POST['is_published']) ? 1 : 0,
                 'published_at' => isset($_POST['is_published']) ? date('Y-m-d H:i:s') : null,
                 'author_id' => $_SESSION['user_id'] ?? 1,
-            ]);
+            ];
+            // Optional SEO columns (may not exist yet)
+            foreach (['focus_keyword', 'featured_image', 'image_alt'] as $col) {
+                if (isset($_POST[$col])) $data[$col] = trim($_POST[$col]);
+            }
+            try {
+                $this->db->insert('site_blog_posts', $data);
+            } catch (\Exception $e) {
+                // Remove optional columns and retry
+                unset($data['focus_keyword'], $data['featured_image'], $data['image_alt']);
+                $this->db->insert('site_blog_posts', $data);
+            }
             header('Location: /admin/blog?updated=1');
             exit;
         }
@@ -59,6 +70,9 @@ class AdminContentController extends AdminController
                 'content' => $_POST['content'] ?? '',
                 'meta_title' => trim($_POST['meta_title'] ?? ''),
                 'meta_description' => trim($_POST['meta_description'] ?? ''),
+                'focus_keyword' => trim($_POST['focus_keyword'] ?? ''),
+                'featured_image' => trim($_POST['featured_image'] ?? ''),
+                'image_alt' => trim($_POST['image_alt'] ?? ''),
                 'is_published' => isset($_POST['is_published']) ? 1 : 0,
             ];
             if (!empty($_POST['slug'])) $data['slug'] = trim($_POST['slug']);
