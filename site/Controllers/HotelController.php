@@ -102,7 +102,26 @@ class HotelController
         $slug = $params['slug'] ?? '';
         $hotel = $this->hotelRepo->findBySlugWithJoins($slug);
 
+        // Fallback: try to find by CRM hotel name (for hotels without profile)
         if (!$hotel) {
+            $decodedSlug = urldecode($slug);
+            $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE hotel_name = :name", [':name' => $decodedSlug]);
+            if (!$crmHotel) {
+                // Try transliterated match
+                $crmHotel = $this->db->fetch("SELECT * FROM hotel_rate_hotels WHERE id = :id", [':id' => (int)$slug]);
+            }
+            if ($crmHotel) {
+                // Auto-create profile and redirect
+                $newSlug = $this->slugify($crmHotel->hotel_name ?? 'hotel-' . $crmHotel->id);
+                $this->db->insert('site_hotel_profiles', [
+                    'crm_hotel_id' => $crmHotel->id,
+                    'slug' => $newSlug,
+                    'is_active' => 1,
+                    'created_at' => date('Y-m-d H:i:s'),
+                ]);
+                header('Location: /hotel/' . $newSlug);
+                exit;
+            }
             http_response_code(404);
             $this->render('errors/404', ['meta' => ['title' => 'هتل یافت نشد', 'description' => '']]);
             return;
@@ -202,6 +221,29 @@ class HotelController
             'hotels' => $hotels,
             'meta' => $meta,
         ]);
+    }
+
+    private function slugify(string $text): string
+    {
+        $text = trim($text);
+        $persianMap = [
+            'آ' => 'a', 'ا' => 'a', 'ب' => 'b', 'پ' => 'p', 'ت' => 't', 'ث' => 's',
+            'ج' => 'j', 'چ' => 'ch', 'ح' => 'h', 'خ' => 'kh', 'د' => 'd', 'ذ' => 'z',
+            'ر' => 'r', 'ز' => 'z', 'ژ' => 'zh', 'س' => 's', 'ش' => 'sh', 'ص' => 's',
+            'ض' => 'z', 'ط' => 't', 'ظ' => 'z', 'ع' => 'a', 'غ' => 'gh', 'ف' => 'f',
+            'ق' => 'gh', 'ک' => 'k', 'گ' => 'g', 'ل' => 'l', 'م' => 'm', 'ن' => 'n',
+            'و' => 'v', 'ه' => 'h', 'ی' => 'y', 'ة' => 'h', 'ئ' => 'y', 'ؤ' => 'v',
+        ];
+        $result = '';
+        $len = mb_strlen($text);
+        for ($i = 0; $i < $len; $i++) {
+            $char = mb_substr($text, $i, 1);
+            if (isset($persianMap[$char])) $result .= $persianMap[$char];
+            elseif (preg_match('/[a-zA-Z0-9]/', $char)) $result .= $char;
+            elseif (in_array($char, [' ', '-', '_', '‌'])) $result .= '-';
+        }
+        $result = preg_replace('/\-+/', '-', $result);
+        return trim($result, '-') ?: 'hotel-' . time();
     }
 
     private function render(string $view, array $data = []): void

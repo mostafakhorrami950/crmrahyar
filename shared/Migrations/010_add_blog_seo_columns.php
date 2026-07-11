@@ -3,7 +3,7 @@ namespace Shared\Migrations;
 
 class Migration010
 {
-    public static function up(\Shared\Core\Database $db): void
+    public static function up($db): void
     {
         $columns = [
             'focus_keyword' => "VARCHAR(255) DEFAULT NULL",
