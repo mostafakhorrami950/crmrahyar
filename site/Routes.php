@@ -14,6 +14,7 @@ use Site\Controllers\AuthController;
 // Public routes
 $router->get('/', [HomeController::class, 'index']);
 $router->get('/hotels', [HotelController::class, 'index']);
+$router->get('/hotels/{city_slug}', [HotelController::class, 'index']);
 $router->get('/hotel/{slug}', [HotelController::class, 'show']);
 $router->get('/hotel/{slug}/{room}', [HotelController::class, 'room']);
 $router->get('/search', [SearchController::class, 'index']);
@@ -64,6 +65,9 @@ $router->get('/faq', [HomeController::class, 'page']);
 
 // Cities
 $router->get('/city/{slug}', [HotelController::class, 'city']);
+
+// Dashboard (redirect to admin)
+$router->get('/dashboard', [\Site\Controllers\AdminController::class, 'index']);
 
 // Admin routes (separate from CRM)
 $router->get('/admin', [\Site\Controllers\AdminController::class, 'index']);

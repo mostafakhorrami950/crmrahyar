@@ -39,30 +39,61 @@ class HotelController
 
     public function index(array $params = []): void
     {
-        $cityId = $_GET['city_id'] ?? null;
+        $citySlug = $params['city_slug'] ?? $_GET['city'] ?? null;
         $sort = $_GET['sort'] ?? 'featured';
+        $nearHaram = isset($_GET['near_haram']);
 
-        $filters = ['is_active' => 1];
-        if ($cityId) $filters['city_id'] = (int)$cityId;
+        $where = ['hp.is_active = 1', 'hp.deleted_at IS NULL'];
+        $queryParams = [];
 
-        $orderBy = 'featured DESC, sort_order ASC, id DESC';
-        if ($sort === 'name') $orderBy = 'hotel_name ASC';
-        elseif ($sort === 'rating') $orderBy = 'star_rating DESC';
+        $city = null;
+        if ($citySlug) {
+            $city = $this->db->fetch("SELECT * FROM site_cities WHERE slug = :s AND is_active = 1", [':s' => $citySlug]);
+            if ($city) {
+                $where[] = 'hp.city_id = :city_id';
+                $queryParams[':city_id'] = $city->id;
+            }
+        }
 
-        $hotels = $this->hotelRepo->findAll($filters, $orderBy, 50);
+        if ($nearHaram) {
+            $where[] = 'hp.distance_to_haram_km IS NOT NULL';
+        }
+
+        $orderBy = 'hp.featured DESC, hp.sort_order ASC, hp.id DESC';
+        if ($sort === 'name') $orderBy = 'hp.slug ASC';
+        elseif ($sort === 'rating') $orderBy = 'hp.featured DESC';
+        elseif ($sort === 'haram') $orderBy = 'hp.distance_to_haram_km ASC';
+
+        $whereStr = implode(' AND ', $where);
+        $hotels = $this->db->fetchAll("
+            SELECT hp.*, c.name as city_name, c.slug as city_slug,
+                   COALESCE(h.hotel_name, hp.slug) as hotel_name,
+                   COALESCE(h.star_rating, 0) as star_rating
+            FROM site_hotel_profiles hp
+            LEFT JOIN site_cities c ON hp.city_id = c.id
+            LEFT JOIN hotel_rate_hotels h ON hp.crm_hotel_id = h.id
+            WHERE {$whereStr}
+            ORDER BY {$orderBy}
+            LIMIT 50
+        ", $queryParams);
+
         $cities = $this->db->fetchAll("SELECT * FROM site_cities WHERE is_active = 1 ORDER BY name");
 
+        $title = 'لیست هتل‌ها';
+        if ($city) $title = 'هتل‌های ' . $city->name;
+
         $meta = [
-            'title' => 'لیست هتل‌ها',
-            'description' => 'لیست تمام هتل‌ها با قیمت و امکانات',
+            'title' => $title,
+            'description' => 'لیست هتل‌ها با قیمت و امکانات',
             'canonical' => $this->config->url() . '/hotels',
         ];
 
         $this->render('hotels/index', [
             'hotels' => $hotels,
             'cities' => $cities,
+            'city' => $city,
             'meta' => $meta,
-            'filters' => $_GET,
+            'filters' => array_merge($_GET, ['city_slug' => $citySlug]),
         ]);
     }
 

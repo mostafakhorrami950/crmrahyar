@@ -39,7 +39,7 @@ class AdminController
         // Check permission: super_admin always has access, others need site.access
         if ($user->role_slug !== 'super_admin') {
             $hasPerm = $this->db->fetch(
-                "SELECT p.id FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = :rid AND p.slug = 'site.access'",
+                "SELECT id FROM role_permissions WHERE role_id = :rid AND permission = 'site.access'",
                 [':rid' => $user->role_id]
             );
             if (!$hasPerm) {

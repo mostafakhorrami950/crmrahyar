@@ -66,9 +66,30 @@ class HomeController
     {
         $path = $_SERVER['REQUEST_URI'];
         $slug = trim(parse_url($path, PHP_URL_PATH), '/');
-        $page = $this->db->fetch("SELECT * FROM site_pages WHERE slug = :s AND is_active = 1 AND deleted_at IS NULL", [':s' => $slug]);
+
+        // Try database first
+        $page = null;
+        try {
+            $page = $this->db->fetch("SELECT * FROM site_pages WHERE slug = :s AND is_active = 1 AND deleted_at IS NULL", [':s' => $slug]);
+        } catch (\Exception $e) {}
+
+        // Fallback for common pages
+        if (!$page) {
+            $defaults = [
+                'contact' => ['title' => 'تماس با ما', 'content' => '<h2>تماس با ما</h2><p>تلفن: ۰۵۱-۱۲۳۴۵۶۷۸</p><p>ایمیل: info@rahyartravel.ir</p><p>آدرس: مشهد، خیابان امام رضا</p>'],
+                'about' => ['title' => 'درباره ما', 'content' => '<h2>درباره ما</h2><p>شرکت خدمات مسافرتی رهیار، ارائه دهنده خدمات رزرو هتل در مشهد مقدس.</p>'],
+                'terms' => ['title' => 'قوانین و مقررات', 'content' => '<h2>قوانین و مقررات</h2><p>قوانین استفاده از سایت...</p>'],
+                'privacy' => ['title' => 'حریم خصوصی', 'content' => '<h2>حریم خصوصی</h2><p>سیاست حفظ حریم خصوصی کاربران...</p>'],
+                'faq' => ['title' => 'سوالات متداول', 'content' => '<h2>سوالات متداول</h2><p>پاسخ سوالات رایج...</p>'],
+            ];
+
+            if (isset($defaults[$slug])) {
+                $page = (object)$defaults[$slug];
+            }
+        }
+
         if (!$page) { $this->notFound(); return; }
-        $this->render('pages/show', ['page' => $page, 'meta' => ['title' => $page->title, 'description' => $page->meta_description ?? '']]);
+        $this->render('pages/show', ['page' => $page, 'meta' => ['title' => $page->title, 'description' => '']]);
     }
 
     public function sitemapIndex(array $params = []): void

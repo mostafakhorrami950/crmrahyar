@@ -23,9 +23,9 @@ class Database
             $config = $GLOBALS['app_config'];
             self::$instance = new self(
                 $config['db']['host'],
-                $config['db']['username'],
-                $config['db']['password'],
-                $config['db']['database']
+                $config['db']['user'] ?? $config['db']['username'] ?? 'root',
+                $config['db']['pass'] ?? $config['db']['password'] ?? '',
+                $config['db']['name'] ?? $config['db']['database'] ?? 'crm_travel'
             );
         }
         return self::$instance;

@@ -25,7 +25,7 @@ class AdminHotelController
         );
         if (!$user) { header('Location: /crm/login'); exit; }
         if ($user->role_slug !== 'super_admin') {
-            $has = $this->db->fetch("SELECT p.id FROM permissions p JOIN role_permissions rp ON p.id = rp.permission_id WHERE rp.role_id = :rid AND p.slug = 'site.manage_hotels'", [':rid' => $user->role_id]);
+            $has = $this->db->fetch("SELECT id FROM role_permissions WHERE role_id = :rid AND permission = 'site.manage_hotels'", [':rid' => $user->role_id]);
             if (!$has) { echo '⛔ دسترسی ندارید'; exit; }
         }
     }
@@ -34,13 +34,15 @@ class AdminHotelController
     {
         $this->requireAuth();
         $hotels = $this->db->fetchAll("
-            SELECT hp.*, h.hotel_name, h.star_rating,
+            SELECT hp.*, 
+                   COALESCE(h.hotel_name, hp.slug) as hotel_name,
+                   COALESCE(h.star_rating, 0) as star_rating,
                    c.name as city_name
             FROM site_hotel_profiles hp
             LEFT JOIN hotel_rate_hotels h ON hp.crm_hotel_id = h.id
             LEFT JOIN site_cities c ON hp.city_id = c.id
             WHERE hp.deleted_at IS NULL
-            ORDER BY hp.featured DESC, hp.sort_order, h.hotel_name
+            ORDER BY hp.featured DESC, hp.sort_order
         ");
         $this->render('admin/hotels/index', ['hotels' => $hotels, 'meta' => ['title' => 'مدیریت هتل‌ها']]);
     }

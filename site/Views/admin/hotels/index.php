@@ -47,5 +47,5 @@ ob_start();
 <?php
 $content = ob_get_clean();
 $meta = $meta ?? ['title' => 'مدیریت هتل‌ها', 'description' => ''];
-require __DIR__ . '/../layouts/main.php';
+require __DIR__ . '/../../layouts/main.php';
 ?>

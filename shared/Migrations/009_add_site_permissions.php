@@ -21,21 +21,22 @@ class Migration009
         }
 
         // Grant all site permissions to super_admin role (id=1)
-        $sitePerms = $db->fetchAll("SELECT id FROM permissions WHERE slug LIKE 'site.%'");
-        foreach ($sitePerms as $perm) {
+        // role_permissions uses 'permission' column (slug string), not 'permission_id'
+        $siteSlugs = ['site.access', 'site.manage_hotels', 'site.manage_rooms', 'site.manage_content'];
+        foreach ($siteSlugs as $slug) {
             $exists = $db->fetch(
-                "SELECT id FROM role_permissions WHERE role_id = 1 AND permission_id = :pid",
-                [':pid' => $perm->id]
+                "SELECT id FROM role_permissions WHERE role_id = 1 AND permission = :perm",
+                [':perm' => $slug]
             );
             if (!$exists) {
-                $db->insert('role_permissions', ['role_id' => 1, 'permission_id' => $perm->id]);
+                $db->insert('role_permissions', ['role_id' => 1, 'permission' => $slug, 'scope' => 'all']);
             }
         }
     }
 
     public static function down($db): void
     {
-        $db->query("DELETE FROM role_permissions WHERE permission_id IN (SELECT id FROM permissions WHERE slug LIKE 'site.%')");
+        $db->query("DELETE FROM role_permissions WHERE permission LIKE 'site.%'");
         $db->query("DELETE FROM permissions WHERE slug LIKE 'site.%'");
     }
 }

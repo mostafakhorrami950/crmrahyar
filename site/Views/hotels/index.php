@@ -4,21 +4,24 @@ ob_start();
 ?>
 
 <div class="container" style="padding-top: 30px; padding-bottom: 40px;">
-    <h1 style="font-size: 28px; font-weight: 900; margin-bottom: 20px;">🏨 هتل‌ها</h1>
+    <h1 style="font-size: 28px; font-weight: 900; margin-bottom: 20px;">🏨 <?php echo isset($city) && $city ? 'هتل‌های ' . htmlspecialchars($city->name) : 'هتل‌ها'; ?></h1>
 
     <!-- Filters -->
     <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
         <select onchange="filterByCity(this.value)" style="padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font: inherit; font-size: 13px;">
             <option value="">همه شهرها</option>
-            <?php foreach ($cities as $city): ?>
-            <option value="<?php echo $city->id; ?>" <?php echo (($filters['city_id'] ?? '') == $city->id) ? 'selected' : ''; ?>><?php echo htmlspecialchars($city->name); ?></option>
+            <?php foreach ($cities as $c): ?>
+            <option value="<?php echo htmlspecialchars($c->slug); ?>" <?php echo (($filters['city_slug'] ?? '') === $c->slug) ? 'selected' : ''; ?>><?php echo htmlspecialchars($c->name); ?></option>
             <?php endforeach; ?>
         </select>
         <select onchange="sortHotels(this.value)" style="padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font: inherit; font-size: 13px;">
             <option value="featured" <?php echo (($filters['sort'] ?? '') === 'featured') ? 'selected' : ''; ?>>ویژه</option>
             <option value="name" <?php echo (($filters['sort'] ?? '') === 'name') ? 'selected' : ''; ?>>نام</option>
-            <option value="rating" <?php echo (($filters['sort'] ?? '') === 'rating') ? 'selected' : ''; ?>>ستاره</option>
+            <option value="haram" <?php echo (($filters['sort'] ?? '') === 'haram') ? 'selected' : ''; ?>>نزدیک‌تر به حرم</option>
         </select>
+        <label style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" onchange="toggleNearHaram(this.checked)" <?php echo isset($filters['near_haram']) ? 'checked' : ''; ?>> 🕌 نزدیک حرم
+        </label>
     </div>
 
     <!-- Hotel Grid -->
@@ -52,15 +55,22 @@ ob_start();
 </div>
 
 <script>
-function filterByCity(cityId) {
-    var url = new URL(window.location);
-    if (cityId) url.searchParams.set('city_id', cityId);
-    else url.searchParams.delete('city_id');
-    window.location.href = url.toString();
+function filterByCity(citySlug) {
+    if (citySlug) {
+        window.location.href = '/hotels/' + citySlug;
+    } else {
+        window.location.href = '/hotels';
+    }
 }
 function sortHotels(sort) {
     var url = new URL(window.location);
     url.searchParams.set('sort', sort);
+    window.location.href = url.toString();
+}
+function toggleNearHaram(checked) {
+    var url = new URL(window.location);
+    if (checked) url.searchParams.set('near_haram', '1');
+    else url.searchParams.delete('near_haram');
     window.location.href = url.toString();
 }
 </script>

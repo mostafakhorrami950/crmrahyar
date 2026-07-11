@@ -84,5 +84,5 @@ ob_start();
 <?php
 $content = ob_get_clean();
 $meta = $meta ?? ['title' => 'ویرایش هتل', 'description' => ''];
-require __DIR__ . '/../layouts/main.php';
+require __DIR__ . '/../../layouts/main.php';
 ?>
