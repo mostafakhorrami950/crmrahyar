@@ -14,9 +14,9 @@ class OpenRouterService
         $this->apiKey = '';
         $this->model = 'deepseek/deepseek-v4-pro';
         try {
-            $key = $db->fetch("SELECT `value` FROM site_settings WHERE `key` = 'openrouter_api_key'");
-            $model = $db->fetch("SELECT `value` FROM site_settings WHERE `key` = 'openrouter_model'");
-            if ($key) $this->apiKey = $key->value;
+            $key = $db->fetch("SELECT `setting_value` as `value` FROM site_settings WHERE `setting_key` = 'openrouter_api_key'");
+            $model = $db->fetch("SELECT `setting_value` as `value` FROM site_settings WHERE `setting_key` = 'openrouter_model'");
+            if ($key && !empty($key->value)) $this->apiKey = $key->value;
             if ($model && !empty($model->value)) $this->model = $model->value;
         } catch (\Exception $e) {}
     }

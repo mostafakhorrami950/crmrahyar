@@ -71,8 +71,8 @@ class HomeController
         ];
         $company = 'آژانس مسافرتی رهیار';
         try {
-            $row = $this->db->fetch("SELECT `value` FROM site_settings WHERE `key` = 'company_name'");
-            if ($row) $company = $row->value;
+            $row = $this->db->fetch("SELECT `setting_value` as `value` FROM site_settings WHERE `setting_key` = 'company_name'");
+            if ($row && !empty($row->value)) $company = $row->value;
         } catch (\Exception $e) {}
         $this->render('blog/show', ['post' => $post, 'meta' => $meta, 'company' => $company]);
     }
@@ -178,8 +178,8 @@ class HomeController
         $baseUrl = $this->config->url();
         $settings = [];
         try {
-            $rows = $this->db->fetchAll("SELECT `key`, `value` FROM site_settings");
-            foreach ($rows as $row) $settings[$row->key] = $row->value;
+            $rows = $this->db->fetchAll("SELECT `setting_key`, `setting_value` FROM site_settings");
+            foreach ($rows as $row) $settings[$row->setting_key] = $row->setting_value;
         } catch (\Exception $e) {}
         $company = $settings['company_name'] ?? 'آژانس مسافرتی رهیار';
 

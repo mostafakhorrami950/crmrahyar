@@ -174,18 +174,21 @@ class AdminContentController extends AdminController
         $settings = [];
         try {
             $rows = $this->db->fetchAll("SELECT * FROM site_settings ORDER BY id");
-            foreach ($rows as $row) $settings[$row->key] = $row->value;
+            foreach ($rows as $row) {
+                $k = $row->setting_key ?? $row->key ?? '';
+                $settings[$k] = $row->value ?? $row->setting_value ?? '';
+            }
         } catch (\Exception $e) {}
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fields = ['site_title', 'site_description', 'site_phone', 'site_email', 'site_address', 'site_logo', 'company_name', 'footer_text', 'openrouter_api_key', 'openrouter_model'];
             foreach ($fields as $field) {
                 if (isset($_POST[$field])) {
                     $val = trim($_POST[$field]);
-                    $exists = $this->db->fetch("SELECT id FROM site_settings WHERE `key` = :k", [':k' => $field]);
+                    $exists = $this->db->fetch("SELECT id FROM site_settings WHERE `setting_key` = :k", [':k' => $field]);
                     if ($exists) {
-                        $this->db->update('site_settings', ['value' => $val], '`key` = :k', [':k' => $field]);
+                        $this->db->update('site_settings', ['setting_value' => $val], '`setting_key` = :k', [':k' => $field]);
                     } else {
-                        $this->db->insert('site_settings', ['key' => $field, 'value' => $val]);
+                        $this->db->insert('site_settings', ['setting_key' => $field, 'setting_value' => $val]);
                     }
                 }
             }
@@ -231,7 +234,9 @@ class AdminContentController extends AdminController
             header('Location: /admin/seo?updated=1');
             exit;
         }
-        $this->renderAdmin('admin/seo/index', ['redirects' => $redirects, 'meta' => ['title' => 'سئو']]);
+        $keywords = [];
+        try { $keywords = $this->db->fetchAll("SELECT * FROM site_seo_keywords ORDER BY id DESC LIMIT 50"); } catch (\Exception $e) {}
+        $this->renderAdmin('admin/seo/index', ['redirects' => $redirects, 'keywords' => $keywords, 'meta' => ['title' => 'سئو']]);
     }
 
     public function seoDeleteRedirect(array $params = []): void

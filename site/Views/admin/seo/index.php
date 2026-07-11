@@ -64,11 +64,7 @@
                 <tr><th>کلمه کلیدی</th><th>slug</th><th>صفحه مقصد</th><th>عملیات</th></tr>
             </thead>
             <tbody>
-            <?php
-            $keywords = [];
-            try { $keywords = $db->fetchAll("SELECT * FROM site_seo_keywords ORDER BY id DESC LIMIT 50"); } catch (\Exception $e) {}
-            if (empty($keywords)):
-            ?>
+            <?php if (empty($keywords)):
                 <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 20px;">هنوز کلمه کلیدی ثبت نشده</td></tr>
             <?php else: foreach ($keywords as $kw): ?>
                 <tr>
