@@ -20,7 +20,7 @@ class AdminController
         $this->config = $c->make(Config::class);
     }
 
-    private function requireAdmin(): void
+    protected function requireAdmin(): void
     {
         // Check if user is logged in (CRM session)
         if (!isset($_SESSION['user_id'])) {
@@ -72,8 +72,16 @@ class AdminController
             $r = $this->db->fetch("SELECT COUNT(*) as cnt FROM site_blog_posts WHERE is_published = 1 AND deleted_at IS NULL");
             $stats['posts'] = $r->cnt ?? 0;
         } catch (\Exception $e) { $stats['posts'] = 0; }
+        try {
+            $r = $this->db->fetch("SELECT COUNT(*) as cnt FROM site_cities WHERE is_active = 1");
+            $stats['cities'] = $r->cnt ?? 0;
+        } catch (\Exception $e) { $stats['cities'] = 0; }
+        try {
+            $r = $this->db->fetch("SELECT COUNT(*) as cnt FROM site_rooms WHERE deleted_at IS NULL");
+            $stats['rooms'] = $r->cnt ?? 0;
+        } catch (\Exception $e) { $stats['rooms'] = 0; }
 
-        $this->render('admin/index', ['stats' => $stats, 'meta' => ['title' => 'پنل مدیریت سایت']]);
+        $this->renderAdmin('admin/dashboard', ['stats' => $stats, 'meta' => ['title' => 'داشبورد مدیریت']]);
     }
 
     public function database(array $params = []): void
@@ -147,10 +155,23 @@ class AdminController
         return $results;
     }
 
-    private function render(string $view, array $data = []): void
+    protected function render(string $view, array $data = []): void
     {
         extract($data);
         $viewPath = __DIR__ . '/../Views/' . str_replace('.', '/', $view) . '.php';
         if (file_exists($viewPath)) { require $viewPath; } else { echo "View not found: {$view}"; }
+    }
+
+    /**
+     * Render with admin layout
+     */
+    protected function renderAdmin(string $view, array $data = []): void
+    {
+        ob_start();
+        extract($data);
+        $viewPath = __DIR__ . '/../Views/' . str_replace('.', '/', $view) . '.php';
+        if (file_exists($viewPath)) { require $viewPath; } else { echo "View not found: {$view}"; }
+        $content = ob_get_clean();
+        require __DIR__ . '/../Views/admin/layouts/admin.php';
     }
 }

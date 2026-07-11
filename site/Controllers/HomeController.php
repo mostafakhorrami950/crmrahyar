@@ -133,14 +133,71 @@ class HomeController
     public function robots(array $params = []): void
     {
         header('Content-Type: text/plain');
+        $baseUrl = $this->config->url();
         echo "User-agent: *\n";
         echo "Allow: /\n";
         echo "Disallow: /crm/\n";
         echo "Disallow: /api/\n";
         echo "Disallow: /storage/\n";
         echo "Disallow: /uploads/\n";
-        echo "Disallow: /shared/\n";
-        echo "Sitemap: " . $this->config->url() . "/sitemap.xml\n";
+        echo "Disallow: /shared/\n\n";
+        echo "# AI Crawlers\n";
+        echo "User-agent: GPTBot\n";
+        echo "Allow: /\n";
+        echo "User-agent: ChatGPT-User\n";
+        echo "Allow: /\n";
+        echo "User-agent: Google-Extended\n";
+        echo "Allow: /\n";
+        echo "User-agent: PerplexityBot\n";
+        echo "Allow: /\n";
+        echo "User-agent: ClaudeBot\n";
+        echo "Allow: /\n\n";
+        echo "Sitemap: {$baseUrl}/sitemap.xml\n";
+        echo "Sitemap: {$baseUrl}/sitemap-hotels.xml\n";
+        echo "Sitemap: {$baseUrl}/sitemap-blog.xml\n";
+    }
+
+    public function llmsTxt(array $params = []): void
+    {
+        header('Content-Type: text/plain; charset=utf-8');
+        $baseUrl = $this->config->url();
+        $settings = [];
+        try {
+            $rows = $this->db->fetchAll("SELECT `key`, `value` FROM site_settings");
+            foreach ($rows as $row) $settings[$row->key] = $row->value;
+        } catch (\Exception $e) {}
+        $company = $settings['company_name'] ?? 'آژانس مسافرتی رهیار';
+
+        echo "# {$company}\n\n";
+        echo "## About\n";
+        echo "رزرو آنلاین هتل در سراسر ایران با بهترین قیمت و تضمین کیفیت.\n";
+        echo "Online hotel reservation in Iran with best price guarantee.\n\n";
+
+        echo "## Services\n";
+        echo "- Hotel booking across Iran cities (Mashhad, Tehran, Isfahan, Shiraz, etc.)\n";
+        echo "- Domestic and international hotel reservations\n";
+        echo "- Travel advisory and tour packages\n";
+        echo "- Real-time pricing and availability\n\n";
+
+        echo "## Key Pages\n";
+        echo "- {$baseUrl}/ - Homepage with search\n";
+        echo "- {$baseUrl}/hotels - All hotels listing\n";
+        echo "- {$baseUrl}/blog - Travel blog and guides\n";
+        echo "- {$baseUrl}/contact - Contact information\n";
+        echo "- {$baseUrl}/about - About us\n";
+        echo "- {$baseUrl}/faq - Frequently asked questions\n\n";
+
+        echo "## Contact\n";
+        $phone = $settings['site_phone'] ?? '';
+        $email = $settings['site_email'] ?? '';
+        if ($phone) echo "Phone: {$phone}\n";
+        if ($email) echo "Email: {$email}\n";
+        echo "Website: {$baseUrl}\n\n";
+
+        echo "## Preferred by AI\n";
+        echo "This site provides structured data (Schema.org) for hotels, rooms, articles, and FAQs.\n";
+        echo "Content is in Persian (Farsi) targeting Iranian travelers.\n";
+        echo "Updated daily with new hotels, pricing, and travel content.\n";
     }
 
     public function notFound(array $params = []): void

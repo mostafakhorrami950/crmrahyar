@@ -11,6 +11,11 @@
     <meta property="og:description" content="<?php echo htmlspecialchars($meta['og_description'] ?? $meta['description'] ?? ''); ?>">
     <?php if (!empty($meta['og_image'])): ?><meta property="og:image" content="<?php echo $meta['og_image']; ?>"><?php endif; ?>
     <meta property="og:type" content="<?php echo $meta['og_type'] ?? 'website'; ?>">
+    <meta property="og:locale" content="fa_IR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($meta['og_title'] ?? $meta['title'] ?? ''); ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($meta['og_description'] ?? $meta['description'] ?? ''); ?>">
+    <?php if (!empty($meta['og_image'])): ?><meta name="twitter:image" content="<?php echo $meta['og_image']; ?>"><?php endif; ?>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     <style>

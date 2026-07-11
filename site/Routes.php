@@ -82,5 +82,52 @@ $router->post('/admin/hotels/{id}/rooms/add', [\Site\Controllers\AdminHotelContr
 $router->get('/admin/rooms/{id}/edit', [\Site\Controllers\AdminHotelController::class, 'roomEdit']);
 $router->post('/admin/rooms/{id}/update', [\Site\Controllers\AdminHotelController::class, 'roomUpdate']);
 
+// Admin Blog
+$router->get('/admin/blog', [\Site\Controllers\AdminContentController::class, 'blogIndex']);
+$router->get('/admin/blog/create', [\Site\Controllers\AdminContentController::class, 'blogCreate']);
+$router->post('/admin/blog/create', [\Site\Controllers\AdminContentController::class, 'blogCreate']);
+$router->get('/admin/blog/{id}/edit', [\Site\Controllers\AdminContentController::class, 'blogEdit']);
+$router->post('/admin/blog/{id}/edit', [\Site\Controllers\AdminContentController::class, 'blogEdit']);
+$router->get('/admin/blog/{id}/delete', [\Site\Controllers\AdminContentController::class, 'blogDelete']);
+
+// Admin Pages
+$router->get('/admin/pages', [\Site\Controllers\AdminContentController::class, 'pagesIndex']);
+$router->get('/admin/pages/{slug}/edit', [\Site\Controllers\AdminContentController::class, 'pagesEdit']);
+$router->post('/admin/pages/{slug}/edit', [\Site\Controllers\AdminContentController::class, 'pagesEdit']);
+
+// Admin Settings
+$router->get('/admin/settings', [\Site\Controllers\AdminContentController::class, 'settingsIndex']);
+$router->post('/admin/settings', [\Site\Controllers\AdminContentController::class, 'settingsIndex']);
+
+// Admin SEO
+$router->get('/admin/seo', [\Site\Controllers\AdminContentController::class, 'seoIndex']);
+$router->post('/admin/seo', [\Site\Controllers\AdminContentController::class, 'seoIndex']);
+$router->get('/admin/seo/redirect/{id}/delete', [\Site\Controllers\AdminContentController::class, 'seoDeleteRedirect']);
+
+// Admin Cities
+$router->get('/admin/cities', [\Site\Controllers\AdminContentController::class, 'citiesIndex']);
+$router->get('/admin/cities/create', [\Site\Controllers\AdminContentController::class, 'citiesEdit']);
+$router->post('/admin/cities/create', [\Site\Controllers\AdminContentController::class, 'citiesEdit']);
+$router->get('/admin/cities/{id}/edit', [\Site\Controllers\AdminContentController::class, 'citiesEdit']);
+$router->post('/admin/cities/{id}/edit', [\Site\Controllers\AdminContentController::class, 'citiesEdit']);
+
+// Admin FAQs
+$router->get('/admin/faqs', [\Site\Controllers\AdminContentController::class, 'faqsIndex']);
+$router->get('/admin/faqs/create', [\Site\Controllers\AdminContentController::class, 'faqsEdit']);
+$router->post('/admin/faqs/create', [\Site\Controllers\AdminContentController::class, 'faqsEdit']);
+$router->get('/admin/faqs/{id}/edit', [\Site\Controllers\AdminContentController::class, 'faqsEdit']);
+$router->post('/admin/faqs/{id}/edit', [\Site\Controllers\AdminContentController::class, 'faqsEdit']);
+$router->get('/admin/faqs/{id}/delete', [\Site\Controllers\AdminContentController::class, 'faqsDelete']);
+
+// Admin Bookings
+$router->get('/admin/bookings', [\Site\Controllers\AdminContentController::class, 'bookingsIndex']);
+
+// Admin Media API
+$router->post('/admin/media/upload', [\Site\Controllers\AdminContentController::class, 'mediaUpload']);
+$router->get('/admin/media/{id}/delete', [\Site\Controllers\AdminContentController::class, 'mediaDelete']);
+
+// SEO Files
+$router->get('/llms.txt', [\Site\Controllers\HomeController::class, 'llmsTxt']);
+
 // 404
 $router->set404([HomeController::class, 'notFound']);
