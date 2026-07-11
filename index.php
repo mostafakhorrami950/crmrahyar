@@ -46,7 +46,12 @@ try {
     // Database (shared with CRM)
     $container->singleton(Database::class, function() {
         $config = $GLOBALS['app_config'];
-        return new Database($config['db']['host'], $config['db']['username'], $config['db']['password'], $config['db']['database']);
+        return new Database(
+            $config['db']['host'],
+            $config['db']['user'],
+            $config['db']['pass'],
+            $config['db']['name']
+        );
     });
 
     // Config
