@@ -22,11 +22,19 @@ class AdminController
 
     private function requireAdmin(): void
     {
-        \Shared\Core\Auth::requireAuth();
-        $user = \Shared\Core\Auth::user();
-        if (!$user || $user->role_slug !== 'super_admin') {
-            \Shared\Core\Session::setFlash('danger', 'فقط مدیر اصلی به این بخش دسترسی دارد.');
-            header('Location: /');
+        // Check if user is logged in (CRM session)
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /crm/login');
+            exit;
+        }
+        // Check if user is admin
+        $user = $this->db->fetch(
+            "SELECT u.*, r.slug as role_slug FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = :id",
+            [':id' => $_SESSION['user_id']]
+        );
+        if (!$user || ($user->role_slug !== 'super_admin' && $user->role_slug !== 'admin')) {
+            header('Content-Type: text/html; charset=utf-8');
+            echo '<div style="text-align:center;padding:60px;font-family:Vazirmatn,sans-serif;"><h2>⛔ دسترسی محدود</h2><p>فقط مدیر اصلی به این بخش دسترسی دارد.</p><a href="/crm">بازگشت به CRM</a></div>';
             exit;
         }
     }

@@ -21,7 +21,18 @@ class DatabaseRepairController
             'payments', 'sms_history', 'settings',
             'custom_fields', 'custom_field_values', 'db_repair_log',
             'change_logs', 'phone_lines', 'phone_assignments',
-            'hotel_rate_hotels', 'hotel_rate_list'
+            'hotel_rate_hotels', 'hotel_rate_list',
+            // Site tables
+            'site_cities', 'site_neighborhoods', 'site_hotel_profiles', 'site_rooms',
+            'site_room_daily_rates', 'site_pricing_rules', 'site_campaigns',
+            'site_bookings', 'site_booking_guests', 'site_booking_status_log',
+            'site_booking_snapshots', 'site_reservations',
+            'site_agencies', 'site_agency_transactions', 'site_ledger',
+            'site_media', 'site_search_index', 'site_workflows', 'site_workflow_transitions',
+            'site_blog_posts', 'site_pages', 'site_faqs', 'site_reviews', 'site_notifications',
+            'site_settings', 'site_event_logs', 'site_analytics', 'site_seo_redirects',
+            'site_queue_jobs', 'site_feature_flags', 'site_outbox', 'site_idempotency_keys',
+            'site_audit_logs', 'site_migrations',
         ];
         
         // Get actual tables
@@ -281,6 +292,15 @@ class DatabaseRepairController
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             } catch (\Exception $e) {}
             
+            // Run site migrations (PHP-based)
+            $siteResults = [];
+            try {
+                $runner = new \Shared\Core\MigrationRunner($db);
+                $siteResults = $runner->run();
+            } catch (\Exception $e) {
+                $siteResults[] = ['name' => 'site_migrations', 'status' => 'error', 'message' => $e->getMessage()];
+            }
+            
             // Log repairs
             foreach ($repairs as $r) {
                 $db->insert('db_repair_log', [
@@ -293,9 +313,10 @@ class DatabaseRepairController
             
             echo json_encode([
                 'success' => true,
-                'message' => 'تعمیر دیتابیس با موفقیت انجام شد. ' . (count($results) + count($repairs)) . ' عملیات اجرا شد.',
+                'message' => 'تعمیر دیتابیس با موفقیت انجام شد. ' . (count($results) + count($repairs) + count($siteResults)) . ' عملیات اجرا شد.',
                 'migrations' => $results,
-                'column_repairs' => $repairs
+                'column_repairs' => $repairs,
+                'site_migrations' => $siteResults
             ]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'خطا: ' . $e->getMessage()]);
